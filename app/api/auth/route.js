@@ -9,13 +9,13 @@ export async function POST(request) {
       NODE_ENV: process.env.NODE_ENV,
     });
 
-    const body = await request.json();
+    const requestBody = await request.json();
     console.log('Auth request data:', {
-      hasGoogleId: !!body.googleId,
+      hasGoogleId: !!requestBody.googleId,
     });
 
     // 요청 본문 검증
-    if (!body.googleId) {
+    if (!requestBody.googleId) {
       return new Response(JSON.stringify({ error: 'googleId is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -28,8 +28,10 @@ export async function POST(request) {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -42,61 +44,50 @@ export async function POST(request) {
 
     const data = await response.json();
 
-    // 백엔드 응답 구조 확인을 위한 로그
-    console.log('Raw backend response:', {
-      hasAccessToken: !!data.accessToken,
-      hasRefreshToken: !!data.refreshToken,
-      hasUserData: !!data.user,
-    });
-
-    // 응답 데이터 구조 검증 및 변환
-    const authData = {
-      ...data,
-      loginAt: new Date().toISOString(),
-      user: {
-        ...data.user,
-        id: data.user?.id || data.user?._id,
+    // 응답 데이터가 없는 경우 기본값 설정
+    const responseData = {
+      success: true,
+      data: data || {},
+      message: data?.message || '인증이 완료되었습니다.',
+      timestamp: new Date().toISOString(),
+      path: '/api/auth',
+      meta: {
+        tokens: {
+          accessToken: data?.accessToken || null,
+          refreshToken: data?.refreshToken || null,
+        },
       },
     };
 
-    console.log('Processed auth data:', {
-      hasTokens: !!(authData.accessToken && authData.refreshToken),
-      userId: authData.user?.id,
+    return new Response(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, private',
+        Pragma: 'no-cache',
+      },
     });
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: authData,
-        message: '로그인이 성공적으로 완료되었습니다.',
-        timestamp: new Date().toISOString(),
-        path: '/api/auth',
-        meta: {
-          loginAt: authData.loginAt,
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, private',
-          Pragma: 'no-cache',
-        },
-      }
-    );
   } catch (error) {
     console.error('Auth API Error:', {
       message: error.message,
       stack: error.stack,
     });
+
     return new Response(
       JSON.stringify({
-        error: 'Authentication failed',
+        success: false,
+        error: '인증에 실패했습니다.',
         details: error.message,
+        timestamp: new Date().toISOString(),
+        path: '/api/auth',
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
       }
     );
   }

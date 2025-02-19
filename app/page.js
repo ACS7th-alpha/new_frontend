@@ -114,18 +114,19 @@ export default function HomePage() {
       const data = await response.json();
       console.log('3. 백엔드 로그인 응답:', data);
 
-      if (response.ok) {
-        // 1. 토큰 및 사용자 정보 저장
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('refresh_token', data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+      if (response.ok && data.success) {
+        // 토큰 및 사용자 정보 저장 부분 수정
+        localStorage.setItem('access_token', data.meta.tokens.accessToken);
+        localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
+        localStorage.setItem('user', JSON.stringify(data.data)); // 백엔드에서 받은 사용자 정보
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
-        // 2. 예산 데이터 가져오기
+
+        // 예산 데이터 가져오기
         try {
           const budgetResponse = await fetch('/api/budget', {
             headers: {
-              Authorization: `Bearer ${data.access_token}`,
+              Authorization: `Bearer ${data.meta.tokens.accessToken}`,
             },
           });
 
@@ -137,8 +138,9 @@ export default function HomePage() {
           console.error('예산 데이터 가져오기 실패:', error);
         }
 
-        window.location.reload(); // 페이지 새로고침
+        window.location.reload();
       } else {
+        // 회원가입이 필요한 경우
         const userData = {
           id: decoded.sub,
           email: decoded.email,

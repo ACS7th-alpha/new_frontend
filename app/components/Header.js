@@ -34,20 +34,12 @@ export default function Header({ onLogin }) {
     try {
       const oldToken = localStorage.getItem('access_token');
       const refreshToken = localStorage.getItem('refresh_token');
-      const currentTime = new Date();
 
-      console.log(
-        `\n=== 토큰 갱신 시도 [${currentTime.toLocaleTimeString()}] ===`
-      );
-      console.log(
-        '기존 Access Token (마지막 10자):',
-        oldToken ? `...${oldToken.slice(-10)}` : '없음'
-      );
-      console.log(
-        '사용할 Refresh Token (마지막 10자):',
-        refreshToken ? `...${refreshToken.slice(-10)}` : '없음'
-      );
-      console.log('갱신 요청 시작...');
+      if (!refreshToken) {
+        console.error('Refresh token not found');
+        handleLogout();
+        return;
+      }
 
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
@@ -59,51 +51,38 @@ export default function Header({ onLogin }) {
         }),
       });
 
-      console.log('서버 응답 상태:', response.status);
-
       if (response.ok) {
         const data = await response.json();
-        const newToken = data.access_token;
 
-        console.log('\n=== 토큰 갱신 성공 ===');
-        console.log(
-          '이전 Access Token (마지막 10자):',
-          oldToken ? `...${oldToken.slice(-10)}` : '없음'
-        );
-        console.log(
-          '새로운 Access Token (마지막 10자):',
-          newToken ? `...${newToken.slice(-10)}` : '없음'
-        );
-        console.log(
-          '토큰 변경 여부:',
-          oldToken !== newToken ? '✅ 토큰이 변경됨' : '❌ 토큰이 동일함'
-        );
-        console.log('갱신 완료 시간:', currentTime.toLocaleTimeString());
+        if (data.success && data.meta.tokens.accessToken) {
+          const newToken = data.meta.tokens.accessToken;
+          localStorage.setItem('access_token', newToken);
 
-        localStorage.setItem('access_token', newToken);
-        console.log('새로운 토큰 저장 완료');
+          // 새로운 refresh token이 있다면 업데이트
+          if (data.meta.tokens.refreshToken) {
+            localStorage.setItem(
+              'refresh_token',
+              data.meta.tokens.refreshToken
+            );
+          }
 
-        // 다음 갱신 타이머 설정 (30초)
-        const THIRTY_SECONDS = 60 * 60 * 1000;
-        const nextRefreshTime = new Date(Date.now() + THIRTY_SECONDS);
-        console.log(
-          '다음 갱신 예정 시간:',
-          nextRefreshTime.toLocaleTimeString()
-        );
-        console.log('남은 시간: 30초');
+          console.log('토큰 갱신 성공:', {
+            oldToken: oldToken?.slice(-10),
+            newToken: newToken?.slice(-10),
+          });
 
-        setTimeout(refreshAccessToken, THIRTY_SECONDS);
+          // 다음 갱신 타이머 설정 (1시간)
+          setTimeout(refreshAccessToken, 60 * 60 * 1000);
+        } else {
+          console.error('Invalid token refresh response:', data);
+          handleLogout();
+        }
       } else {
-        console.error('\n=== 토큰 갱신 실패 ===');
-        console.error('응답 상태:', response.status);
-        console.error('에러 메시지:', await response.text());
-        console.error('실패 시간:', currentTime.toLocaleTimeString());
+        console.error('Token refresh failed:', response.status);
         handleLogout();
       }
     } catch (error) {
-      console.error('\n=== 토큰 갱신 중 오류 발생 ===');
-      console.error('에러 내용:', error);
-      console.error('발생 시간:', new Date().toLocaleTimeString());
+      console.error('Token refresh error:', error);
       handleLogout();
     }
   };
@@ -125,37 +104,32 @@ export default function Header({ onLogin }) {
     const token = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
     const userStr = localStorage.getItem('user');
-    const currentTime = new Date();
 
-    console.log(
-      `\n=== 초기 로그인 상태 체크 [${currentTime.toLocaleTimeString()}] ===`
-    );
-    console.log('Access Token:', token);
-    console.log('Refresh Token:', refreshToken);
-
-    // user 데이터가 있을 때만 JSON.parse 실행
-    const userData = userStr ? JSON.parse(userStr) : null;
-    console.log('User Data:', userData);
-    console.log('로그인 상태:', !!token);
+    console.log('Initial auth check:', {
+      hasAccessToken: !!token,
+      hasRefreshToken: !!refreshToken,
+      hasUserData: !!userStr,
+    });
 
     if (token && refreshToken) {
-      setIsLoggedIn(true);
-      setTokenRefreshTimer();
+      try {
+        const userData = userStr ? JSON.parse(userStr) : null;
+        setIsLoggedIn(true);
 
-      // 5초마다 토큰 상태 체크
-      const interval = setInterval(checkTokenStatus, 5000);
-      setTokenCheckInterval(interval);
-      console.log('토큰 상태 체크 타이머 설정 완료 (5초 간격)');
-    }
+        // 토큰 갱신 타이머 설정 (1시간)
+        const refreshTimer = setTimeout(refreshAccessToken, 60 * 60 * 1000);
 
-    return () => {
-      if (tokenCheckInterval) {
-        clearInterval(tokenCheckInterval);
-        console.log('토큰 체크 인터벌 정리 완료');
+        return () => {
+          clearTimeout(refreshTimer);
+          if (tokenCheckInterval) {
+            clearInterval(tokenCheckInterval);
+          }
+        };
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        handleLogout();
       }
-      clearTimeout(setTokenRefreshTimer);
-      console.log('토큰 갱신 타이머 정리 완료');
-    };
+    }
   }, []);
 
   const handleLogout = () => {
