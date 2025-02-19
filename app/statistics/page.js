@@ -90,10 +90,17 @@ export default function StatisticsPage() {
         const data = await response.json();
         processData(data.spending || []);
       } catch (error) {
-        console.error('Error fetching spending data:', error);
-        setCategoryData([]);
-        setMonthlySpending(0);
-        setYearlyData(Array(12).fill(0));
+        console.error('Error:', error);
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to...',
+            details: error.message,
+          }),
+          {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       } finally {
         setLoading(false);
       }
