@@ -1,0 +1,27 @@
+name: CI-Harbor
+
+on:
+  push:
+    branches:
+      - master  # 또는 배포할 브랜치
+
+jobs:
+  build-and-push:
+    runs-on: self-hosted  # Self-hosted runner 사용
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to Harbor
+        run: |
+          docker login https://192.168.2.76:443 -u yurim -p ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Placeholder for Docker Build (Dockerfile 없음)
+        run: |
+          echo "Dockerfile 없음 - 나중에 빌드 추가 예정"
+          
+      # Dockerfile이 생기면 아래 코드 활성화
+      # - name: Build and Push Docker Image
+      #   run: |
+      #     docker build -t 192.168.2.76:443/my-project/my-image:latest .
+      #     docker push 192.168.2.76:443/my-project/my-image:latest
