@@ -1,9 +1,17 @@
 export async function POST(request) {
   try {
     console.log('Chat request received');
-    const authorization = request.headers.get('Authorization');
 
-    // Authorization 헤더 검증
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_CHAT_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+
+    const authorization = request.headers.get('Authorization');
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
+
     if (!authorization) {
       console.error('Missing Authorization header in chat request');
       return new Response(
@@ -12,19 +20,18 @@ export async function POST(request) {
           timestamp: new Date().toISOString(),
           path: '/api/chat',
         }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    console.log(
-      'Authorization header:',
-      authorization.substring(0, 15) + '...'
-    );
 
     // 요청 본문 검증
     const questionData = await request.json();
+    console.log('Chat request data:', {
+      hasMessage: !!questionData.message,
+      messageLength: questionData.message?.length,
+      hasContext: !!questionData.context,
+    });
+
     if (!questionData.message) {
       console.error('Missing message in request body');
       return new Response(
@@ -33,16 +40,9 @@ export async function POST(request) {
           timestamp: new Date().toISOString(),
           path: '/api/chat',
         }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    console.log('Chat message received:', {
-      messageLength: questionData.message.length,
-      context: questionData.context || 'none',
-    });
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_CHAT_URL}/chat`;
     console.log('Sending chat request to:', url);
@@ -65,29 +65,50 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    console.log('Chat response successfully received');
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const chatResponse = {
+      message: data.message,
+      messageId: data.messageId || crypto.randomUUID(),
+      context: data.context || questionData.context,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log('Processed chat response:', {
+      hasMessage: !!chatResponse.message,
+      messageId: chatResponse.messageId,
+      hasContext: !!chatResponse.context,
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          message: data.message,
-          timestamp: new Date().toISOString(),
-          messageId: data.messageId || crypto.randomUUID(),
-          context: data.context || questionData.context,
-        },
+        data: chatResponse,
         message: '챗봇 응답이 성공적으로 생성되었습니다.',
+        timestamp: chatResponse.timestamp,
         path: '/api/chat',
+        meta: {
+          messageId: chatResponse.messageId,
+          generatedAt: chatResponse.timestamp,
+        },
       }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
         },
       }
     );
   } catch (error) {
+    console.error('Chat API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     console.error('Error processing chat request:', error);
     return new Response(
       JSON.stringify({

@@ -1,19 +1,16 @@
 export async function GET(request) {
   try {
     console.log('Spending data fetch request received');
-    const authorization = request.headers.get('Authorization');
 
-    if (!authorization) {
-      console.error('Missing Authorization header in spending fetch request');
-      return new Response(
-        JSON.stringify({
-          error: 'Authorization header is required',
-          timestamp: new Date().toISOString(),
-          path: '/api/budget/spending',
-        }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+
+    const authorization = request.headers.get('Authorization');
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget/spending`;
     console.log('Fetching spending data from:', url);
@@ -30,28 +27,55 @@ export async function GET(request) {
     }
 
     const data = await response.json();
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const spendingData = {
+      spending: data.spending || {},
+      totalAmount: Object.values(data.spending || {}).reduce(
+        (sum, amount) => sum + amount,
+        0
+      ),
+      period: {
+        year: data.year || new Date().getFullYear(),
+        month: data.month || new Date().getMonth() + 1,
+      },
+    };
+
+    console.log('Processed spending data:', {
+      categories: Object.keys(spendingData.spending).length,
+      totalAmount: spendingData.totalAmount,
+      period: spendingData.period,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          spending: data.spending,
-          totalAmount: Object.values(data.spending).reduce(
-            (sum, amount) => sum + amount,
-            0
-          ),
-          period: {
-            year: data.year,
-            month: data.month,
-          },
-        },
+        data: spendingData,
         message: '지출 데이터를 성공적으로 불러왔습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/budget/spending',
+        meta: {
+          period: spendingData.period,
+          totalCategories: Object.keys(spendingData.spending).length,
+        },
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
+      }
     );
   } catch (error) {
-    console.error('Error fetching spending data:', error);
+    console.error('Spending API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: '지출 데이터를 불러오는데 실패했습니다.',
@@ -66,68 +90,20 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    console.log('New expense creation request received');
+    console.log('Spending creation request received');
+
     const authorization = request.headers.get('Authorization');
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
-    // Authorization 헤더 검증
-    if (!authorization) {
-      console.error('Missing Authorization header in expense creation request');
-      return new Response(
-        JSON.stringify({
-          error: 'Authorization header is required',
-          timestamp: new Date().toISOString(),
-          path: '/api/budget/spending',
-        }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    console.log(
-      'Authorization header:',
-      authorization.substring(0, 15) + '...'
-    );
-
-    // 요청 본문 검증
-    const requestData = await request.json();
-    if (!requestData.amount || !requestData.category || !requestData.date) {
-      console.error('Invalid expense data:', {
-        hasAmount: !!requestData.amount,
-        hasCategory: !!requestData.category,
-        hasDate: !!requestData.date,
-      });
-      return new Response(
-        JSON.stringify({
-          error: '금액, 카테고리, 날짜는 필수 입력 항목입니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/budget/spending',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // 금액 유효성 검사
-    if (isNaN(requestData.amount) || requestData.amount <= 0) {
-      console.error('Invalid amount:', requestData.amount);
-      return new Response(
-        JSON.stringify({
-          error: '유효한 지출 금액을 입력해주세요.',
-          timestamp: new Date().toISOString(),
-          path: '/api/budget/spending',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
+    const requestBody = await request.json();
+    console.log('Spending creation data:', {
+      hasDate: !!requestBody.date,
+      hasCategory: !!requestBody.category,
+      hasAmount: !!requestBody.amount,
+    });
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget/spending`;
-    console.log('Creating new expense at:', url);
+    console.log('Creating spending at:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -135,7 +111,7 @@ export async function POST(request) {
         Authorization: authorization,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestData),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -147,26 +123,44 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    console.log('Expense successfully created');
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const createdSpending = {
+      ...data,
+      id: data.id || data._id,
+      createdAt: new Date().toISOString(),
+    };
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          ...data,
-          createdAt: new Date().toISOString(),
-        },
+        data: createdSpending,
         message: '지출이 성공적으로 등록되었습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/budget/spending',
+        meta: {
+          createdAt: createdSpending.createdAt,
+          category: createdSpending.category,
+          amount: createdSpending.amount,
+        },
       }),
       {
         status: 201,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
       }
     );
   } catch (error) {
-    console.error('Error creating expense:', error);
+    console.error('Spending Creation API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: '지출 등록에 실패했습니다.',

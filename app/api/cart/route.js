@@ -1,6 +1,14 @@
 export async function GET(request) {
   try {
     console.log('Cart items fetch request received');
+
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_CART_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+
     const authorization = request.headers.get('Authorization');
 
     if (!authorization) {
@@ -30,29 +38,57 @@ export async function GET(request) {
     }
 
     const data = await response.json();
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const items = Array.isArray(data.items) ? data.items : [];
+    const normalizedItems = items.map((item) => ({
+      ...item,
+      id: item.id || item._id,
+      price: item.price || item.sale_price || 0,
+      quantity: item.quantity || 1,
+    }));
+
+    console.log('Processed cart items:', {
+      count: normalizedItems.length,
+      sample: normalizedItems[0], // 첫 번째 아이템 데이터 샘플
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          items: data.items.map((item) => ({
-            ...item,
-            id: item.id || item._id,
-            price: item.price || item.sale_price || 0,
-            quantity: item.quantity || 1,
-          })),
-          totalItems: data.items.length,
-          totalAmount: data.items.reduce(
-            (sum, item) => sum + (item.sale_price || 0) * (item.quantity || 1),
+          items: normalizedItems,
+          totalItems: normalizedItems.length,
+          totalAmount: normalizedItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
             0
           ),
         },
         message: '장바구니 목록을 성공적으로 불러왔습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/cart',
+        meta: {
+          total: normalizedItems.length,
+          updatedAt: new Date().toISOString(),
+        },
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
+      }
     );
   } catch (error) {
+    console.error('Cart API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     console.error('Error fetching cart items:', error);
     return new Response(
       JSON.stringify({

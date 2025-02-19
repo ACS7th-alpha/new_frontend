@@ -3,7 +3,14 @@ export async function POST(request) {
     console.log('Multiple images upload request received');
     const authorization = request.headers.get('Authorization');
 
-    // Authorization 헤더 검증
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
+
     if (!authorization) {
       console.error('Missing Authorization header in multiple upload request');
       return new Response(
@@ -12,39 +19,20 @@ export async function POST(request) {
           timestamp: new Date().toISOString(),
           path: '/api/upload/multiple',
         }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    console.log(
-      'Authorization header:',
-      authorization.substring(0, 15) + '...'
-    );
 
-    // FormData 검증
     const formData = await request.formData();
-    const files = formData.getAll('images');
+    const files = formData.getAll('files');
 
-    if (!files || files.length === 0) {
-      console.error('No images found in form data');
-      return new Response(
-        JSON.stringify({
-          error: '업로드할 이미지가 필요합니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/upload/multiple',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    console.log(`Attempting to upload ${files.length} images`);
+    console.log('Multiple upload request data:', {
+      fileCount: files.length,
+      fileNames: files.map((file) => file.name),
+    });
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL}/upload/multiple`;
-    console.log('Uploading images to:', url);
+    console.log('Uploading multiple files to:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -61,27 +49,54 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    console.log('Images successfully uploaded');
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const uploadResults = Array.isArray(data) ? data : [data];
+    const normalizedResults = uploadResults.map((result) => ({
+      ...result,
+      uploadedAt: new Date().toISOString(),
+      url: result.url || result.fileUrl,
+      size: result.size || 0,
+    }));
+
+    console.log('Processed upload results:', {
+      count: normalizedResults.length,
+      urls: normalizedResults.map((r) => r.url),
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          urls: data.urls,
-          count: data.urls.length,
-          uploadedAt: new Date().toISOString(),
-        },
-        message: `${data.urls.length}개의 이미지가 성공적으로 업로드되었습니다.`,
+        data: normalizedResults,
+        message: '파일들이 성공적으로 업로드되었습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/upload/multiple',
+        meta: {
+          uploadedAt: new Date().toISOString(),
+          totalFiles: normalizedResults.length,
+          totalSize: normalizedResults.reduce(
+            (sum, file) => sum + file.size,
+            0
+          ),
+        },
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
       }
     );
   } catch (error) {
-    console.error('Error uploading multiple images:', error);
+    console.error('Multiple Upload API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: '이미지 업로드에 실패했습니다.',

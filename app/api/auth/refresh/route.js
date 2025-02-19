@@ -2,8 +2,20 @@ export async function POST(request) {
   try {
     console.log('Token refresh request received');
 
-    // 요청 본문 검증
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_AUTH_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+
     const requestData = await request.json();
+    console.log('Request data:', {
+      hasRefreshToken: !!requestData.refreshToken,
+      tokenLength: requestData.refreshToken?.length,
+    });
+
+    // 요청 본문 검증
     if (!requestData.refreshToken) {
       console.error('Missing refresh token in request');
       return new Response(
@@ -28,12 +40,8 @@ export async function POST(request) {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        refreshToken: requestData.refreshToken,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: requestData.refreshToken }),
     });
 
     if (!response.ok) {
@@ -65,21 +73,39 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    console.log('Token refresh successful');
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', {
+      hasAccessToken: !!data.accessToken,
+      hasRefreshToken: !!data.refreshToken,
+      expiresIn: data.expiresIn,
+    });
+
+    // 응답 데이터 구조 검증 및 변환
+    const tokenData = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      expiresIn: data.expiresIn || 3600,
+      tokenType: 'Bearer',
+      issuedAt: new Date().toISOString(),
+    };
+
+    console.log('Processed token data:', {
+      hasTokens: !!(tokenData.accessToken && tokenData.refreshToken),
+      expiresIn: tokenData.expiresIn,
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          expiresIn: data.expiresIn || 3600,
-          tokenType: 'Bearer',
-          issuedAt: new Date().toISOString(),
-        },
+        data: tokenData,
         message: '토큰이 성공적으로 갱신되었습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/auth/refresh',
+        meta: {
+          issuedAt: tokenData.issuedAt,
+          expiresIn: tokenData.expiresIn,
+        },
       }),
       {
         status: 200,
@@ -91,6 +117,10 @@ export async function POST(request) {
       }
     );
   } catch (error) {
+    console.error('Token Refresh API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     console.error('Error refreshing token:', error);
     return new Response(
       JSON.stringify({

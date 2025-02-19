@@ -14,31 +14,29 @@ export async function GET(request) {
     const page = requestUrl.searchParams.get('page') || '1';
     const limit = requestUrl.searchParams.get('limit') || '20';
 
+    console.log('Query parameters:', { page, limit });
+
     // 백엔드 요청 URL 구성
     const baseUrl = 'http://hama-product:3007';
     const url = new URL('/products', baseUrl);
     url.searchParams.set('page', page);
     url.searchParams.set('limit', limit);
 
-    console.log('Fetching from:', url.toString());
+    console.log('Fetching products from:', url.toString());
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        'Cache-Control': 'no-store',
       },
-      next: { revalidate: 0 },
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Backend response error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error('Backend products fetch error:', errorText);
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorText}`
+      );
     }
 
     const data = await response.json();
@@ -46,26 +44,43 @@ export async function GET(request) {
     // 백엔드 응답 구조 확인을 위한 로그
     console.log('Raw backend response:', JSON.stringify(data, null, 2));
 
-    // 응답 데이터 구조 검증
+    // 응답 데이터 구조 검증 및 변환
     const products = Array.isArray(data) ? data : data.data || [];
+    const normalizedProducts = products.map((product) => ({
+      ...product,
+      id: product.id || product._id,
+      price: Number(product.price) || 0,
+      createdAt: product.createdAt || new Date().toISOString(),
+    }));
 
-    console.log('Processed products:', {
-      count: products.length,
-      sample: products[0], // 첫 번째 상품 데이터 샘플
+    console.log('Processed products data:', {
+      count: normalizedProducts.length,
+      sample: normalizedProducts[0],
     });
 
-    return Response.json({
-      success: true,
-      data: products,
-      message: '상품 목록을 성공적으로 불러왔습니다.',
-      timestamp: new Date().toISOString(),
-      path: '/api/products',
-      meta: {
-        total: products.length,
-        page: parseInt(page),
-        limit: parseInt(limit),
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: normalizedProducts,
+        message: '상품 목록을 성공적으로 불러왔습니다.',
+        timestamp: new Date().toISOString(),
+        path: '/api/products',
+        meta: {
+          total: normalizedProducts.length,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          fetchedAt: new Date().toISOString(),
+        },
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
+      }
+    );
   } catch (error) {
     console.error('Products API Error:', {
       message: error.message,

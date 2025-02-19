@@ -3,6 +3,14 @@ export async function POST(request) {
     console.log('Receipt analysis request received');
     const authorization = request.headers.get('Authorization');
 
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
+
     if (!authorization) {
       console.error('Missing Authorization header in receipt analysis request');
       return new Response(
@@ -16,20 +24,13 @@ export async function POST(request) {
     }
 
     const formData = await request.formData();
-    if (!formData.has('file')) {
-      console.error('No file found in form data');
-      return new Response(
-        JSON.stringify({
-          error: '영수증 이미지가 필요합니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/upload/analyze',
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('Receipt analysis request data:', {
+      hasFile: formData.has('file'),
+      fileName: formData.get('file')?.name,
+    });
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL}/upload/analyze`;
-    console.log('Sending receipt for analysis to:', url);
+    console.log('Analyzing receipt at:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -39,27 +40,63 @@ export async function POST(request) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Backend receipt analysis error:', errorText);
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
     }
 
     const data = await response.json();
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const analysisResult = {
+      ...data,
+      analyzedAt: new Date().toISOString(),
+      items: Array.isArray(data.items)
+        ? data.items.map((item) => ({
+            ...item,
+            price: Number(item.price) || 0,
+          }))
+        : [],
+    };
+
+    console.log('Processed analysis result:', {
+      itemCount: analysisResult.items.length,
+      totalAmount: analysisResult.items.reduce(
+        (sum, item) => sum + item.price,
+        0
+      ),
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          ...data,
-          analyzedAt: new Date().toISOString(),
-        },
-        message: '영수증 분석이 완료되었습니다.',
+        data: analysisResult,
+        message: '영수증 분석이 성공적으로 완료되었습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/upload/analyze',
+        meta: {
+          analyzedAt: analysisResult.analyzedAt,
+          itemCount: analysisResult.items.length,
+        },
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
+      }
     );
   } catch (error) {
-    console.error('Error analyzing receipt:', error);
+    console.error('Receipt Analysis API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: '영수증 분석에 실패했습니다.',

@@ -1,26 +1,16 @@
 export async function GET(request) {
   try {
     console.log('Budget request received');
-    const authorization = request.headers.get('Authorization');
 
-    // Authorization 헤더 검증
-    if (!authorization) {
-      console.error('Missing Authorization header in budget request');
-      return new Response(
-        JSON.stringify({
-          error: 'Authorization header is required',
-          timestamp: new Date().toISOString(),
-        }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    console.log(
-      'Authorization header:',
-      authorization.substring(0, 15) + '...'
-    );
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+
+    const authorization = request.headers.get('Authorization');
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget`;
     console.log('Fetching budget from:', url);
@@ -42,24 +32,49 @@ export async function GET(request) {
     }
 
     const data = await response.json();
-    console.log('Budget data successfully fetched');
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const budgetData = {
+      ...data,
+      id: data.id || data._id,
+      amount: Number(data.amount) || 0,
+      updatedAt: data.updatedAt || new Date().toISOString(),
+    };
+
+    console.log('Processed budget data:', {
+      budgetId: budgetData.id,
+      amount: budgetData.amount,
+      updatedAt: budgetData.updatedAt,
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: data,
+        data: budgetData,
+        message: '예산 정보를 성공적으로 불러왔습니다.',
         timestamp: new Date().toISOString(),
+        path: '/api/budget',
+        meta: {
+          updatedAt: budgetData.updatedAt,
+        },
       }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
         },
       }
     );
   } catch (error) {
-    console.error('Error fetching budget:', error);
+    console.error('Budget API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: 'Failed to fetch budget',
@@ -77,31 +92,15 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     console.log('Budget creation request received');
+
     const authorization = request.headers.get('Authorization');
+    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
-    if (!authorization) {
-      console.error('Missing Authorization header in budget creation request');
-      return new Response(
-        JSON.stringify({
-          error: 'Authorization header is required',
-          timestamp: new Date().toISOString(),
-          path: '/api/budget',
-        }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const budgetData = await request.json();
-    if (!budgetData.year || !budgetData.month || !budgetData.categories) {
-      return new Response(
-        JSON.stringify({
-          error: '연도, 월, 카테고리별 예산은 필수 입력 항목입니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/budget',
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const requestBody = await request.json();
+    console.log('Budget creation data:', {
+      hasAmount: !!requestBody.amount,
+      amount: requestBody.amount,
+    });
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget`;
     console.log('Creating budget at:', url);
@@ -112,32 +111,54 @@ export async function POST(request) {
         Authorization: authorization,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(budgetData),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Backend budget creation error:', errorText);
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
     }
 
     const data = await response.json();
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증 및 변환
+    const createdBudget = {
+      ...data,
+      id: data.id || data._id,
+      createdAt: new Date().toISOString(),
+    };
+
     return new Response(
       JSON.stringify({
         success: true,
-        data: {
-          ...data,
-          createdAt: new Date().toISOString(),
-        },
-        message: '예산이 성공적으로 설정되었습니다.',
+        data: createdBudget,
+        message: '예산이 성공적으로 생성되었습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/budget',
+        meta: {
+          createdAt: createdBudget.createdAt,
+        },
       }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 201,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
+      }
     );
   } catch (error) {
-    console.error('Error creating budget:', error);
+    console.error('Budget Creation API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: '예산 설정에 실패했습니다.',
@@ -145,7 +166,10 @@ export async function POST(request) {
         timestamp: new Date().toISOString(),
         path: '/api/budget',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
   }
 }

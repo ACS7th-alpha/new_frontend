@@ -1,8 +1,20 @@
 export async function DELETE(request, { params }) {
   try {
     console.log('Cart item deletion request received');
+
     const { uid } = params;
     const authorization = request.headers.get('Authorization');
+
+    // 디버깅을 위한 로그
+    console.log('Request URL:', request.url);
+    console.log('Environment:', {
+      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_CART_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+    console.log('Delete request details:', {
+      itemId: uid,
+      hasAuthorization: !!authorization,
+    });
 
     if (!authorization) {
       console.error(
@@ -28,10 +40,14 @@ export async function DELETE(request, { params }) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Backend cart deletion error:', errorText);
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
     }
+
+    // 백엔드 응답 로깅
+    console.log('Cart item successfully deleted:', { itemId: uid });
 
     return new Response(
       JSON.stringify({
@@ -40,11 +56,25 @@ export async function DELETE(request, { params }) {
         deletedId: uid,
         timestamp: new Date().toISOString(),
         path: `/api/cart/${uid}`,
+        meta: {
+          deletedAt: new Date().toISOString(),
+          itemId: uid,
+        },
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, private',
+          Pragma: 'no-cache',
+        },
+      }
     );
   } catch (error) {
-    console.error('Error deleting cart item:', error);
+    console.error('Cart Item Deletion API Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return new Response(
       JSON.stringify({
         error: '장바구니 상품 삭제에 실패했습니다.',
