@@ -23,7 +23,7 @@ export async function POST(request) {
     }
 
     // 백엔드 URL 확인
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/login`;
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/google/login`;
     console.log('Authenticating at:', url);
 
     const response = await fetch(url, {
