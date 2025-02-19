@@ -1,19 +1,55 @@
 export async function GET(request) {
   try {
-    const accessToken = request.headers.get('Authorization');
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/profile`,
-      {
-        headers: {
-          Authorization: accessToken,
-        },
-      }
+    console.log('Profile fetch request received');
+    const authorization = request.headers.get('Authorization');
+
+    if (!authorization) {
+      console.error('Missing Authorization header in profile fetch request');
+      return new Response(
+        JSON.stringify({
+          error: 'Authorization header is required',
+          timestamp: new Date().toISOString(),
+          path: '/api/profile',
+        }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/profile`;
+    console.log('Fetching profile from:', url);
+
+    const response = await fetch(url, {
+      headers: { Authorization: authorization },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorText}`
+      );
+    }
+
+    const data = await response.json();
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: data,
+        message: '프로필 정보를 성공적으로 불러왔습니다.',
+        timestamp: new Date().toISOString(),
+        path: '/api/profile',
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
-    return Response.json(await response.json());
   } catch (error) {
-    return Response.json(
-      { error: 'Failed to fetch profile', details: error.message },
-      { status: 500 }
+    console.error('Error fetching profile:', error);
+    return new Response(
+      JSON.stringify({
+        error: '프로필 정보를 불러오는데 실패했습니다.',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+        path: '/api/profile',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
@@ -47,7 +83,9 @@ export async function PATCH(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile`;
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/profile`;
+    console.log('Updating profile at:', url);
+
     const response = await fetch(url, {
       method: 'PATCH',
       headers: {

@@ -48,10 +48,7 @@ export async function POST(request) {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        Authorization: authorization,
-        // Content-Type은 FormData를 사용할 때 자동으로 설정됨
-      },
+      headers: { Authorization: authorization },
       body: formData,
     });
 

@@ -3,7 +3,6 @@ export async function POST(request) {
     console.log('Receipt analysis request received');
     const authorization = request.headers.get('Authorization');
 
-    // Authorization 헤더 검증
     if (!authorization) {
       console.error('Missing Authorization header in receipt analysis request');
       return new Response(
@@ -12,18 +11,10 @@ export async function POST(request) {
           timestamp: new Date().toISOString(),
           path: '/api/upload/analyze',
         }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    console.log(
-      'Authorization header:',
-      authorization.substring(0, 15) + '...'
-    );
 
-    // FormData 검증
     const formData = await request.formData();
     if (!formData.has('file')) {
       console.error('No file found in form data');
@@ -33,10 +24,7 @@ export async function POST(request) {
           timestamp: new Date().toISOString(),
           path: '/api/upload/analyze',
         }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -45,24 +33,18 @@ export async function POST(request) {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        Authorization: authorization,
-        // Content-Type은 FormData를 사용할 때 자동으로 설정됨
-      },
+      headers: { Authorization: authorization },
       body: formData,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Backend receipt analysis error:', errorText);
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
     }
 
     const data = await response.json();
-    console.log('Receipt successfully analyzed');
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -74,10 +56,7 @@ export async function POST(request) {
         timestamp: new Date().toISOString(),
         path: '/api/upload/analyze',
       }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error analyzing receipt:', error);
@@ -88,10 +67,7 @@ export async function POST(request) {
         timestamp: new Date().toISOString(),
         path: '/api/upload/analyze',
       }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

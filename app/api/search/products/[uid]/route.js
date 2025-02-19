@@ -32,8 +32,6 @@ export async function GET(request, { params }) {
     }
 
     const data = await response.json();
-    console.log('Product details successfully fetched');
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -43,7 +41,7 @@ export async function GET(request, { params }) {
           price: data.price || data.sale_price || 0,
           updatedAt: data.updatedAt || new Date().toISOString(),
         },
-        message: '상품 정보를 성공적으로 불러왔습니다.',
+        message: '상품 상세 정보를 성공적으로 불러왔습니다.',
         timestamp: new Date().toISOString(),
         path: `/api/search/products/${uid}`,
       }),
@@ -59,7 +57,7 @@ export async function GET(request, { params }) {
     console.error('Error fetching product details:', error);
     return new Response(
       JSON.stringify({
-        error: '상품 정보를 불러오는데 실패했습니다.',
+        error: '상품 상세 정보를 불러오는데 실패했습니다.',
         details: error.message,
         timestamp: new Date().toISOString(),
         path: `/api/search/products/${uid}`,
