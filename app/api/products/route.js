@@ -42,17 +42,29 @@ export async function GET(request) {
     }
 
     const data = await response.json();
-    console.log('Backend response received:', {
-      status: response.status,
-      dataLength: data?.length,
+
+    // 백엔드 응답 구조 확인을 위한 로그
+    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+
+    // 응답 데이터 구조 검증
+    const products = Array.isArray(data) ? data : data.data || [];
+
+    console.log('Processed products:', {
+      count: products.length,
+      sample: products[0], // 첫 번째 상품 데이터 샘플
     });
 
     return Response.json({
       success: true,
-      data: data,
+      data: products,
       message: '상품 목록을 성공적으로 불러왔습니다.',
       timestamp: new Date().toISOString(),
       path: '/api/products',
+      meta: {
+        total: products.length,
+        page: parseInt(page),
+        limit: parseInt(limit),
+      },
     });
   } catch (error) {
     console.error('Products API Error:', {
