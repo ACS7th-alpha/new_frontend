@@ -53,16 +53,13 @@ export default function WritePage() {
 
       if (images.length > 0) {
         try {
-          const imageUploadResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL}/upload/multiple`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-              },
-              body: imageFormData,
-            }
-          );
+          const imageUploadResponse = await fetch('/api/upload/multiple', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+            body: imageFormData,
+          });
 
           if (!imageUploadResponse.ok) {
             console.error(
@@ -95,17 +92,14 @@ export default function WritePage() {
 
       console.log('전송할 리뷰 데이터:', reviewData);
 
-      const reviewResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(reviewData),
-        }
-      );
+      const reviewResponse = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData),
+      });
 
       const responseText = await reviewResponse.text();
       console.log('서버 응답:', responseText);

@@ -1,19 +1,27 @@
 export async function POST(request) {
   try {
-    const data = await request.json();
+    const body = await request.json();
+    console.log('Auth request body:', body);
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/login`,
+      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       }
     );
-    const result = await response.json();
-    return Response.json(result);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Response.json(data);
   } catch (error) {
+    console.error('Auth error:', error);
     return Response.json(
       { error: 'Authentication failed', details: error.message },
       { status: 500 }
@@ -23,21 +31,28 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const accessToken = request.headers.get('Authorization');
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/delete`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: accessToken,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return Response.json(await response.json());
+    const authorization = request.headers.get('Authorization');
+
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth`;
+    console.log('Deleting user account at:', url);
+
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return new Response(null, { status: 204 }); // No content
   } catch (error) {
+    console.error('Error deleting user account:', error);
     return Response.json(
-      { error: 'Delete failed', details: error.message },
+      { error: 'Failed to delete user account', details: error.message },
       { status: 500 }
     );
   }

@@ -1,16 +1,13 @@
 export async function POST(request) {
   try {
-    const authorization = request.headers.get('Authorization');
     const body = await request.json();
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_CHAT_URL}/perplexity`;
-    console.log('Sending chat message to:', url);
-    console.log('Request body:', body);
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/refresh`;
+    console.log('Refreshing token at:', url);
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        Authorization: authorization,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
@@ -23,9 +20,9 @@ export async function POST(request) {
     const data = await response.json();
     return Response.json(data);
   } catch (error) {
-    console.error('Error in chat:', error);
+    console.error('Error refreshing token:', error);
     return Response.json(
-      { error: 'Failed to get chat response', details: error.message },
+      { error: 'Failed to refresh token', details: error.message },
       { status: 500 }
     );
   }

@@ -23,11 +23,19 @@ export async function GET(request) {
       url = `${process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL}/products?page=${page}&limit=${limit}`;
     }
 
+    console.log('Fetching products from:', url);
+
     const response = await fetch(url);
-    return Response.json(await response.json());
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Response.json(data);
   } catch (error) {
+    console.error('Error fetching products:', error);
     return Response.json(
-      { error: 'Search failed', details: error.message },
+      { error: 'Failed to fetch products', details: error.message },
       { status: 500 }
     );
   }

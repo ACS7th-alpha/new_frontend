@@ -1,45 +1,80 @@
 # Install dependencies only when needed
 FROM node:18-alpine AS deps
+
+# 필요한 패키지만 설치
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
 
-# Install ALL dependencies (including devDependencies)
+# package.json 최적화를 위한 복사
 COPY package.json package-lock.json ./
-RUN npm ci
+# 프로덕션 빌드에 필요한 의존성만 설치
+RUN npm ci --only=production --no-audit --no-optional
 
 # Rebuild the source code only when needed
 FROM node:18-alpine AS builder
+
+# 필수 패키지만 설치
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+# 의존성 파일만 먼저 복사하여 캐시 활용
+COPY package.json package-lock.json ./
+
+# 빌드에 필요한 모든 의존성 설치 (critters 포함)
+RUN npm ci && npm install critters
+
+# 소스 파일 복사
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED=1
+# 프로덕션 빌드
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build Next.js
+# 빌드 실행
 RUN npm run build
 
-# Production image, copy all the files and run next
+# 프로덕션 의존성만 재설치
+RUN rm -rf node_modules && \
+    npm ci --only=production --no-audit --no-optional && \
+    npm cache clean --force
+
+# 프로덕션 이미지
 FROM node:18-alpine AS runner
+
+# 최소한의 런타임 환경 설정
+RUN apk add --no-cache libc6-compat \
+    && addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs \
+    && mkdir -p /app \
+    && chown -R nextjs:nodejs /app
+
 WORKDIR /app
 
+# 환경 변수 설정
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# 필요한 파일만 선택적으로 복사
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-# Copy only necessary files
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Create cache directory and set permissions
-RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
-
+# 보안을 위한 사용자 전환
 USER nextjs
 
+# 포트 노출
 EXPOSE 3000
 
-# Start Next.js
-CMD ["node", "server.js"]
+# 헬스체크 추가
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+
+# 캐시 최적화
+RUN npm cache clean --force
+
+# Next.js 실행
+CMD ["npm", "start"]

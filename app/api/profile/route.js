@@ -20,23 +20,30 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   try {
-    const data = await request.json();
-    const accessToken = request.headers.get('Authorization');
+    const authorization = request.headers.get('Authorization');
+    const body = await request.json();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/update`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: accessToken,
-        },
-        body: JSON.stringify(data),
-      }
-    );
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/profile`;
+    console.log('Updating profile at:', url);
+    console.log('Request body:', body);
 
-    return Response.json(await response.json());
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Response.json(data);
   } catch (error) {
+    console.error('Error updating profile:', error);
     return Response.json(
       { error: 'Failed to update profile', details: error.message },
       { status: 500 }

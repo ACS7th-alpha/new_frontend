@@ -1,19 +1,27 @@
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category');
-  const random = searchParams.get('random');
-
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL;
-    let url;
+    const { searchParams } = new URL(request.url);
+    const keyword = searchParams.get('keyword');
+    const category = searchParams.get('category');
+    const page = searchParams.get('page') || 1;
+    const limit = searchParams.get('limit') || 10;
 
-    if (!category || category === '전체') {
-      url = `${baseUrl}/products?random=${random}`;
+    let url;
+    if (keyword && keyword !== '전체') {
+      url = `${
+        process.env.NEXT_PUBLIC_BACKEND_PRODUCT_URL
+      }/products/search?keyword=${encodeURIComponent(
+        keyword
+      )}&page=${page}&limit=${limit}`;
+    } else if (category) {
+      url = `${
+        process.env.NEXT_PUBLIC_BACKEND_PRODUCT_URL
+      }/products?category=${encodeURIComponent(category)}`;
     } else {
-      url = `${baseUrl}/products/category/${encodeURIComponent(
-        category
-      )}?random=${random}`;
+      url = `${process.env.NEXT_PUBLIC_BACKEND_PRODUCT_URL}/products`;
     }
+
+    console.log('Fetching products from:', url);
 
     const response = await fetch(url, {
       headers: {

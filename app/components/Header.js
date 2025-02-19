@@ -124,7 +124,7 @@ export default function Header({ onLogin }) {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
-    const user = localStorage.getItem('user');
+    const userStr = localStorage.getItem('user');
     const currentTime = new Date();
 
     console.log(
@@ -132,7 +132,10 @@ export default function Header({ onLogin }) {
     );
     console.log('Access Token:', token);
     console.log('Refresh Token:', refreshToken);
-    console.log('User Data:', user ? JSON.parse(user) : null);
+
+    // user 데이터가 있을 때만 JSON.parse 실행
+    const userData = userStr ? JSON.parse(userStr) : null;
+    console.log('User Data:', userData);
     console.log('로그인 상태:', !!token);
 
     if (token && refreshToken) {

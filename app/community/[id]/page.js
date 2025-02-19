@@ -16,11 +16,10 @@ export default function ProductDetail({ params }) {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews/${id}`
-        );
-        if (!response.ok)
+        const response = await fetch(`/api/reviews/${id}`);
+        if (!response.ok) {
           throw new Error('상품 정보를 불러오는데 실패했습니다.');
+        }
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -35,10 +34,10 @@ export default function ProductDetail({ params }) {
   useEffect(() => {
     const fetchOtherProducts = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews`
-        );
-        if (!response.ok) throw new Error('데이터를 불러오는데 실패했습니다.');
+        const response = await fetch('/api/reviews');
+        if (!response.ok) {
+          throw new Error('데이터를 불러오는데 실패했습니다.');
+        }
 
         const data = await response.json();
         // 현재 글을 제외하고 최신순으로 정렬
