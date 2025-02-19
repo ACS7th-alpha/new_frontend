@@ -1,18 +1,18 @@
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log('Auth request body:', body);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    // 백엔드 URL 확인
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/login`;
+    console.log('Auth URL:', url); // 디버깅용
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -21,7 +21,7 @@ export async function POST(request) {
     const data = await response.json();
     return Response.json(data);
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('Error during authentication:', error);
     return Response.json(
       { error: 'Authentication failed', details: error.message },
       { status: 500 }

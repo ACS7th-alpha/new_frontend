@@ -5,6 +5,7 @@ export async function GET(request) {
     const category = searchParams.get('category');
     const page = searchParams.get('page') || 1;
     const limit = searchParams.get('limit') || 10;
+    const random = searchParams.get('random');
 
     let url;
     if (keyword && keyword !== '전체') {
@@ -18,15 +19,18 @@ export async function GET(request) {
         process.env.NEXT_PUBLIC_BACKEND_PRODUCT_URL
       }/products?category=${encodeURIComponent(category)}`;
     } else {
-      url = `${process.env.NEXT_PUBLIC_BACKEND_PRODUCT_URL}/products`;
+      url = `${process.env.NEXT_PUBLIC_BACKEND_PRODUCT_URL}/products${
+        random ? `?random=${random}` : ''
+      }`;
     }
 
     console.log('Fetching products from:', url);
 
     const response = await fetch(url, {
       headers: {
-        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json',
       },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
