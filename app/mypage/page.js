@@ -35,7 +35,7 @@ export default function MyPage() {
     }
   }, [activeTab]);
 
-  const handleDeletePost = async (e, postId) => {
+  const handleDeletePost = async (e, id) => {
     e.stopPropagation(); // 클릭 이벤트 전파 방지
 
     const confirmDelete = window.confirm('이 글을 정말 삭제하시겠습니까?');
@@ -45,7 +45,7 @@ export default function MyPage() {
       const token = localStorage.getItem('access_token');
       if (!token) throw new Error('로그인이 필요합니다.');
 
-      const response = await fetch(`/api/reviews/${postId}`, {
+      const response = await fetch(`/api/reviews/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ export default function MyPage() {
       if (!response.ok) throw new Error('글 삭제 실패');
 
       // 글 삭제 성공 시, 화면에서 해당 글 제거
-      setMyPosts(myPosts.filter((post) => post._id !== postId));
+      setMyPosts(myPosts.filter((post) => post._id !== id));
       alert('글이 삭제되었습니다.');
     } catch (error) {
       console.error('Error deleting post:', error);
