@@ -100,23 +100,42 @@ export async function POST(request) {
       body: JSON.stringify(requestBody),
     });
 
+    const responseText = await response.text();
+    console.log('[Children API] POST: Backend response:', {
+      status: response.status,
+      text: responseText,
+    });
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Children API] POST: Backend error:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // 409 상태 코드 처리
+      if (response.status === 409) {
+        return new Response(
+          JSON.stringify({
+            error: '이미 존재하는 자녀 이름입니다.',
+            timestamp: new Date().toISOString(),
+          }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      throw new Error(`Backend error: ${response.status}`);
     }
 
-    const data = await response.json();
+    // responseText가 비어있지 않은 경우에만 JSON 파싱
+    const data = responseText ? JSON.parse(responseText) : {};
+
     return new Response(JSON.stringify(data), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('[Children API] POST Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
 

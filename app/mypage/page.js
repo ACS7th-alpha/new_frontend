@@ -412,61 +412,94 @@ export default function MyPage() {
     }
   };
 
-  const handleAddChild = () => {
-    setIsAddingChild(true); // 추가 모드 활성화
-  };
-
-  const handleSaveNewChild = async () => {
-    const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    const requestBody = {
-      name: newChild.name,
-      gender: newChild.gender,
-      birthdate: newChild.birthdate,
-    };
-
-    console.log('Sending request body:', JSON.stringify(requestBody)); // 요청 본문 로그
-
+  const handleAddChild = async () => {
     try {
+      console.log('[MyPage] Adding new child:', newChild);
+
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      // 입력 검증
+      if (!newChild.name || !newChild.birthdate) {
+        alert('이름과 생년월일을 모두 입력해주세요.');
+        return;
+      }
+
       const response = await fetch('/api/children', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          name: newChild.name.trim(),
+          birthdate: newChild.birthdate,
+          gender: newChild.gender || 'male',
+        }),
+      });
+
+      console.log('[MyPage] Add child response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
       });
 
       if (!response.ok) {
-        const errorDetails = await response.text();
-        console.error('Error details:', errorDetails);
-        throw new Error(
-          `아기 정보 추가 실패: ${response.status} ${response.statusText}`
-        );
+        const errorText = await response.text();
+        console.error('[MyPage] Add child error:', errorText);
+
+        if (response.status === 409) {
+          throw new Error('이미 존재하는 자녀 이름입니다.');
+        }
+        throw new Error(`아기 정보 추가 실패: ${response.status}`);
       }
 
-      const data = await response.json(); // 서버에서 응답받은 데이터
+      const data = await response.json();
+      console.log('[MyPage] Add child success:', data);
 
-      // 새로운 사용자 정보를 userInfo에 업데이트
-      setUserInfo(data.user); // 응답에서 user 정보를 사용하여 상태 업데이트
+      // 현재 localStorage의 user 데이터를 가져옴
+      const currentUserData = JSON.parse(localStorage.getItem('user'));
 
-      // 입력 필드 초기화
-      setNewChild({ name: '', birthdate: '', gender: 'male' });
-      setIsAddingChild(false); // 추가 모드 비활성화
-      alert('아기 정보가 성공적으로 추가되었습니다.');
+      // 새로운 자녀 정보 추가
+      const updatedUserData = {
+        ...currentUserData,
+        user: {
+          ...currentUserData.user,
+          children: [
+            ...(currentUserData.user.children || []),
+            data.child, // 서버에서 반환한 새 자녀 정보
+          ],
+        },
+      };
+
+      console.log(
+        '[MyPage] Updating localStorage with new child:',
+        updatedUserData
+      );
+
+      // localStorage와 상태 업데이트
+      localStorage.setItem('user', JSON.stringify(updatedUserData));
+      setUserInfo(updatedUserData);
+
+      // 입력 폼 초기화
+      setNewChild({
+        name: '',
+        birthdate: '',
+        gender: 'male',
+      });
+      setIsAddingChild(false);
+
+      alert('자녀 정보가 추가되었습니다.');
     } catch (error) {
-      console.error('Error adding child:', error);
-      alert('아기 정보 추가 중 오류가 발생했습니다.');
+      console.error('[MyPage] Error adding child:', {
+        message: error.message,
+        stack: error.stack,
+      });
+      alert(error.message);
     }
-  };
-
-  const handleCancelAddChild = () => {
-    setNewChild({ name: '', birthdate: '', gender: 'male' }); // 입력 필드 초기화
-    setIsAddingChild(false); // 추가 모드 비활성화
   };
 
   const handleEditProfile = () => {
@@ -704,7 +737,7 @@ export default function MyPage() {
               <h2 className="text-2xl font-bold px-4 text-gray-800 mb-6 flex justify-between items-center">
                 자녀 정보 👶
                 <button
-                  onClick={handleAddChild}
+                  onClick={() => setIsAddingChild(true)}
                   className="px-4 py-2 bg-orange-400 text-white text-base rounded-md hover:bg-orange-600 transition-colors"
                 >
                   추가
@@ -757,13 +790,13 @@ export default function MyPage() {
                   </div>
                   <div className="flex gap-1">
                     <button
-                      onClick={handleSaveNewChild}
+                      onClick={handleAddChild}
                       className="px-4 py-2 bg-orange-200 text-gray-600 rounded-md hover:bg-green-200 transition-colors flex items-center justify-center whitespace-nowrap"
                     >
                       저장
                     </button>
                     <button
-                      onClick={handleCancelAddChild}
+                      onClick={() => setIsAddingChild(false)}
                       className="px-4 py-2 bg-gray-300 text-gray-600 rounded-md hover:bg-gray-400 transition-colors flex items-center justify-center whitespace-nowrap"
                     >
                       취소
