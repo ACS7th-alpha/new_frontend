@@ -170,3 +170,89 @@ export async function PUT(request) {
     );
   }
 }
+
+export async function PATCH(request) {
+  try {
+    console.log('[Profile API] PATCH request received');
+
+    const authorization = request.headers.get('Authorization');
+    console.log(
+      '[Profile API] Authorization header:',
+      authorization ? 'Present' : 'Missing'
+    );
+
+    if (!authorization) {
+      console.error('[Profile API] Missing Authorization header');
+      return new Response(
+        JSON.stringify({
+          error: 'Authorization header is required',
+          timestamp: new Date().toISOString(),
+          path: '/api/profile',
+        }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const requestBody = await request.json();
+    console.log('[Profile API] Update data:', {
+      hasNickname: !!requestBody.nickname,
+      hasMonthlyBudget: !!requestBody.monthlyBudget,
+    });
+
+    const baseUrl = 'http://hama-auth:3001';
+    const url = `${baseUrl}/auth/update`;
+    console.log('[Profile API] Forwarding PATCH request to:', url);
+
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('[Profile API] Backend response:', {
+      status: response.status,
+      ok: response.ok,
+      statusText: response.statusText,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Profile API] Backend error:', errorText);
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorText}`
+      );
+    }
+
+    const data = await response.json();
+    console.log('[Profile API] Profile updated successfully');
+
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, private',
+      },
+    });
+  } catch (error) {
+    console.error('[Profile API] Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
+
+    return new Response(
+      JSON.stringify({
+        error: '프로필 업데이트에 실패했습니다.',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+        path: '/api/profile',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
