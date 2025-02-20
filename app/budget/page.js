@@ -219,35 +219,38 @@ export default function BudgetPage() {
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch spending data');
-      }
-
       const data = await response.json();
-      console.log('Fetched spending data:', data);
-      console.log('[BudgetPage] Spending data structure:', {
-        hasData: !!data?.data,
-        categories: data?.data?.categories,
-        period: data?.data?.period,
+      console.log('[BudgetPage] Raw spending data:', {
+        fullData: data,
+        dataStructure: {
+          hasData: !!data?.data,
+          dataKeys: Object.keys(data?.data || {}),
+          spendingData: data?.data,
+        },
       });
 
-      if (!data?.data?.categories) {
-        console.log('[BudgetPage] No categories in spending data');
-        return;
+      /*
+      if (data?.data?.categories) {
+        data.data.categories.forEach((category) => {
+          setCategorySpending((prev) => ({
+            ...prev,
+            [category.name]: category.spending || 0,
+          }));
+        });
       }
 
       const spendingMap = {};
       data.spending.forEach((item) => {
         spendingMap[item.category] = item.details;
       });
-
       setSpendingDetails(spendingMap);
-      console.log('Spending details organized:', spendingMap);
+      */
     } catch (error) {
-      console.error('Error fetching spending data:', error);
-    } finally {
-      setLoading(false);
+      console.error('[BudgetPage] Error in fetchSpendingData:', error);
     }
+    // finally {
+    //   setLoading(false);
+    // }
   };
 
   useEffect(() => {
