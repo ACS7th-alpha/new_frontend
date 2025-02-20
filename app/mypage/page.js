@@ -169,6 +169,7 @@ export default function MyPage() {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -177,10 +178,13 @@ export default function MyPage() {
         ok: budgetResponse.ok,
       });
 
-      // 예산 삭제가 실패하면 계정 삭제 중단
+      // 예산 삭제가 실패하면 상세 에러 메시지 확인
       if (!budgetResponse.ok) {
+        const errorData = await budgetResponse.json();
+        console.error('[MyPage] Budget deletion error details:', errorData);
         throw new Error(
-          '예산 데이터 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.'
+          errorData.error ||
+            '예산 데이터 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.'
         );
       }
 
@@ -192,6 +196,7 @@ export default function MyPage() {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -201,6 +206,7 @@ export default function MyPage() {
 
       // 모든 과정이 성공적으로 완료되면 로그아웃 처리
       localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
       router.push('/');
       alert('회원 탈퇴가 완료되었습니다.');
     } catch (error) {
