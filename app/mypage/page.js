@@ -458,17 +458,27 @@ export default function MyPage() {
       }
 
       const data = await response.json();
-      console.log('[MyPage] Add child success:', data);
+      console.log('[MyPage] Server response data:', data);
 
-      // 서버에서 반환된 전체 사용자 데이터로 업데이트
+      if (!data.user) {
+        console.error(
+          '[MyPage] Invalid server response - missing user data:',
+          data
+        );
+        throw new Error('서버 응답 데이터 오류');
+      }
+
+      // 현재 localStorage의 user 데이터를 가져옴
+      const currentUserData = JSON.parse(localStorage.getItem('user'));
+      console.log('[MyPage] Current user data:', currentUserData);
+
+      // 새로운 데이터로 업데이트
       const updatedUserData = {
-        user: data.user, // 서버에서 반환된 전체 user 객체
+        ...currentUserData,
+        user: data.user,
       };
 
-      console.log(
-        '[MyPage] Updating localStorage with server response:',
-        updatedUserData
-      );
+      console.log('[MyPage] Updated user data to save:', updatedUserData);
 
       // localStorage와 상태 업데이트
       localStorage.setItem('user', JSON.stringify(updatedUserData));
@@ -483,6 +493,9 @@ export default function MyPage() {
       setIsAddingChild(false);
 
       alert('자녀 정보가 추가되었습니다.');
+
+      // 페이지 새로고침 (선택적)
+      window.location.reload();
     } catch (error) {
       console.error('[MyPage] Error adding child:', {
         message: error.message,
