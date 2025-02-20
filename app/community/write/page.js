@@ -117,46 +117,45 @@ export default function WritePage() {
 
         const imageData = await imageUploadResponse.json();
         console.log('[WritePage] Image upload successful:', imageData);
-      }
 
-      // 리뷰 데이터 생성 및 전송
-      const reviewData = {
-        name: title.trim(),
-        description: content.trim(),
-        ageGroup: age.trim(),
-        purchaseLink: store.trim() || null,
-        recommended: isRecommended,
-        imageUrls: images.map((image) => image.preview),
-      };
+        // 리뷰 데이터 전송
+        const reviewData = {
+          name: title.trim(),
+          description: content.trim(),
+          ageGroup: age.trim(),
+          purchaseLink: store.trim() || null,
+          recommended: isRecommended,
+          imageUrls: imageData.data.map((img) => img.url),
+        };
 
-      const token = localStorage.getItem('access_token');
-      console.log(
-        '[WritePage] Token for review:',
-        token ? 'Present' : 'Missing'
-      );
+        console.log(
+          '[WritePage] Token for review:',
+          token ? 'Present' : 'Missing'
+        );
 
-      console.log('전송할 리뷰 데이터:', reviewData);
-      const reviewResponse = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(reviewData),
-      });
+        console.log('[WritePage] Submitting review:', reviewData);
+        const reviewResponse = await fetch('/api/reviews', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reviewData),
+        });
 
-      if (!reviewResponse.ok) {
-        const errorData = await reviewResponse.json();
-        console.error('[WritePage] Review submission error:', errorData);
-        throw new Error(`리뷰 등록 실패: ${reviewResponse.status}`);
-      }
+        if (!reviewResponse.ok) {
+          const errorData = await reviewResponse.json();
+          console.error('[WritePage] Review submission error:', errorData);
+          throw new Error(`리뷰 등록 실패: ${reviewResponse.status}`);
+        }
 
-      const data = await reviewResponse.json();
-      console.log('[WritePage] Review submission successful:', data);
+        const data = await reviewResponse.json();
+        console.log('[WritePage] Review submission successful:', data);
 
-      if (data.success) {
-        console.log('[WritePage] Redirecting to community page');
-        router.push('/community');
+        if (data.success) {
+          console.log('[WritePage] Redirecting to community page');
+          router.push('/community');
+        }
       }
     } catch (error) {
       console.error('[WritePage] Submission error:', error);
