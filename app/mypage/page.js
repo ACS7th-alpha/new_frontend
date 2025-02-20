@@ -735,10 +735,14 @@ export default function MyPage() {
                             <p className="text-gray-600 mb-2">이름</p>
                             <input
                               type="text"
-                              value={child.name}
-                              onChange={(e) =>
-                                handleEditChild(index, 'name', e.target.value)
-                              }
+                              value={child.name || ''}
+                              onChange={(e) => {
+                                console.log('[MyPage] Updating child name:', {
+                                  oldName: child.name,
+                                  newName: e.target.value,
+                                });
+                                handleEditChild(index, 'name', e.target.value);
+                              }}
                               className="text-lg font-semibold border border-gray-300 rounded-md p-2 w-36 h-12"
                               required
                             />
@@ -747,14 +751,25 @@ export default function MyPage() {
                             <p className="text-gray-600 mb-2">생년월일</p>
                             <input
                               type="date"
-                              value={child.birthdate.split('T')[0]}
-                              onChange={(e) =>
+                              value={
+                                child.birthdate
+                                  ? child.birthdate.split('T')[0]
+                                  : ''
+                              }
+                              onChange={(e) => {
+                                console.log(
+                                  '[MyPage] Updating child birthdate:',
+                                  {
+                                    oldDate: child.birthdate,
+                                    newDate: e.target.value,
+                                  }
+                                );
                                 handleEditChild(
                                   index,
                                   'birthdate',
                                   e.target.value
-                                )
-                              }
+                                );
+                              }}
                               className="text-lg font-semibold border border-gray-300 rounded-md p-2"
                               required
                             />
@@ -762,10 +777,18 @@ export default function MyPage() {
                           <div>
                             <p className="text-gray-600 mb-2">성별</p>
                             <select
-                              value={child.gender}
-                              onChange={(e) =>
-                                handleEditChild(index, 'gender', e.target.value)
-                              }
+                              value={child.gender || 'male'}
+                              onChange={(e) => {
+                                console.log('[MyPage] Updating child gender:', {
+                                  oldGender: child.gender,
+                                  newGender: e.target.value,
+                                });
+                                handleEditChild(
+                                  index,
+                                  'gender',
+                                  e.target.value
+                                );
+                              }}
                               className="text-lg font-semibold border border-gray-300 rounded-md p-2 h-12"
                               required
                             >
