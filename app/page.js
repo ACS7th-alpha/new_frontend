@@ -80,36 +80,31 @@ export default function HomePage() {
 
           if (response.ok) {
             const spendingData = await response.json();
-            console.log('[HomePage] Budget data received:', {
-              success: spendingData.success,
-              hasData:
-                Array.isArray(spendingData.spending) &&
-                spendingData.spending.length > 0,
-              categoriesCount: spendingData.spending?.length || 0,
-              sampleCategory: spendingData.spending?.[0], // 첫 번째 카테고리 데이터 샘플
-            });
+            console.log('[HomePage] Raw spending data:', spendingData);
 
             // 현재 년월 구하기
             const now = new Date();
             const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth();
+            const currentMonth = now.getMonth(); // 0-11 그대로 사용
 
-            // 현재 월의 지출액만 필터링하여 합산
+            // 현재 월의 예산 데이터 찾기
+            const currentMonthData = spendingData.data?.find(
+              (budget) =>
+                budget.year === currentYear && budget.month === currentMonth
+            );
+
+            console.log('[HomePage] Current month budget:', {
+              year: currentYear,
+              month: currentMonth,
+              found: !!currentMonthData,
+              categories: currentMonthData?.categories,
+            });
+
             let currentMonthTotal = 0;
-            if (spendingData.spending && Array.isArray(spendingData.spending)) {
-              spendingData.spending.forEach((category) => {
-                if (category.details && Array.isArray(category.details)) {
-                  category.details.forEach((detail) => {
-                    const spendingDate = new Date(detail.date);
-                    if (
-                      spendingDate.getFullYear() === currentYear &&
-                      spendingDate.getMonth() === currentMonth
-                    ) {
-                      currentMonthTotal += detail.amount;
-                    }
-                  });
-                }
-              });
+            if (currentMonthData?.categories) {
+              currentMonthTotal = Object.values(
+                currentMonthData.categories
+              ).reduce((sum, amount) => sum + (amount || 0), 0);
             }
 
             setMonthlySpending(currentMonthTotal);
