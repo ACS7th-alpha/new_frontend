@@ -1,186 +1,201 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import Loading from '../components/Loading';
-import { unstable_noStore as noStore } from 'next/cache';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Header from '@/app/components/Header';
 
-export default function SearchPage() {
-  noStore();
+// SearchContent 컴포넌트로 useSearchParams를 사용하는 부분을 분리
+function SearchContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const query = searchParams.get('query');
+  const keyword = searchParams.get('keyword');
   const [products, setProducts] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0); // 총 건수 상태 추가
+  const [page, setPage] = useState(1);
   const limit = 40;
 
-  console.log('[SearchPage] Initial render:', {
-    query,
-    currentPage,
-    loading,
-    productsLength: products.length,
-    totalCount,
-  });
-
   useEffect(() => {
-    const fetchSearchResults = async () => {
-      if (!query) {
-        console.log('[SearchPage] No query provided');
-        return;
-      }
-
+    async function fetchSearchResults() {
+      console.log('검색 시작:', keyword);
       setLoading(true);
-      console.log('[SearchPage] Fetching data:', {
-        query,
-        page: currentPage,
-        limit,
-      });
-
       try {
-        const response = await fetch(
-          `/api/products/search?query=${encodeURIComponent(
-            query
-          )}&page=${currentPage}&limit=${limit}`
-        );
-        console.log('[SearchPage] Response status:', response.status);
+        const url =
+          keyword === '전체'
+            ? `/api/products?random=${Math.random()}`
+            : `/api/search?keyword=${encodeURIComponent(
+                keyword
+              )}&page=${page}&limit=${limit}`;
 
-        if (!response.ok) {
-          throw new Error(`Search failed with status: ${response.status}`);
-        }
+        const response = await fetch(url, {
+          headers: {
+            'Cache-Control': 'no-store',
+          },
+        });
+        console.log('검색 응답 상태:', response.status);
 
         const data = await response.json();
-        console.log('[SearchPage] Raw API response:', data);
+        console.log('검색된 상품 수:', data.data?.length || 0);
 
         if (data.success) {
-          console.log('[SearchPage] Setting data:', {
-            productsCount: data.data.products.length,
-            totalCount: data.data.totalCount,
+          setProducts(Array.isArray(data.data) ? data.data : []);
+          setTotalPages(Math.ceil(data.meta?.total / limit));
+          setTotalCount(data.meta?.total || 0);
+          console.log('검색 완료:', {
+            keyword,
+            count: data.data.length,
+            firstProductName: data.data[0]?.name,
+            total: data.meta?.total,
           });
-          setProducts(data.data.products);
-          const totalItems = data.meta?.total ?? 0;
-          const calculatedTotalPages = Math.max(
-            Math.ceil(totalItems / limit),
-            1
-          );
-          setTotalPages(calculatedTotalPages);
-          setTotalCount(totalItems);
         } else {
-          console.warn('[SearchPage] API returned success: false');
+          console.log('검색 실패:', data.message);
+          setProducts([]);
+          setTotalCount(0);
         }
       } catch (error) {
-        console.error('[SearchPage] Error:', error);
+        console.log('검색 오류:', error.message);
         setProducts([]);
         setTotalCount(0);
-        setTotalPages(1);
       } finally {
         setLoading(false);
-        console.log('[SearchPage] Loading finished');
       }
-    };
+    }
 
-    console.log('[SearchPage] Effect triggered:', {
-      query,
-      currentPage,
-    });
-    fetchSearchResults();
-  }, [query, currentPage]);
-
-  console.log('[SearchPage] Before render:', {
-    loading,
-    productsLength: products.length,
-    totalCount,
-  });
+    if (keyword) {
+      fetchSearchResults();
+    } else {
+      console.log('검색어 없음');
+      setProducts([]);
+      setLoading(false);
+    }
+  }, [keyword, page, limit]);
 
   if (loading) {
-    console.log('[SearchPage] Rendering loading state');
-    return <Loading />;
+    return (
+      <div className="min-h-screen bg-gradient-to-b flex justify-center items-center">
+        <div className="animate-bounce text-4xl">🔍</div>
+      </div>
+    );
   }
 
+  const getPageRange = () => {
+    const startPage = Math.floor((page - 1) / 5) * 5 + 1;
+    const endPage = Math.min(startPage + 4, totalPages);
+    return { startPage, endPage };
+  };
+
+  const { startPage, endPage } = getPageRange();
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">
-          &quot;{query}&quot; 검색 결과
-        </h1>
-        <p className="text-gray-600">
-          총{' '}
-          <span className="text-xl font-bold text-orange-500">
-            {totalCount}
-          </span>
-          건의 상품이 있습니다
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((product) => {
-          console.log('[SearchPage] Rendering product:', product.uid);
-          return (
-            <div
-              key={product.uid}
-              onClick={() => {
-                console.log('[SearchPage] Product clicked:', product.uid);
-                router.push(`/product/${product.uid}`);
-              }}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200 cursor-pointer"
-            >
-              <div className="relative pb-[100%]">
-                <img
-                  src={product.img}
-                  alt={product.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error(
-                      '[SearchPage] Image load error:',
-                      product.img
-                    );
-                    e.target.src = '/fallback-image.jpg'; // 대체 이미지
-                  }}
-                />
-              </div>
-              <div className="p-4">
-                <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
-                <h3 className="text-md font-semibold text-gray-800 mb-2 line-clamp-2">
-                  {product.name}
-                </h3>
-                <p className="text-lg font-bold text-black-500">
-                  {Number(product.sale_price).toLocaleString()}원
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-8">
-          <nav className="flex items-center gap-2">
-            {Array.from({ length: totalPages }).map((_, index) => {
-              console.log(
-                '[SearchPage] Rendering pagination button:',
-                index + 1
-              );
-              return (
-                <button
-                  key={index + 1}
-                  onClick={() => {
-                    console.log('[SearchPage] Page changed to:', index + 1);
-                    setCurrentPage(index + 1);
-                  }}
-                  className={`px-4 py-2 rounded ${
-                    currentPage === index + 1
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              );
-            })}
-          </nav>
+    <div className="min-h-screen bg-white">
+      <Header />
+      <div className="container max-w-5xl mx-auto px-4 py-12">
+        {/* 검색 결과 헤더 */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            &ldquo;{keyword}&rdquo; 검색 결과
+          </h1>
+          <p className="text-xl text-gray-600">
+            총{' '}
+            <span className="text-xl font-bold text-orange-500">
+              {totalCount}
+            </span>
+            건의 상품이 있습니다
+          </p>
         </div>
-      )}
+
+        {products.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500">검색 결과가 없습니다 😢</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {products.map((product) => (
+                <Link
+                  key={product.uid}
+                  href={`/product/${product.uid}`}
+                  className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 block"
+                >
+                  <img
+                    src={product.img}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="px-5 py-4">
+                    <h2 className="text-base font-semibold text-gray-800 mb-1 line-clamp-2">
+                      {product.name}
+                    </h2>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">
+                        {product.site}
+                      </p>
+                      <p className="text-xl font-bold text-black">
+                        {product.sale_price}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {products.length > 0 && (
+              <div className="flex justify-center items-center gap-1 mt-12">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+                >
+                  ← 이전
+                </button>
+
+                {/* 페이지 번호 목록 */}
+                <div className="flex gap-1">
+                  {Array.from(
+                    { length: endPage - startPage + 1 },
+                    (_, idx) => startPage + idx
+                  ).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`rounded-full text-pink-600 font-medium ${
+                        page === n ? 'bg-pink-100' : 'bg-white hover:bg-pink-50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+
+                {/* "Next" arrow for the next set of pages */}
+                {endPage < totalPages && (
+                  <button
+                    onClick={() => setPage(endPage + 1)}
+                    className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 transition-colors duration-200 font-medium"
+                  >
+                    → 다음
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
+  );
+}
+
+// 메인 페이지 컴포넌트
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }
