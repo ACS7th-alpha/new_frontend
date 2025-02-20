@@ -57,7 +57,7 @@ function CalendarContent() {
         }
 
         const data = await response.json();
-        setAllSpending(data.spending || []);
+        setAllSpending(data?.data?.spending || []);
       } catch (error) {
         console.error('Error fetching spending:', error);
       } finally {
@@ -325,7 +325,7 @@ function CalendarContent() {
       }
 
       const responseData = await response.json();
-      alert(responseData.message);
+      alert(responseData?.data?.message);
 
       // 지출 등록 성공 후 전체 지출 내역을 다시 불러오기
       const spendingResponse = await fetch('/api/budget/spending', {
@@ -336,7 +336,7 @@ function CalendarContent() {
 
       if (spendingResponse.ok) {
         const spendingData = await spendingResponse.json();
-        setAllSpending(spendingData.spending || []);
+        setAllSpending(spendingData?.data?.spending || []);
       }
 
       // 폼 초기화
@@ -443,11 +443,11 @@ function CalendarContent() {
 
         if (spendingResponse.ok) {
           const spendingData = await spendingResponse.json();
-          setAllSpending(spendingData.spending || []);
+          setAllSpending(spendingData?.data?.spending || []);
 
           // 선택된 날짜의 지출 내역도 업데이트
           const day = selectedDate.getDate();
-          const updatedDailySpending = spendingData.spending.filter(
+          const updatedDailySpending = spendingData?.data?.spending.filter(
             (spending) => {
               const spendingDate = new Date(spending.date);
               return spendingDate.getDate() === day;
@@ -498,7 +498,7 @@ function CalendarContent() {
 
         if (spendingResponse.ok) {
           const spendingData = await spendingResponse.json();
-          setAllSpending(spendingData.spending || []);
+          setAllSpending(spendingData?.data?.spending || []);
         }
       } else {
         alert('지출 삭제에 실패했습니다.');
@@ -536,15 +536,17 @@ function CalendarContent() {
       }
 
       const data = await response.json();
-      console.log('OCR 응답:', data);
+      console.log('OCR 응답:', data?.data?.analysisResult);
 
       // OCR 결과를 지출 항목으로 변환
-      const newSpendingItems = data.analysisResult.items.map((item) => ({
-        date: item.date || '', // 날짜가 없으면 빈 문자열 사용
-        category: getCategoryValue(item.category), // 카테고리 매핑 함수 사용
-        itemName: item.itemName,
-        amount: item.amount ? item.amount.toString() : '0', // 금액이 없으면 '0'으로 설정
-      }));
+      const newSpendingItems = data?.data?.analysisResult?.items.map(
+        (item) => ({
+          date: item.date || '', // 날짜가 없으면 빈 문자열 사용
+          category: getCategoryValue(item.category), // 카테고리 매핑 함수 사용
+          itemName: item.itemName,
+          amount: item.amount ? item.amount.toString() : '0', // 금액이 없으면 '0'으로 설정
+        })
+      );
 
       setSpendingItems(newSpendingItems);
     } catch (error) {
