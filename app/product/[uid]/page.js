@@ -114,11 +114,11 @@ export default function ProductDetail() {
         console.log('[ProductDetail] Product data:', {
           hasData: !!data,
           productInfo: data,
-          additionalInfo: data?.additionalInfo,
-          reviewSummary: data?.additionalInfo?.review_summary,
+          additionalInfo: data?.data?.additionalInfo,
+          reviewSummary: data?.data?.additionalInfo?.review_summary,
         });
 
-        setProduct(data);
+        setProduct(data.data);
       } catch (error) {
         console.error('[ProductDetail] Error fetching product:', {
           error: error.message,
