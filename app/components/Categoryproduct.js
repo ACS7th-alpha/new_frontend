@@ -66,29 +66,21 @@ export default function CategoryProduct() {
 
         console.log('[CategoryProduct] Request URL:', url);
 
-        const response = await fetch(url, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data.success) {
           setProducts(data.data);
-          const total = data.meta.total;
-          setTotalPages(Math.ceil(total / limit));
+          // meta.total에서 전체 상품 수를 가져옴
+          const totalItems = data.meta.total;
+          const calculatedTotalPages = Math.ceil(totalItems / limit);
+          setTotalPages(calculatedTotalPages);
 
           console.log('[CategoryProduct] Products loaded:', {
             count: data.data.length,
-            total,
+            totalItems,
             currentPage: page,
-            totalPages: Math.ceil(total / limit),
+            totalPages: calculatedTotalPages,
           });
         } else {
           console.error('[CategoryProduct] API Error:', data.error);
