@@ -47,10 +47,12 @@ export async function GET(request) {
     }
 
     const data = await response.json();
+    console.log('[Budget API] Raw backend response:', data);
     console.log('[Budget API] Backend response data:', {
       success: true,
       dataLength: data?.length || 0,
       sampleData: data?.[0] || null,
+      fullData: data,
     });
 
     return new Response(
