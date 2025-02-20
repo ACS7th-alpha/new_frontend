@@ -3,12 +3,6 @@ export async function POST(request) {
     console.log('Receipt analysis request received');
     const authorization = request.headers.get('Authorization');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     if (!authorization) {
@@ -29,7 +23,8 @@ export async function POST(request) {
       fileName: formData.get('file')?.name,
     });
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL}/upload/analyze`;
+    const baseUrl = 'http://hama-image-upload:3002';
+    const url = `${baseUrl}/upload/analyze`;
     console.log('Analyzing receipt at:', url);
 
     const response = await fetch(url, {
