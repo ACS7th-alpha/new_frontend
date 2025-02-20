@@ -62,7 +62,7 @@ export default function CategoryProduct() {
 
       setLoading(true);
       try {
-        let url = '/api/search';
+        let url = '/api/search/category';
         if (category !== '전체') {
           const encodedCategory = encodeURIComponent(category);
           url += `?category=${encodedCategory}&page=${page}&limit=${limit}`;
