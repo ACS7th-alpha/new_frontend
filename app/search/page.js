@@ -16,25 +16,40 @@ export default function SearchPage() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 40;
 
+  console.log('[SearchPage] Render start:', { query, currentPage, loading });
+
   useEffect(() => {
     const fetchSearchResults = async () => {
-      if (!query) return;
+      if (!query) {
+        console.log('[SearchPage] No query provided');
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
+      console.log('[SearchPage] Fetching data:', { query, currentPage, limit });
+
       try {
-        const response = await fetch(
-          `/api/search?keyword=${encodeURIComponent(
-            query
-          )}&page=${currentPage}&limit=${limit}`
-        );
+        const apiUrl = `/api/search?keyword=${encodeURIComponent(
+          query
+        )}&page=${currentPage}&limit=${limit}`;
+        console.log('[SearchPage] API URL:', apiUrl);
+
+        const response = await fetch(apiUrl);
+        console.log('[SearchPage] Response status:', response.status);
+
         if (!response.ok) {
-          throw new Error('검색 실패');
+          throw new Error(`검색 실패: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('[SearchPage] API Response:', data);
+        console.log('[SearchPage] Raw API response:', data);
 
         if (data.success) {
+          console.log('[SearchPage] Setting data:', {
+            productsCount: data.data?.length,
+            total: data.meta?.total,
+          });
           setProducts(data.data || []);
           const totalItems = data.meta?.total || 0;
           const calculatedTotalPages = Math.max(
@@ -43,6 +58,8 @@ export default function SearchPage() {
           );
           setTotalPages(calculatedTotalPages);
           setTotalCount(totalItems);
+        } else {
+          console.warn('[SearchPage] API returned success: false');
         }
       } catch (error) {
         console.error('[SearchPage] Error:', error);
@@ -51,13 +68,43 @@ export default function SearchPage() {
         setTotalPages(1);
       } finally {
         setLoading(false);
+        console.log('[SearchPage] Loading finished');
       }
     };
 
+    console.log('[SearchPage] Effect triggered');
     fetchSearchResults();
   }, [query, currentPage]);
 
-  if (loading) return <Loading />;
+  console.log('[SearchPage] Before render:', {
+    loading,
+    productsCount: products.length,
+    totalCount,
+    totalPages,
+  });
+
+  if (loading) {
+    console.log('[SearchPage] Rendering loading state');
+    return <Loading />;
+  }
+
+  if (!query) {
+    console.log('[SearchPage] No query - rendering empty state');
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-center text-gray-600">검색어를 입력해주세요.</p>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    console.log('[SearchPage] No results - rendering empty state');
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-center text-gray-600">검색 결과가 없습니다.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
