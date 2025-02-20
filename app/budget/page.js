@@ -253,7 +253,7 @@ export default function BudgetPage() {
               const detailDate = new Date(detail.date);
               return (
                 detailDate.getFullYear() === year &&
-                detailDate.getMonth() + 1 === month
+                detailDate.getMonth() === month
               );
             }) || [];
 
