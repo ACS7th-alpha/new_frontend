@@ -226,17 +226,25 @@ export default function BudgetPage() {
           hasData: !!data?.data,
           dataKeys: Object.keys(data?.data || {}),
           spendingData: data?.data,
+          categories: data?.data?.categories,
+          spending: data?.data?.spending,
         },
       });
 
-      // categories 처리
+      // categories 처리 - 데이터 구조 확인을 위한 로그 추가
       if (data?.data?.categories) {
+        console.log(
+          '[BudgetPage] Processing categories:',
+          data.data.categories
+        );
         data.data.categories.forEach((category) => {
           setCategorySpending((prev) => ({
             ...prev,
             [category.name]: category.spending || 0,
           }));
         });
+      } else {
+        console.log('[BudgetPage] No categories data found in:', data.data);
       }
 
       // spending details 처리
