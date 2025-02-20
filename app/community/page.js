@@ -15,31 +15,36 @@ export default function CommunityPage() {
     const fetchItems = async () => {
       try {
         const accessToken = localStorage.getItem('access_token');
+        console.log('Using access token:', accessToken); // 토큰 확인
+
         const response = await fetch('/api/reviews', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
 
+        console.log('Response status:', response.status); // 응답 상태 확인
+        console.log('Response headers:', response.headers); // 응답 헤더 확인
+
         if (!response.ok) {
           throw new Error('데이터를 불러오는데 실패했습니다.');
         }
 
         const responseData = await response.json();
-        console.log('받아온 데이터:', responseData);
+        console.log('전체 응답 데이터:', responseData); // 전체 응답 데이터 확인
 
-        // data 배열에 접근하여 정렬
         const reviews = responseData.data || [];
+        console.log('리뷰 데이터 길이:', reviews.length); // 데이터 배열 길이 확인
+
         const sortedData = reviews.sort((a, b) => {
           const dateA = new Date(a.createdAt);
           const dateB = new Date(b.createdAt);
-          return dateB - dateA; // 내림차순 정렬 (최신순)
+          return dateB - dateA;
         });
 
-        console.log('정렬된 데이터:', sortedData);
         setItems(sortedData);
       } catch (error) {
-        console.error('Error fetching reviews:', error);
+        console.error('Error details:', error); // 자세한 에러 정보 확인
       }
     };
     fetchItems();
