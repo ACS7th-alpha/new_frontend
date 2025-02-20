@@ -165,16 +165,15 @@ export default function HomePage() {
       });
 
       if (response.ok && data.success) {
-        // 토큰과 유저 데이터 저장
-        if (data.meta?.tokens?.accessToken) {
-          localStorage.setItem('access_token', data.meta.tokens.accessToken);
+        // user 응답에서 토큰 추출
+        const userData = JSON.parse(data.data);
+        if (userData.access_token) {
+          localStorage.setItem('access_token', userData.access_token);
         }
-        if (data.meta?.tokens?.refreshToken) {
-          localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
+        if (userData.refresh_token) {
+          localStorage.setItem('refresh_token', userData.refresh_token);
         }
-        if (data.data) {
-          localStorage.setItem('user', JSON.stringify(data.data));
-        }
+        localStorage.setItem('user', JSON.stringify(userData));
 
         // 캐시된 데이터 삭제
         localStorage.removeItem('spendingData');
@@ -185,7 +184,7 @@ export default function HomePage() {
           console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
-              Authorization: `Bearer ${data.meta.tokens.accessToken}`,
+              Authorization: `Bearer ${userData.access_token}`,
             },
           });
 
