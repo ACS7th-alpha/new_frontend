@@ -60,19 +60,10 @@ export default function CategoryProduct() {
         const response = await fetch(url);
         const data = await response.json();
 
-        // API 응답 구조 확인을 위한 로그
-        console.log('[CategoryProduct] API Response Structure:', {
-          fullResponse: data,
-          metaData: data.meta,
-          totalInMeta: data.meta?.total,
-          totalDirectly: data.total,
-          dataLength: data.data?.length,
-        });
-
         if (data.success) {
           setProducts(data.data);
-          // 로그 확인 후 올바른 total 값을 사용하도록 수정 예정
-          const totalItems = data.meta?.total || data.total || 0;
+          // data.meta.total을 사용하여 전체 상품 수를 가져옴
+          const totalItems = data.meta?.total || 0;
           const calculatedTotalPages = Math.max(
             Math.ceil(totalItems / limit),
             1
