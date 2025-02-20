@@ -23,7 +23,8 @@ export async function GET(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_CART_URL}/cart`;
+    const baseUrl = 'http://hama-cart:3003'; // 카트 서비스의 내부 URL로 변경
+    const url = `${baseUrl}/cart`;
     console.log('Fetching cart items from:', url);
 
     const response = await fetch(url, {
@@ -131,7 +132,8 @@ export async function POST(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_CART_URL}/cart`;
+    const baseUrl = 'http://hama-cart:3003'; // 카트 서비스의 내부 URL로 변경
+    const url = `${baseUrl}/cart`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
