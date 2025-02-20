@@ -109,7 +109,7 @@ export default function ChatButton() {
     };
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/perplexity/ask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

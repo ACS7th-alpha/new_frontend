@@ -14,12 +14,7 @@ export async function POST(request) {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        file: file.name,
-      }),
+      body: formData,
     });
 
     if (!response.ok) {
