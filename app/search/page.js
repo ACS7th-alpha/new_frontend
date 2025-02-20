@@ -17,6 +17,14 @@ function SearchContent() {
 
   useEffect(() => {
     async function fetchSearchResults() {
+      console.log('[SearchContent] Fetching search results:', {
+        keyword,
+        url: `/api/products?keyword=${encodeURIComponent(
+          keyword
+        )}&page=${page}&limit=${limit}`,
+        timestamp: new Date().toISOString(),
+      });
+
       setLoading(true);
       try {
         const url =
@@ -31,23 +39,55 @@ function SearchContent() {
             'Cache-Control': 'no-store',
           },
         });
+        console.log('[SearchContent] Response status:', response.status);
+
         const data = await response.json();
-        setProducts(Array.isArray(data.data) ? data.data : []);
-        setTotalPages(Math.ceil(data.total / limit)); // Calculate total pages
-        setTotalCount(data.total || 0); // 총 건수 설정
+        console.log('[SearchContent] Search response:', {
+          success: data.success,
+          productCount: data.data?.length || 0,
+          meta: data.meta,
+          fullResponse: data,
+        });
+
+        if (data.success) {
+          setProducts(Array.isArray(data.data) ? data.data : []);
+          setTotalPages(Math.ceil(data.total / limit)); // Calculate total pages
+          setTotalCount(data.total || 0); // 총 건수 설정
+          console.log('[SearchContent] Products updated:', {
+            count: data.data.length,
+            firstProduct: data.data[0],
+            lastProduct: data.data[data.data.length - 1],
+          });
+        } else {
+          console.error('[SearchContent] API Error:', data.error);
+          setProducts([]);
+          setTotalCount(0);
+        }
       } catch (error) {
-        console.error('Error fetching search results:', error);
+        console.error('[SearchContent] Failed to fetch search results:', error);
         setProducts([]);
         setTotalCount(0);
       } finally {
         setLoading(false);
+        console.log('[SearchContent] Loading state updated:', false);
       }
     }
 
     if (keyword) {
+      console.log('[SearchContent] Keyword detected, initiating search');
       fetchSearchResults();
+    } else {
+      console.log('[SearchContent] No keyword provided, skipping search');
+      setProducts([]);
+      setLoading(false);
     }
   }, [keyword, page]);
+
+  console.log('[SearchContent] Current state:', {
+    productCount: products.length,
+    isLoading: loading,
+    hasKeyword: Boolean(keyword),
+  });
 
   if (loading) {
     return (
@@ -166,6 +206,78 @@ function SearchContent() {
 
 // 메인 페이지 컴포넌트
 export default function SearchPage() {
+  const searchParams = useSearchParams();
+  const keyword = searchParams.get('keyword');
+
+  console.log('[SearchPage] Rendering with params:', {
+    keyword,
+    timestamp: new Date().toISOString(),
+  });
+
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSearchResults() {
+      console.log('[SearchPage] Fetching search results:', {
+        keyword,
+        url: `/api/search?keyword=${encodeURIComponent(
+          keyword
+        )}&page=1&limit=40`,
+        timestamp: new Date().toISOString(),
+      });
+
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/search?keyword=${encodeURIComponent(keyword)}&page=1&limit=40`
+        );
+        console.log('[SearchPage] Response status:', response.status);
+
+        const data = await response.json();
+        console.log('[SearchPage] Search response:', {
+          success: data.success,
+          productCount: data.data?.length || 0,
+          meta: data.meta,
+          fullResponse: data,
+        });
+
+        if (data.success) {
+          setProducts(data.data);
+          console.log('[SearchPage] Products updated:', {
+            count: data.data.length,
+            firstProduct: data.data[0],
+            lastProduct: data.data[data.data.length - 1],
+          });
+        } else {
+          console.error('[SearchPage] API Error:', data.error);
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error('[SearchPage] Failed to fetch search results:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+        console.log('[SearchPage] Loading state updated:', false);
+      }
+    }
+
+    if (keyword) {
+      console.log('[SearchPage] Keyword detected, initiating search');
+      fetchSearchResults();
+    } else {
+      console.log('[SearchPage] No keyword provided, skipping search');
+      setProducts([]);
+      setLoading(false);
+    }
+  }, [keyword]);
+
+  console.log('[SearchPage] Current state:', {
+    productCount: products.length,
+    isLoading: loading,
+    hasKeyword: Boolean(keyword),
+  });
+
   return (
     <Suspense
       fallback={
