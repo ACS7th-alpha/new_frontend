@@ -1012,7 +1012,7 @@ export default function MyPage() {
                         </div>
                         <div className="flex gap-2">
                           <Link
-                            href={`/reviews/${post._id}`}
+                            href={`/community/${post._id}`}
                             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                           >
                             보기
