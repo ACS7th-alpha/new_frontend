@@ -128,18 +128,18 @@ export default function MyPage() {
         throw new Error('내가 쓴 글을 불러오는 데 실패했습니다.');
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
       console.log('[MyPage] Posts fetched successfully:', {
-        data,
-        count: data?.reviews?.length || 0,
+        responseData,
+        count: responseData?.data?.length || 0,
       });
 
-      if (!data?.reviews) {
-        console.error('[MyPage] Invalid response format:', data);
+      if (!responseData?.data) {
+        console.error('[MyPage] Invalid response format:', responseData);
         throw new Error('서버 응답 형식이 올바르지 않습니다.');
       }
 
-      setMyPosts(data.reviews);
+      setMyPosts(responseData.data);
     } catch (error) {
       console.error('[MyPage] Error fetching posts:', {
         message: error.message,
