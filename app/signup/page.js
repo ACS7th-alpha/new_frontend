@@ -103,17 +103,16 @@ function SignupForm() {
 
       if (response.ok) {
         console.log('=== 회원가입 성공 ===');
-        console.log('받은 토큰들:', {
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        });
+        const { access_token, refresh_token, userInfo } = data;
+        console.log('받은 토큰들:', { access_token, refresh_token });
 
         // 토큰과 사용자 정보 저장
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('refresh_token', data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('access_token', access_token);
+        localStorage.setItem('refresh_token', refresh_token);
+        localStorage.setItem('user', userInfo); // 서버에서 받은 userInfo 문자열 그대로 저장
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
+
         console.log('로컬 스토리지 저장 완료');
         console.log('메인 페이지로 이동 중...');
 
@@ -127,7 +126,7 @@ function SignupForm() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${data.access_token}`,
+              Authorization: `Bearer ${access_token}`,
             },
             body: JSON.stringify({
               year: year,
