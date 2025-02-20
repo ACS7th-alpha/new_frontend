@@ -105,55 +105,66 @@ function SignupForm() {
         console.log('=== 회원가입 성공 ===');
         const { access_token, refresh_token, userInfo } = data;
         console.log('받은 토큰들:', { access_token, refresh_token });
+        console.log('받은 userInfo (raw):', userInfo);
 
-        // 토큰과 사용자 정보 저장
-        localStorage.setItem('access_token', access_token);
-        localStorage.setItem('refresh_token', refresh_token);
-        localStorage.setItem('user', userInfo); // 서버에서 받은 userInfo 문자열 그대로 저장
-        localStorage.removeItem('spendingData');
-        localStorage.removeItem('budget');
-
-        console.log('로컬 스토리지 저장 완료');
-        console.log('메인 페이지로 이동 중...');
-
-        // 2. 초기 예산 설정 요청
         try {
-          const currentDate = new Date();
-          const year = currentDate.getFullYear(); // 현재 년도
-          const month = currentDate.getMonth() + 1; // 현재 월 (0부터 시작하므로 +1)
+          // userInfo가 이미 문자열인지 확인
+          const parsedUserInfo =
+            typeof userInfo === 'string' ? JSON.parse(userInfo) : userInfo;
+          console.log('파싱된 userInfo:', parsedUserInfo);
 
-          const budgetResponse = await fetch('/api/budget', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${access_token}`,
-            },
-            body: JSON.stringify({
-              year: year,
-              month: month,
-              categories: {
-                diaper: 0,
-                sanitary: 0,
-                feeding: 0,
-                skincare: 0,
-                food: 0,
-                toys: 0,
-                bedding: 0,
-                fashion: 0,
-                other: 0,
+          // 토큰과 사용자 정보 저장
+          localStorage.setItem('access_token', access_token);
+          localStorage.setItem('refresh_token', refresh_token);
+          localStorage.setItem('user', JSON.stringify(parsedUserInfo)); // 객체를 문자열로 변환하여 저장
+          localStorage.removeItem('spendingData');
+          localStorage.removeItem('budget');
+
+          console.log('저장된 user 정보:', localStorage.getItem('user'));
+          console.log('로컬 스토리지 저장 완료');
+          console.log('메인 페이지로 이동 중...');
+
+          // 2. 초기 예산 설정 요청
+          try {
+            const currentDate = new Date();
+            const year = currentDate.getFullYear(); // 현재 년도
+            const month = currentDate.getMonth() + 1; // 현재 월 (0부터 시작하므로 +1)
+
+            const budgetResponse = await fetch('/api/budget', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${access_token}`,
               },
-            }),
-          });
+              body: JSON.stringify({
+                year: year,
+                month: month,
+                categories: {
+                  diaper: 0,
+                  sanitary: 0,
+                  feeding: 0,
+                  skincare: 0,
+                  food: 0,
+                  toys: 0,
+                  bedding: 0,
+                  fashion: 0,
+                  other: 0,
+                },
+              }),
+            });
 
-          if (!budgetResponse.ok) {
-            console.warn('초기 예산 설정 실패:', await budgetResponse.text());
+            if (!budgetResponse.ok) {
+              console.warn('초기 예산 설정 실패:', await budgetResponse.text());
+            }
+          } catch (error) {
+            console.error('초기 예산 설정 중 오류:', error);
           }
+
+          // 3. 메인 페이지로 이동
+          router.push('/');
         } catch (error) {
           console.error('초기 예산 설정 중 오류:', error);
         }
-
-        // 3. 메인 페이지로 이동
-        router.push('/');
       } else {
         console.error('=== 회원가입 실패 ===');
         console.error('에러 메시지:', data.message);
