@@ -166,14 +166,8 @@ export default function HomePage() {
       });
 
       if (response.ok && data.success) {
-        localStorage.setItem(
-          'access_token',
-          data.data.meta?.tokens?.accessToken
-        );
-        localStorage.setItem(
-          'refresh_token',
-          data.data.meta?.tokens?.refreshToken
-        );
+        localStorage.setItem('access_token', data.data.accessToken);
+        localStorage.setItem('refresh_token', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.data));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
@@ -183,7 +177,7 @@ export default function HomePage() {
           console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
-              Authorization: `Bearer ${data.meta.tokens.accessToken}`,
+              Authorization: `Bearer ${data.data.accessToken}`,
             },
           });
 
