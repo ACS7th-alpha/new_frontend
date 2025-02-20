@@ -106,7 +106,7 @@ export async function POST(request) {
       );
     }
 
-    const url = `${process.env.BACKEND_URL}/reviews`;
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews`;
     console.log('Sending review to backend:', {
       url,
       data: reviewData,
