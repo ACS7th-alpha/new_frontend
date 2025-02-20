@@ -7,7 +7,6 @@ export async function GET(request) {
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '40';
 
-    // BACKEND_URL 환경 변수 사용
     const backendUrl = process.env.BACKEND_URL || 'http://hama-product:3007';
 
     console.log('[Search API] Request received:', {
@@ -17,7 +16,8 @@ export async function GET(request) {
       backendUrl,
     });
 
-    const apiUrl = `${backendUrl}/products?keyword=${encodeURIComponent(
+    // 검색 전용 엔드포인트 사용
+    const apiUrl = `${backendUrl}/search?keyword=${encodeURIComponent(
       keyword
     )}&page=${page}&limit=${limit}`;
     console.log('[Search API] Calling backend URL:', apiUrl);
@@ -40,18 +40,19 @@ export async function GET(request) {
     const data = await response.json();
     console.log('[Search API] Backend response:', {
       status: response.status,
-      success: data.success,
+      data: data,
       resultCount: data.data?.length || 0,
       firstProduct: data.data?.[0]?.name,
     });
 
+    // 응답 데이터 구조화
     return NextResponse.json({
       success: true,
       data: data.data || [],
       meta: {
-        total: data.total || 0,
-        page,
-        limit,
+        total: data.meta?.total || 0,
+        page: Number(page),
+        limit: Number(limit),
         keyword,
       },
     });
