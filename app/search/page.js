@@ -107,66 +107,100 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">
-          &quot;{query}&quot; 검색 결과
-        </h1>
-        <p className="text-gray-600">
-          총{' '}
-          <span className="text-xl font-bold text-orange-500">
-            {totalCount}
-          </span>
-          건의 상품이 있습니다
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((product) => (
-          <div
-            key={product.uid}
-            onClick={() => router.push(`/product/${product.uid}`)}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200 cursor-pointer"
-          >
-            <div className="relative pb-[100%]">
-              <img
-                src={product.img}
-                alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
-              <h3 className="text-md font-semibold text-gray-800 mb-2 line-clamp-2">
-                {product.name}
-              </h3>
-              <p className="text-lg font-bold text-black-500">
-                {Number(product.sale_price).toLocaleString()}원
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-8">
-          <nav className="flex items-center gap-2">
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-4 py-2 rounded ${
-                  currentPage === index + 1
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </nav>
+    <div className="min-h-screen bg-white">
+      <Header />
+      <div className="container max-w-5xl mx-auto px-4 py-12">
+        {/* 검색 결과 헤더 */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            &ldquo;{keyword}&rdquo; 검색 결과
+          </h1>
+          <p className="text-xl text-gray-600">
+            총{' '}
+            <span className="text-xl font-bold text-orange-500">
+              {totalCount}
+            </span>
+            건의 상품이 있습니다
+          </p>
         </div>
-      )}
+
+        {products.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500">검색 결과가 없습니다 😢</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {products.map((product) => (
+                <Link
+                  key={product.uid}
+                  href={`/product/${product.uid}`}
+                  className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 block"
+                >
+                  <img
+                    src={product.img}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="px-5 py-4">
+                    <h2 className="text-base font-semibold text-gray-800 mb-1 line-clamp-2">
+                      {product.name}
+                    </h2>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">
+                        {product.site}
+                      </p>
+                      <p className="text-xl font-bold text-black">
+                        {product.sale_price}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {products.length > 0 && (
+              <div className="flex justify-center items-center gap-1 mt-12">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+                >
+                  ← 이전
+                </button>
+
+                {/* 페이지 번호 목록 */}
+                <div className="flex gap-1">
+                  {Array.from(
+                    { length: endPage - startPage + 1 },
+                    (_, idx) => startPage + idx
+                  ).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`rounded-full text-pink-600 font-medium ${
+                        page === n ? 'bg-pink-100' : 'bg-white hover:bg-pink-50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+
+                {/* "Next" arrow for the next set of pages */}
+                {endPage < totalPages && (
+                  <button
+                    onClick={() => setPage(endPage + 1)}
+                    className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 transition-colors duration-200 font-medium"
+                  >
+                    → 다음
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
