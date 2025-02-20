@@ -490,7 +490,7 @@ export default function MyPage() {
     setNewBudget(userInfo?.user?.monthlyBudget || 0);
   };
 
-  if (!userInfo?.user) {
+  if (!userInfo) {
     return (
       <div className="min-h-screen bg-pink-50">
         <Header />
