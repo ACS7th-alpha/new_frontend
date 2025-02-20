@@ -30,7 +30,9 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_CART_URL}/cart/${uid}`;
+  
+    const baseUrl = 'http://hama-cart:3003';
+    const url = `${baseUrl}/cart/${uid}`;
     console.log('Deleting cart item at:', url);
 
     const response = await fetch(url, {

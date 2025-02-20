@@ -31,7 +31,8 @@ export async function DELETE(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_CART_URL}/cart/clear`;
+    const baseUrl = 'http://hama-cart:3003';
+    const url = `${baseUrl}/cart/clear`;
     console.log('Clearing cart at:', url);
 
     const response = await fetch(url, {
