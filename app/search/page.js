@@ -44,6 +44,7 @@ function SearchContent() {
           console.log('검색 완료:', {
             keyword,
             count: data.data.length,
+            firstProductName: data.data[0]?.name, // 첫 번째 상품 이름 로깅
           });
         } else {
           console.log('검색 실패:', data.message);
