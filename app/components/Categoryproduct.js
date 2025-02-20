@@ -71,8 +71,8 @@ export default function CategoryProduct() {
 
         if (data.success) {
           setProducts(data.data);
-          // meta.total에서 전체 상품 수를 가져옴
-          const totalItems = data.meta.total;
+          // 최상위 레벨의 total 값을 사용
+          const totalItems = data.total;
           const calculatedTotalPages = Math.ceil(totalItems / limit);
           setTotalPages(calculatedTotalPages);
 
