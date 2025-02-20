@@ -5,6 +5,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 import Loading from '../components/Loading';
 import Header from '../components/Header';
 import Link from 'next/link';
+
 export default function SearchPage() {
   noStore();
   const searchParams = useSearchParams();
@@ -114,7 +115,7 @@ export default function SearchPage() {
         {/* 검색 결과 헤더 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            &ldquo;{keyword}&rdquo; 검색 결과
+            &ldquo;{query}&rdquo; 검색 결과
           </h1>
           <p className="text-xl text-gray-600">
             총{' '}
