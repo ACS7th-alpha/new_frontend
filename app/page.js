@@ -54,9 +54,25 @@ export default function HomePage() {
         if (parsedUser.children && parsedUser.children[0]) {
           const birthDate = new Date(parsedUser.children[0].birthdate);
           const today = new Date();
+
+          console.log('[HomePage] Child age calculation:', {
+            birthDateString: parsedUser.children[0].birthdate,
+            parsedBirthDate: birthDate,
+            today,
+            yearDiff: today.getFullYear() - birthDate.getFullYear(),
+            monthDiff: today.getMonth() - birthDate.getMonth(),
+            calculation: {
+              yearPart: (today.getFullYear() - birthDate.getFullYear()) * 12,
+              monthPart: today.getMonth() - birthDate.getMonth(),
+            },
+          });
+
           const monthDiff =
             (today.getFullYear() - birthDate.getFullYear()) * 12 +
             (today.getMonth() - birthDate.getMonth());
+
+          console.log('[HomePage] Final monthDiff:', monthDiff);
+
           setChildAge(monthDiff);
         }
 
