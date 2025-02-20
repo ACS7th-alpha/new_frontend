@@ -160,17 +160,14 @@ export default function HomePage() {
       console.log('[GoogleLogin] Auth response:', {
         status: response.status,
         ok: response.ok,
-        success: true,
-        hasTokens: !!data.access_token,
+        success: data.success,
+        hasTokens: !!data.meta?.tokens,
       });
 
-      if (response.ok) {
-        // 토큰과 유저 정보 저장
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('refresh_token', data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // 캐시된 데이터 삭제
+      if (response.ok && data.success) {
+        localStorage.setItem('access_token', data.meta.tokens.accessToken);
+        localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
+        localStorage.setItem('user', JSON.stringify(data.data));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
 
@@ -179,7 +176,7 @@ export default function HomePage() {
           console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
-              Authorization: `Bearer ${data.access_token}`,
+              Authorization: `Bearer ${data.meta.tokens.accessToken}`,
             },
           });
 
