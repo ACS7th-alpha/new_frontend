@@ -985,53 +985,50 @@ export default function MyPage() {
             </div>
           )}
           {activeTab === 'posts' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 내가 쓴 글 <span className="ml-2">📝</span>
               </h2>
               {loading ? (
-                <div className="text-center py-8">
-                  <p>로딩 중...</p>
-                </div>
-              ) : myPosts?.length > 0 ? (
-                <div className="space-y-4">
+                <p>로딩 중...</p>
+              ) : myPosts.length > 0 ? (
+                <div className="grid gap-4">
                   {myPosts.map((post) => (
                     <div
                       key={post._id}
-                      className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+                      className="p-4 bg-white rounded-lg shadow flex justify-between items-center"
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-2">
-                            {post.title}
-                          </h3>
-                          <p className="text-gray-600">{post.content}</p>
-                          <div className="mt-2 text-sm text-gray-500">
-                            {new Date(post.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Link
-                            href={`/community/${post._id}`}
-                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                          >
-                            보기
-                          </Link>
-                          <button
-                            onClick={(e) => handleDeletePost(e, post._id)}
-                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                          >
-                            삭제
-                          </button>
-                        </div>
+                      <div>
+                        <h3 className="font-semibold">{post.name}</h3>
+                        <p className="text-gray-600 text-sm">
+                          {post.description}
+                        </p>
+                        <p className="text-gray-500 text-xs">
+                          연령대: {post.ageGroup} |
+                          {post.recommended ? ' 추천함' : ' 추천안함'}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/community/${post._id}`}
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        >
+                          보기
+                        </Link>
+                        <button
+                          onClick={(e) => handleDeletePost(e, post._id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        >
+                          삭제
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">작성한 글이 없습니다.</p>
-                </div>
+                <p className="text-center text-gray-500">
+                  작성한 글이 없습니다.
+                </p>
               )}
             </div>
           )}
