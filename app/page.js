@@ -82,8 +82,11 @@ export default function HomePage() {
             const spendingData = await response.json();
             console.log('[HomePage] Budget data received:', {
               success: spendingData.success,
-              hasData: !!spendingData.spending,
-              categoriesCount: spendingData.spending?.length,
+              hasData:
+                Array.isArray(spendingData.spending) &&
+                spendingData.spending.length > 0,
+              categoriesCount: spendingData.spending?.length || 0,
+              sampleCategory: spendingData.spending?.[0], // 첫 번째 카테고리 데이터 샘플
             });
 
             // 현재 년월 구하기
@@ -192,7 +195,10 @@ export default function HomePage() {
             const budgetData = await budgetResponse.json();
             console.log('[GoogleLogin] Budget data received:', {
               success: budgetData.success,
-              hasData: !!budgetData.data,
+              hasData:
+                Array.isArray(budgetData.data) && budgetData.data.length > 0,
+              dataLength: budgetData.data?.length || 0,
+              sampleData: budgetData.data?.[0],
             });
             localStorage.setItem('budget', JSON.stringify(budgetData));
           }
