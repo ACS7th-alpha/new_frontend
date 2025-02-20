@@ -294,11 +294,11 @@ export default function BudgetPage() {
       const user = JSON.parse(userStr);
       console.log('[BudgetPage] Parsed user data:', {
         fullUserObject: user,
-        userInfo: user.user,
-        monthlyBudget: user.user?.monthlyBudget,
-        parsedBudget: Number(user.user?.monthlyBudget),
+        userInfo: user?.user,
+        monthlyBudget: user?.user?.monthlyBudget,
+        parsedBudget: Number(user?.user?.monthlyBudget),
       });
-      setMonthlyBudget(user.user.monthlyBudget || 0);
+      setMonthlyBudget(user?.user?.monthlyBudget || 0);
     }
 
     // 현재 예산 데이터 불러오기
