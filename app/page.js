@@ -146,7 +146,6 @@ export default function HomePage() {
         timestamp: new Date().toISOString(),
       });
 
-      console.log('[GoogleLogin] Sending auth request to backend');
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: {
@@ -157,20 +156,15 @@ export default function HomePage() {
         }),
       });
 
-      console.log('[GoogleLogin] Auth response status:', {
+      const data = await response.json();
+      console.log('[GoogleLogin] Auth response:', {
         status: response.status,
         ok: response.ok,
-      });
-
-      const data = await response.json();
-      console.log('[GoogleLogin] Auth response data:', {
         success: data.success,
         hasTokens: !!data.meta?.tokens,
-        hasUserData: !!data.data,
       });
 
       if (response.ok && data.success) {
-        console.log('[GoogleLogin] Login successful, storing tokens');
         localStorage.setItem('access_token', data.meta.tokens.accessToken);
         localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.data));
