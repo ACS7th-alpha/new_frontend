@@ -56,7 +56,7 @@ export default function StatisticsPage() {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (storedUser) {
       setUser(storedUser);
-      setMonthlyBudget(storedUser.monthlyBudget || 0); // monthlyBudget 설정
+      setMonthlyBudget(storedUser.user?.monthlyBudget || 0); // monthlyBudget 설정
     }
 
     const fetchSpendingData = async () => {
@@ -238,7 +238,7 @@ export default function StatisticsPage() {
       },
       {
         label: '월별 예산',
-        data: Array(12).fill(user?.monthlyBudget || 0),
+        data: Array(12).fill(user?.user?.monthlyBudget || 0),
         backgroundColor: 'rgba(255, 99, 132, 0.5)',
         borderColor: 'rgba(255, 99, 132, 1)',
         borderWidth: 1,
@@ -511,7 +511,7 @@ export default function StatisticsPage() {
             <div className="mt-12 text-center">
               <p className="text-black text-base">
                 월별 예산:{' '}
-                {Number(user?.monthlyBudget)?.toLocaleString('ko-KR')}원
+                {Number(user?.user?.monthlyBudget)?.toLocaleString('ko-KR')}원
               </p>
               <p className="text-black text-base">
                 연간 총 지출:{' '}
