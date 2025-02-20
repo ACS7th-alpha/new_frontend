@@ -171,7 +171,7 @@ function SignupForm() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-[400px] space-y-8 bg-white p-8 shadow-lg rounded-lg">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-900">Sign up</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">회원가입</h2>
           <div className="w-10 h-10 rounded-full bg-blue-100"></div>
         </div>
 
