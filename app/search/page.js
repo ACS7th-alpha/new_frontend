@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Loading from '../components/Loading';
 import { unstable_noStore as noStore } from 'next/cache';
-
+import Loading from '../components/Loading';
+import Header from '../components/Header';
+import Link from 'next/link';
 export default function SearchPage() {
   noStore();
   const searchParams = useSearchParams();
