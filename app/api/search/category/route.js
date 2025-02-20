@@ -44,12 +44,12 @@ export async function GET(request) {
       productsLength: Array.isArray(data)
         ? data.length
         : data.data?.length || 0,
-      metaTotal: data.meta?.total,
+      totalItems: data.total, // 백엔드에서 오는 실제 total 값
     });
 
     // 응답 데이터 구조화
     const products = Array.isArray(data) ? data : data.data || [];
-    const total = data.meta?.total || products.length;
+    const total = data.total || products.length; // data.meta?.total 대신 data.total 사용
 
     const responseData = {
       success: true,
