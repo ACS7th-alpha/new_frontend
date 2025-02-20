@@ -460,23 +460,13 @@ export default function MyPage() {
       const data = await response.json();
       console.log('[MyPage] Add child success:', data);
 
-      // 현재 localStorage의 user 데이터를 가져옴
-      const currentUserData = JSON.parse(localStorage.getItem('user'));
-
-      // 새로운 자녀 정보 추가
+      // 서버에서 반환된 전체 사용자 데이터로 업데이트
       const updatedUserData = {
-        ...currentUserData,
-        user: {
-          ...currentUserData.user,
-          children: [
-            ...(currentUserData.user.children || []),
-            data.child, // 서버에서 반환한 새 자녀 정보
-          ],
-        },
+        user: data.user, // 서버에서 반환된 전체 user 객체
       };
 
       console.log(
-        '[MyPage] Updating localStorage with new child:',
+        '[MyPage] Updating localStorage with server response:',
         updatedUserData
       );
 
