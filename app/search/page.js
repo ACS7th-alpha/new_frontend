@@ -8,7 +8,7 @@ export default function SearchPage() {
   noStore();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const query = searchParams.get('query');
+  const query = searchParams.get('keyword');
   const [products, setProducts] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
