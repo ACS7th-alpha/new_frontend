@@ -320,73 +320,94 @@ export default function MyPage() {
   const handleSaveChild = async (index) => {
     const child = userInfo?.user?.children[index];
     const originalName = childToEdit.originalName; // 수정 전의 이름
-    const updatedName = child.name; // 수정된 이름
-    const updatedGender = child.gender; // 수정된 성별
-    const updatedBirthdate = child.birthdate; // 수정된 생년월일
-
-    const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    const requestBody = {
-      name: updatedName,
-      gender: updatedGender,
-      birthdate: updatedBirthdate,
-    };
-    console.log(
-      'Sending request body:',
-      JSON.stringify(requestBody),
-      originalName
-    ); // 요청 본문 로그
 
     try {
-      const response = await fetch('/api/children', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          name: originalName,
-          ...requestBody,
-        }),
+      const accessToken = localStorage.getItem('access_token');
+      console.log('[MyPage] Attempting to update child:', {
+        originalName,
+        updatedData: child,
+      });
+
+      if (!accessToken) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const requestBody = {
+        name: child.name,
+        gender: child.gender,
+        birthdate: child.birthdate,
+      };
+
+      console.log('[MyPage] Sending update request:', {
+        originalName,
+        requestBody,
+      });
+
+      // URL에 원래 이름을 포함시켜 요청
+      const response = await fetch(
+        `/api/children/${encodeURIComponent(originalName)}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      console.log('[MyPage] Update response:', {
+        status: response.status,
+        ok: response.ok,
       });
 
       if (!response.ok) {
-        const errorDetails = await response.text();
-        console.error('Error details:', errorDetails);
-        throw new Error(
-          `아기 정보 수정 실패: ${response.status} ${response.statusText}`
-        );
+        const errorText = await response.text();
+        console.error('[MyPage] Update failed:', errorText);
+        throw new Error(`아기 정보 수정 실패: ${response.status}`);
       }
 
-      // 수정 성공 시, 상태에서 해당 아기 정보 업데이트
-      const updatedChildren = userInfo?.user?.children?.map((child, idx) =>
+      const data = await response.json();
+      console.log('[MyPage] Update successful:', data);
+
+      // 현재 localStorage의 user 데이터를 가져옴
+      const currentUserData = JSON.parse(localStorage.getItem('user'));
+
+      // 자녀 정보 업데이트
+      const updatedChildren = currentUserData.user.children.map((c, idx) =>
         idx === index
           ? {
-              ...child,
-              name: updatedName,
-              gender: updatedGender,
-              birthdate: updatedBirthdate,
+              ...c,
+              name: child.name,
+              gender: child.gender,
+              birthdate: child.birthdate,
             }
-          : child
+          : c
       );
 
-      setUserInfo((prev) => {
-        const updatedUserInfo = {
-          ...prev,
-          user: { ...prev.user, children: updatedChildren },
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUserInfo));
-        return updatedUserInfo;
-      });
+      // 전체 user 데이터 업데이트
+      const updatedUserData = {
+        ...currentUserData,
+        user: {
+          ...currentUserData.user,
+          children: updatedChildren,
+        },
+      };
+
+      console.log('[MyPage] Updating localStorage with:', updatedUserData);
+
+      // localStorage와 상태 업데이트
+      localStorage.setItem('user', JSON.stringify(updatedUserData));
+      setUserInfo(updatedUserData);
+      setChildToEdit(null); // 수정 모드 종료
 
       alert('아기 정보가 성공적으로 수정되었습니다.');
-      setChildToEdit(null); // 수정 모드 종료
     } catch (error) {
-      console.error('Error updating child:', error);
+      console.error('[MyPage] Error updating child:', {
+        message: error.message,
+        stack: error.stack,
+      });
       alert('아기 정보 수정 중 오류가 발생했습니다.');
     }
   };
