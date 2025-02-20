@@ -41,7 +41,7 @@ export default function ProductDetail({ params }) {
 
         const data = await response.json();
         // 현재 글을 제외하고 최신순으로 정렬
-        const filteredAndSorted = data
+        const filteredAndSorted = data?.data
           .filter((item) => item._id !== id)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 3); // 최대 3개만 표시
