@@ -118,19 +118,19 @@ export default function WritePage() {
         const imageData = await imageUploadResponse.json();
         console.log('[WritePage] Image upload successful:', imageData);
 
-        // 이미지 URL 추출
-        imageUrls = imageData.data.map((img) => img.url);
+        // 이미지 URL 추출 수정
+        imageUrls = imageData.imageUrls || []; // data.map() 제거, 직접 imageUrls 사용
         console.log('[WritePage] Extracted image URLs:', imageUrls);
       }
 
       // 리뷰 데이터 전송
       const reviewData = {
-        name: title.trim(), // title -> name
-        description: content.trim(), // content -> description
+        name: title.trim(),
+        description: content.trim(),
         ageGroup: age.trim(),
         purchaseLink: store.trim() || null,
         recommended: isRecommended,
-        imageUrls: imageUrls,
+        imageUrls: imageUrls, // 추출된 URL 배열 직접 사용
       };
 
       const token = localStorage.getItem('access_token');
