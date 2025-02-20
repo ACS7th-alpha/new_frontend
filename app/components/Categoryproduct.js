@@ -64,8 +64,7 @@ export default function CategoryProduct() {
       try {
         let url = '/api/search';
         if (category !== '전체') {
-          // 카테고리 파라미터 처리 방식 수정 - 언더스코어 유지
-          const encodedCategory = encodeURIComponent(category); // '_' 를 공백으로 변환하지 않음
+          const encodedCategory = encodeURIComponent(category);
           url += `?category=${encodedCategory}&page=${page}&limit=${limit}`;
         } else {
           url += `?page=${page}&limit=${limit}`;
@@ -73,12 +72,18 @@ export default function CategoryProduct() {
 
         console.log('[CategoryProduct] Request URL:', url);
 
-        const response = await fetch(url, {
-          headers: {
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache',
-          },
-        });
+        // Authorization 헤더 추가
+        const accessToken = localStorage.getItem('access_token');
+        const headers = {
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(url, { headers });
 
         console.log('[CategoryProduct] Raw Response:', {
           status: response.status,
@@ -95,13 +100,14 @@ export default function CategoryProduct() {
         });
 
         if (data.success) {
-          console.log('[CategoryProduct] Products data:', {
-            success: data.success,
-            totalProducts: data.data?.length || 0,
-            firstProduct: data.data?.[0],
-            meta: data.meta,
-            timestamp: new Date().toISOString(),
-          });
+          // 데이터가 비어있는 경우 추가 로깅
+          if (!data.data || data.data.length === 0) {
+            console.log('[CategoryProduct] No products found:', {
+              category,
+              meta: data.meta,
+              headers: headers,
+            });
+          }
 
           setProducts(data.data || []);
           setTotalPages(Math.ceil((data.meta?.total || 0) / limit));
