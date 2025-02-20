@@ -240,7 +240,7 @@ export default function MyPage() {
       const accessToken = localStorage.getItem('access_token');
       if (!accessToken) throw new Error('로그인이 필요합니다.');
 
-      console.log(`Deleting child: ${childToDelete.name}`); // 삭제할 아기 이름 로그
+      console.log(`[MyPage] Deleting child: ${childToDelete.name}`);
       const response = await fetch(
         `/api/children?name=${encodeURIComponent(childToDelete.name)}`,
         {
@@ -252,23 +252,51 @@ export default function MyPage() {
       );
 
       if (!response.ok) {
-        console.error('Failed to delete child:', response.statusText); // 실패 로그
+        console.error('[MyPage] Failed to delete child:', response.statusText);
         throw new Error('아기 정보 삭제 실패');
       }
 
-      // 삭제 성공 시, 상태에서 해당 아기 정보 제거
-      const updatedChildren = userInfo?.user?.children?.filter(
-        (_, idx) => idx !== index
-      );
-      setUserInfo((prev) => {
-        const updatedUserInfo = { ...prev, children: updatedChildren };
-        localStorage.setItem('user', JSON.stringify(updatedUserInfo)); // 로컬 스토리지 업데이트
-        return updatedUserInfo;
-      });
+      const data = await response.json();
+      console.log('[MyPage] Delete response:', data);
+
+      if (data.user) {
+        // 서버에서 반환된 최신 사용자 데이터로 업데이트
+        const updatedUserData = {
+          ...userInfo,
+          user: data.user,
+        };
+
+        console.log('[MyPage] Updating with server data:', updatedUserData);
+
+        // localStorage와 상태 업데이트
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        setUserInfo(updatedUserData);
+      } else {
+        // 서버에서 최신 데이터를 받지 못한 경우, 로컬에서 처리
+        const updatedChildren = userInfo.user.children.filter(
+          (_, idx) => idx !== index
+        );
+
+        const updatedUserData = {
+          ...userInfo,
+          user: {
+            ...userInfo.user,
+            children: updatedChildren,
+          },
+        };
+
+        console.log('[MyPage] Updating locally:', updatedUserData);
+
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        setUserInfo(updatedUserData);
+      }
+
       alert(`${childToDelete.name}의 정보가 삭제되었습니다.`);
-      console.log(`${childToDelete.name}의 정보가 성공적으로 삭제되었습니다.`); // 성공 로그
+      console.log(
+        `[MyPage] ${childToDelete.name}의 정보가 성공적으로 삭제되었습니다.`
+      );
     } catch (error) {
-      console.error('Error deleting child:', error);
+      console.error('[MyPage] Error deleting child:', error);
       alert('아기 정보 삭제 중 오류가 발생했습니다.');
     }
   };
