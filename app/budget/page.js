@@ -226,34 +226,46 @@ export default function BudgetPage() {
           hasData: !!data?.data,
           dataKeys: Object.keys(data?.data || {}),
           spendingData: data?.data,
-          categories: data?.data?.categories,
-          spending: data?.data?.spending,
         },
       });
 
-      // categories 처리 - 데이터 구조 확인을 위한 로그 추가
-      if (data?.data?.categories) {
-        console.log(
-          '[BudgetPage] Processing categories:',
-          data.data.categories
-        );
-        data.data.categories.forEach((category) => {
-          setCategorySpending((prev) => ({
-            ...prev,
-            [category.name]: category.spending || 0,
-          }));
-        });
-      } else {
-        console.log('[BudgetPage] No categories data found in:', data.data);
-      }
-
-      // spending details 처리
+      // spending details 처리 및 카테고리별 총액 계산
       if (data?.data?.spending) {
         const spendingMap = {};
+        const categoryTotals = {};
+
+        // 카테고리 매핑 정의
+        const categoryMapping = {
+          diaper: '기저귀/물티슈',
+          sanitary: '생활/위생용품',
+          feeding: '수유/이유용품',
+          skincare: '스킨케어/화장품',
+          food: '식품',
+          toys: '완구용품',
+          bedding: '침구류',
+          fashion: '패션의류/잡화',
+          other: '기타',
+        };
+
         data.data.spending.forEach((item) => {
+          // spending details 설정
           spendingMap[item.category] = item.details;
+
+          // 각 카테고리의 details 배열을 순회하며 총액 계산
+          if (item.details && Array.isArray(item.details)) {
+            const total = item.details.reduce(
+              (sum, detail) => sum + (detail.amount || 0),
+              0
+            );
+            const categoryName = categoryMapping[item.category];
+            if (categoryName) {
+              categoryTotals[categoryName] = total;
+            }
+          }
         });
+
         setSpendingDetails(spendingMap);
+        setCategorySpending(categoryTotals);
       }
     } catch (error) {
       console.error('[BudgetPage] Error in fetchSpendingData:', error);
