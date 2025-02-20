@@ -1,64 +1,47 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { categories } from '@/app/constants/categories';
+import Link from 'next/link';
 
 export default function CategoryProduct() {
-  const router = useRouter();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState('전체');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
   const [userInfo, setUserInfo] = useState(null);
-  const [childName, setChildName] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState('수유_이유용품');
+  const [childName, setChildName] = useState('');
+  const [totalPages, setTotalPages] = useState(1);
+  const router = useRouter();
   const limit = 40;
 
-  // 페이지 범위 계산
-  const getPageRange = () => {
-    const startPage = Math.floor((page - 1) / 5) * 5 + 1;
-    const endPage = Math.min(startPage + 4, totalPages);
-    console.log('[CategoryProduct] Page range calculated:', {
-      currentPage: page,
-      startPage,
-      endPage,
-      totalPages,
-    });
-    return { startPage, endPage };
-  };
+  // 카테고리 목록 정의
+  const categories = [
+    { id: '수유_이유용품', name: '수유/이유용품', icon: '🍼' },
+    { id: '기저귀_물티슈', name: '기저귀/물티슈', icon: '👶' },
+    { id: '스킨케어_화장품', name: '스킨케어/화장품', icon: '🧴' },
+    { id: '생활_위생용품', name: '생활/위생용품', icon: '🧼' },
+    { id: '침구류', name: '침구류', icon: '🌛' },
+    { id: '식품', name: '식품', icon: '🧀' },
+    { id: '완구용품', name: '완구용품', icon: '✏️' },
+    { id: '패션의류_잡화', name: '패션의류/잡화', icon: '👕' },
+  ];
 
-  // 사용자 정보 로드
   useEffect(() => {
-    const loadUserData = async () => {
-      const userData = localStorage.getItem('userData');
-      console.log('[CategoryProduct] Loading user data:', {
-        hasUserData: !!userData,
-        timestamp: new Date().toISOString(),
-      });
-
-      if (userData) {
-        const parsedData = JSON.parse(userData);
-        setUserInfo(parsedData);
-        const hasChildren = parsedData?.userInfo?.user?.children?.length > 0;
-        const firstChildName = hasChildren
-          ? parsedData.userInfo.user.children[0].name
-          : undefined;
-
-        console.log('[CategoryProduct] Parsed user data:', {
-          userInfo: parsedData,
-          hasChildren,
-          firstChildName,
-        });
-
-        setChildName(firstChildName);
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUserData = JSON.parse(userData);
+        setUserInfo(parsedUserData);
+        if (parsedUserData.children && parsedUserData.children.length > 0) {
+          const firstChild = parsedUserData.children[0];
+          setChildName(firstChild.name);
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
       }
-    };
-
-    loadUserData();
+    }
   }, []);
 
-  // 상품 데이터 로드
   useEffect(() => {
     async function fetchProducts() {
       console.log('[CategoryProduct] Fetching products:', {
@@ -80,32 +63,19 @@ export default function CategoryProduct() {
 
         console.log('[CategoryProduct] Request URL:', url);
 
-        // Authorization 헤더 추가
-        const accessToken = localStorage.getItem('access_token');
-        const headers = {
-          Accept: 'application/json',
-          'Cache-Control': 'no-cache',
-        };
+        const response = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          },
+        });
 
-        if (accessToken) {
-          headers['Authorization'] = `Bearer ${accessToken}`;
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const response = await fetch(url, { headers });
-
-        console.log('[CategoryProduct] Raw Response:', {
-          status: response.status,
-          ok: response.ok,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-        });
-
         const data = await response.json();
-        console.log('[CategoryProduct] Raw API Response:', {
-          ...data,
-          requestedCategory: category,
-          encodedUrl: url,
-        });
+        console.log('[CategoryProduct] Raw API Response:', data);
 
         if (data.success) {
           setProducts(data.data);
@@ -113,25 +83,18 @@ export default function CategoryProduct() {
           setTotalPages(Math.ceil(total / limit));
 
           console.log('[CategoryProduct] Products loaded:', {
-            productsCount: data.data.length,
-            totalProducts: total,
+            count: data.data.length,
+            total,
             currentPage: page,
             totalPages: Math.ceil(total / limit),
           });
         } else {
-          console.log('[CategoryProduct] No products found:', {
-            category,
-            headers,
-            meta: data.meta,
-          });
+          console.error('[CategoryProduct] API Error:', data.error);
           setProducts([]);
           setTotalPages(0);
         }
       } catch (error) {
-        console.error('[CategoryProduct] Failed to fetch products:', {
-          error: error.message,
-          message: error.toString(),
-        });
+        console.error('[CategoryProduct] Failed to fetch products:', error);
         setProducts([]);
         setTotalPages(0);
       } finally {
@@ -142,64 +105,47 @@ export default function CategoryProduct() {
     fetchProducts();
   }, [category, page]);
 
-  // 상태 저장
-  useEffect(() => {
-    const saveState = () => {
-      console.log('[CategoryProduct] Saving state:', {
-        category,
-        page,
-        scrollY: window.scrollY,
-        timestamp: new Date().toISOString(),
-      });
-      sessionStorage.setItem(
-        'categoryProductState',
-        JSON.stringify({
-          category,
-          page,
-          scrollPosition: window.scrollY,
-        })
-      );
-    };
-
-    window.addEventListener('beforeunload', saveState);
-    return () => window.removeEventListener('beforeunload', saveState);
-  }, [category, page]);
-
-  // 저장된 상태 복원
-  useEffect(() => {
-    const savedState = sessionStorage.getItem('categoryProductState');
-    console.log('[CategoryProduct] Restoring saved state:', {
-      savedCategory: savedState ? JSON.parse(savedState).category : null,
-      savedPage: savedState ? JSON.parse(savedState).page : null,
-      savedScrollPosition: savedState
-        ? JSON.parse(savedState).scrollPosition
-        : null,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (savedState) {
-      const {
-        category: savedCategory,
-        page: savedPage,
-        scrollPosition,
-      } = JSON.parse(savedState);
-      setCategory(savedCategory);
-      setPage(savedPage);
-      window.scrollTo(0, scrollPosition);
-      sessionStorage.removeItem('categoryProductState');
-    }
-  }, []);
-
   const handleCategoryClick = (categoryId) => {
     setCategory(categoryId);
-    setPage(1);
+    setPage(1); // 카테고리 변경 시 페이지 1로 리셋
   };
 
-  const handleProductClick = (uid) => {
-    router.push(`/product/${uid}`);
+  // Get the current page range (5 pages per group)
+  const getPageRange = () => {
+    const startPage = Math.floor((page - 1) / 5) * 5 + 1;
+    const endPage = Math.min(startPage + 4, totalPages);
+    return { startPage, endPage };
   };
 
   const { startPage, endPage } = getPageRange();
+
+  // 컴포넌트 마운트 시 저장된 상태와 스크롤 위치 복원
+  useEffect(() => {
+    const savedPage = sessionStorage.getItem('prevPage');
+    const savedCategory = sessionStorage.getItem('prevCategory');
+    const savedScrollPosition = sessionStorage.getItem('scrollPosition');
+
+    if (savedPage) {
+      setPage(parseInt(savedPage));
+      sessionStorage.removeItem('prevPage');
+    }
+    if (savedCategory) {
+      setCategory(savedCategory);
+      sessionStorage.removeItem('prevCategory');
+    }
+    if (savedScrollPosition) {
+      // 약간의 지연을 주어 컨텐츠가 로드된 후 스크롤 위치를 복원
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition));
+        sessionStorage.removeItem('scrollPosition');
+      }, 100);
+    }
+  }, []);
+
+  // 상품 클릭 핸들러 추가
+  const handleProductClick = (uid) => {
+    router.push(`/product/${uid}`);
+  };
 
   return (
     <div className="min-h-screen bg-white mt-12">
@@ -218,7 +164,7 @@ export default function CategoryProduct() {
                 <button
                   onClick={() => handleCategoryClick(cat.id)}
                   className={`
-                    w-20 h-20
+                    w-20 h-20 // 동그라미 크기 조정
                     rounded-full 
                     flex items-center justify-center
                     transition-all duration-200
@@ -227,7 +173,7 @@ export default function CategoryProduct() {
                         ? 'bg-orange-400 text-white shadow-lg transform scale-110'
                         : 'bg-orange-50 text-gray-700 hover:bg-pink-100 hover:scale-105'
                     }
-                  `}
+                `}
                 >
                   <span className="text-4xl">{cat.icon}</span>
                 </button>
@@ -249,24 +195,21 @@ export default function CategoryProduct() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
                 <div
-                  key={product.uid || product._id}
-                  onClick={() => handleProductClick(product.uid || product._id)}
+                  key={product.uid}
+                  onClick={() => handleProductClick(product.uid)}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border-2 border-pink-100 hover:border-pink-200 cursor-pointer"
                 >
                   <div className="relative group">
                     <div className="aspect-square overflow-hidden">
                       <img
-                        src={product.img || product.image}
+                        src={product.img}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.src = '/placeholder-image.png';
-                        }}
                       />
                     </div>
                     <div className="absolute top-3 left-3">
                       <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-l font-medium text-gray-700 line-clamp-2">
-                        {product.brand || '브랜드 정보 없음'}
+                        {product.brand}
                       </span>
                     </div>
                   </div>
@@ -278,14 +221,10 @@ export default function CategoryProduct() {
                     <div className="flex justify-between items-end">
                       <div>
                         <p className="text-sm text-gray-500 mb-1">
-                          {product.site || product.mall || '쇼핑몰 정보 없음'}
+                          {product.site}
                         </p>
                         <p className="text-xl font-bold text-black">
-                          {typeof product.sale_price === 'number'
-                            ? product.sale_price.toLocaleString() + '원'
-                            : product.sale_price ||
-                              product.price?.toLocaleString() + '원' ||
-                              '가격 정보 없음'}
+                          {product.sale_price}
                         </p>
                       </div>
                     </div>
@@ -294,63 +233,49 @@ export default function CategoryProduct() {
               ))}
             </div>
 
-            {products.length === 0 && !loading && (
+            {products.length === 0 && (
               <div className="text-center py-20">
-                <p className="text-gray-500 mb-2">
-                  {category === '전체'
-                    ? '현재 등록된 상품이 없습니다 🎈'
-                    : `${
-                        categories.find((c) => c.id === category)?.name ||
-                        category
-                      } 카테고리에 상품이 없습니다 🎈`}
-                </p>
-                <p className="text-sm text-gray-400">
-                  다른 카테고리를 선택해보세요!
+                <p className="text-gray-500">
+                  해당 카테고리의 상품이 없습니다 🎈
                 </p>
               </div>
             )}
 
-            {/* 페이지네이션 */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-12">
+            {products.length > 0 && (
+              <div className="flex justify-center items-center gap-1 mt-12">
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
                 >
                   ← 이전
                 </button>
 
-                {/* 페이지 번호 */}
-                <div className="flex gap-2">
+                {/* 페이지 번호 목록 */}
+                <div className="flex gap-1">
                   {Array.from(
                     { length: endPage - startPage + 1 },
-                    (_, i) => startPage + i
-                  ).map((pageNum) => (
+                    (_, idx) => startPage + idx
+                  ).map((n) => (
                     <button
-                      key={pageNum}
-                      onClick={() => setPage(pageNum)}
-                      className={`
-                        w-10 h-10 rounded-full
-                        ${
-                          pageNum === page
-                            ? 'bg-pink-100 text-pink-600'
-                            : 'bg-white hover:bg-pink-50 text-gray-700'
-                        }
-                        font-medium
-                      `}
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`rounded-full text-pink-600 font-medium ${
+                        page === n ? 'bg-pink-100' : 'bg-white hover:bg-pink-50'
+                      }`}
                     >
-                      {pageNum}
+                      {n}
                     </button>
                   ))}
                 </div>
 
+                {/* "Next" arrow for the next set of pages */}
                 {endPage < totalPages && (
                   <button
                     onClick={() => setPage(endPage + 1)}
-                    className="px-4 py-2 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50"
+                    className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 transition-colors duration-200 font-medium"
                   >
-                    다음 →
+                    → 다음
                   </button>
                 )}
               </div>
