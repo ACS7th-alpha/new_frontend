@@ -84,24 +84,22 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const accessToken = request.headers.get('Authorization');
-    console.log('[Cart API] Request received:', {
+    console.log('[Cart API] POST Request received:', {
       hasToken: !!accessToken,
       method: request.method,
       headers: Object.fromEntries(request.headers.entries()),
     });
 
     const cartData = await request.json();
-    console.log('[Cart API] Request body:', {
-      uid: cartData.uid,
-      name: cartData.name,
-      category: cartData.category,
-      price: cartData.sale_price,
-    });
+    console.log('[Cart API] Request body:', cartData);
 
     const baseUrl = 'http://hama-cart:3008';
-    console.log('[Cart API] Forwarding request to:', `${baseUrl}/cart`);
+    // 정확한 엔드포인트로 수정 (예: /cart/add 또는 /cart/items)
+    const endpoint = '/cart/add'; // 또는 실제 백엔드 엔드포인트
 
-    const response = await fetch(`${baseUrl}/cart`, {
+    console.log('[Cart API] Sending request to:', `${baseUrl}${endpoint}`);
+
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       method: 'POST',
       headers: {
         Authorization: accessToken,
