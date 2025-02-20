@@ -177,7 +177,7 @@ export default function HomePage() {
           console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
-              Authorization: `Bearer ${data.data.accessToken}`,
+              Authorization: `Bearer ${data.data.access_token}`,
             },
           });
 
