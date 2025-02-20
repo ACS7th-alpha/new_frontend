@@ -21,7 +21,7 @@ export default function ProductDetail({ params }) {
           throw new Error('상품 정보를 불러오는데 실패했습니다.');
         }
         const data = await response.json();
-        setProduct(data);
+        setProduct(data.data);
       } catch (error) {
         console.error('Error fetching product:', error);
       }
