@@ -1,18 +1,10 @@
 export async function GET(request) {
   try {
-    console.log('Children fetch request received');
-
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_AUTH_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     const accessToken = request.headers.get('Authorization');
     console.log('Authorization header:', accessToken ? 'Present' : 'Missing');
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/children`;
+    const baseUrl = 'http://hama-auth:3001';
+    const url = `${baseUrl}/auth/children`;
     console.log('Fetching children data from:', url);
 
     const response = await fetch(url, {
@@ -81,37 +73,25 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    console.log('Child registration request received');
+    console.log('[Children API] POST: Adding new child');
     const authorization = request.headers.get('Authorization');
 
     if (!authorization) {
-      console.error(
-        'Missing Authorization header in child registration request'
-      );
+      console.error('[Children API] POST: Missing Authorization header');
       return new Response(
         JSON.stringify({
           error: 'Authorization header is required',
           timestamp: new Date().toISOString(),
-          path: '/api/children',
         }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     const requestBody = await request.json();
-    if (!requestBody.name) {
-      return new Response(
-        JSON.stringify({
-          error: '아이의 이름은 필수 입력 항목입니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/children',
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('[Children API] POST: Request body:', requestBody);
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/children`;
-    const response = await fetch(url, {
+    const baseUrl = 'http://hama-auth:3001';
+    const response = await fetch(`${baseUrl}/auth/children`, {
       method: 'POST',
       headers: {
         Authorization: authorization,
@@ -122,172 +102,137 @@ export async function POST(request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
-      );
+      console.error('[Children API] POST: Backend error:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: data,
-        message: '아이 정보가 성공적으로 등록되었습니다.',
-        timestamp: new Date().toISOString(),
-        path: '/api/children',
-      }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(data), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    console.error('Error registering child:', error);
-    return new Response(
-      JSON.stringify({
-        error: '아이 등록에 실패했습니다.',
-        details: error.message,
-        timestamp: new Date().toISOString(),
-        path: '/api/children',
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[Children API] POST Error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
 
 export async function PUT(request) {
   try {
-    console.log('Child update request received');
+    console.log('[Children API] PUT: Updating child info');
     const authorization = request.headers.get('Authorization');
 
     if (!authorization) {
-      console.error('Missing Authorization header in child update request');
+      console.error('[Children API] PUT: Missing Authorization header');
       return new Response(
         JSON.stringify({
           error: 'Authorization header is required',
           timestamp: new Date().toISOString(),
-          path: '/api/children',
         }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     const requestBody = await request.json();
-    if (!requestBody.name) {
-      return new Response(
-        JSON.stringify({
-          error: '아이의 이름은 필수 입력 항목입니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/children',
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const childName = requestBody.name;
+    console.log('[Children API] PUT: Updating child:', childName);
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/children`;
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: authorization,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    const baseUrl = 'http://hama-auth:3001';
+    const response = await fetch(
+      `${baseUrl}/auth/children/${encodeURIComponent(childName)}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: authorization,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
-      );
+      console.error('[Children API] PUT: Backend error:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: data,
-        message: '아이 정보가 성공적으로 수정되었습니다.',
-        timestamp: new Date().toISOString(),
-        path: '/api/children',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    console.error('Error updating child:', error);
-    return new Response(
-      JSON.stringify({
-        error: '아이 정보 수정에 실패했습니다.',
-        details: error.message,
-        timestamp: new Date().toISOString(),
-        path: '/api/children',
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[Children API] PUT Error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
 
 export async function DELETE(request) {
   try {
-    console.log('Child deletion request received');
+    console.log('[Children API] DELETE: Removing child');
     const authorization = request.headers.get('Authorization');
 
     if (!authorization) {
-      console.error('Missing Authorization header in child deletion request');
+      console.error('[Children API] DELETE: Missing Authorization header');
       return new Response(
         JSON.stringify({
           error: 'Authorization header is required',
           timestamp: new Date().toISOString(),
-          path: '/api/children',
         }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     const { searchParams } = new URL(request.url);
-    const name = searchParams.get('name');
-    if (!name) {
+    const childName = searchParams.get('name');
+
+    if (!childName) {
+      console.error('[Children API] DELETE: Missing child name');
       return new Response(
         JSON.stringify({
           error: '삭제할 아이의 이름이 필요합니다.',
           timestamp: new Date().toISOString(),
-          path: '/api/children',
         }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const url = `${
-      process.env.NEXT_PUBLIC_BACKEND_URL
-    }/children?name=${encodeURIComponent(name)}`;
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: { Authorization: authorization },
-    });
+    console.log('[Children API] DELETE: Removing child:', childName);
+
+    const baseUrl = 'http://hama-auth:3001';
+    const response = await fetch(
+      `${baseUrl}/auth/children/${encodeURIComponent(childName)}`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: authorization },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
-      );
+      console.error('[Children API] DELETE: Backend error:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: '아이 정보가 성공적으로 삭제되었습니다.',
-        deletedName: name,
-        timestamp: new Date().toISOString(),
-        path: '/api/children',
+        message: '아이 정보가 삭제되었습니다.',
+        deletedName: childName,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error deleting child:', error);
-    return new Response(
-      JSON.stringify({
-        error: '아이 정보 삭제에 실패했습니다.',
-        details: error.message,
-        timestamp: new Date().toISOString(),
-        path: '/api/children',
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[Children API] DELETE Error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
