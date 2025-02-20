@@ -62,13 +62,10 @@ export default function CategoryProduct() {
 
       setLoading(true);
       try {
-        // URL 인코딩 방식 변경
         let url = '/api/search';
         if (category !== '전체') {
-          // 카테고리 파라미터 처리 방식 수정
-          const encodedCategory = encodeURIComponent(
-            category.replace(/_/g, ' ')
-          );
+          // 카테고리 파라미터 처리 방식 수정 - 언더스코어 유지
+          const encodedCategory = encodeURIComponent(category); // '_' 를 공백으로 변환하지 않음
           url += `?category=${encodedCategory}&page=${page}&limit=${limit}`;
         } else {
           url += `?page=${page}&limit=${limit}`;
@@ -76,7 +73,13 @@ export default function CategoryProduct() {
 
         console.log('[CategoryProduct] Request URL:', url);
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+          },
+        });
+
         console.log('[CategoryProduct] Raw Response:', {
           status: response.status,
           ok: response.ok,
@@ -85,7 +88,11 @@ export default function CategoryProduct() {
         });
 
         const data = await response.json();
-        console.log('[CategoryProduct] Raw API Response:', data);
+        console.log('[CategoryProduct] Raw API Response:', {
+          ...data,
+          requestedCategory: category,
+          encodedUrl: url,
+        });
 
         if (data.success) {
           console.log('[CategoryProduct] Products data:', {
