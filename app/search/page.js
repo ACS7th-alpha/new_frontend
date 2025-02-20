@@ -23,7 +23,7 @@ function SearchContent() {
         const url =
           keyword === '전체'
             ? `/api/products?random=${Math.random()}`
-            : `/api/products?keyword=${encodeURIComponent(
+            : `/api/search?keyword=${encodeURIComponent(
                 keyword
               )}&page=${page}&limit=${limit}`;
 
@@ -39,12 +39,13 @@ function SearchContent() {
 
         if (data.success) {
           setProducts(Array.isArray(data.data) ? data.data : []);
-          setTotalPages(Math.ceil(data.total / limit)); // Calculate total pages
-          setTotalCount(data.total || 0); // 총 건수 설정
+          setTotalPages(Math.ceil(data.meta?.total / limit));
+          setTotalCount(data.meta?.total || 0);
           console.log('검색 완료:', {
             keyword,
             count: data.data.length,
-            firstProductName: data.data[0]?.name, // 첫 번째 상품 이름 로깅
+            firstProductName: data.data[0]?.name,
+            total: data.meta?.total
           });
         } else {
           console.log('검색 실패:', data.message);
@@ -67,7 +68,7 @@ function SearchContent() {
       setProducts([]);
       setLoading(false);
     }
-  }, [keyword, page]);
+  }, [keyword, page, limit]);
 
   if (loading) {
     return (
