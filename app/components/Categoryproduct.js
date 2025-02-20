@@ -62,11 +62,14 @@ export default function CategoryProduct() {
 
       setLoading(true);
       try {
+        // URL 인코딩 방식 변경
         let url = '/api/search';
         if (category !== '전체') {
-          url += `?category=${encodeURIComponent(
-            category
-          )}&page=${page}&limit=${limit}`;
+          // 카테고리 파라미터 처리 방식 수정
+          const encodedCategory = encodeURIComponent(
+            category.replace(/_/g, ' ')
+          );
+          url += `?category=${encodedCategory}&page=${page}&limit=${limit}`;
         } else {
           url += `?page=${page}&limit=${limit}`;
         }
@@ -74,33 +77,32 @@ export default function CategoryProduct() {
         console.log('[CategoryProduct] Request URL:', url);
 
         const response = await fetch(url);
-        console.log('[CategoryProduct] API Response:', {
+        console.log('[CategoryProduct] Raw Response:', {
           status: response.status,
           ok: response.ok,
           statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
         });
 
         const data = await response.json();
-        console.log('[CategoryProduct] Products data:', {
-          success: data.success,
-          totalProducts: data.data?.length || 0,
-          meta: data.meta,
-          timestamp: new Date().toISOString(),
-        });
+        console.log('[CategoryProduct] Raw API Response:', data);
 
         if (data.success) {
-          setProducts(data.data);
-          setTotalPages(Math.ceil(data.meta.total / limit));
-          console.log('[CategoryProduct] Updated state:', {
-            productsCount: data.data.length,
-            totalPages: Math.ceil(data.meta.total / limit),
-            currentPage: page,
+          console.log('[CategoryProduct] Products data:', {
+            success: data.success,
+            totalProducts: data.data?.length || 0,
+            firstProduct: data.data?.[0],
+            meta: data.meta,
+            timestamp: new Date().toISOString(),
           });
+
+          setProducts(data.data || []);
+          setTotalPages(Math.ceil((data.meta?.total || 0) / limit));
         } else {
-          console.error(
-            '[CategoryProduct] Failed to fetch products:',
-            data.error
-          );
+          console.error('[CategoryProduct] Failed to fetch products:', {
+            error: data.error,
+            message: data.message,
+          });
           setProducts([]);
         }
       } catch (error) {
@@ -113,6 +115,7 @@ export default function CategoryProduct() {
         setLoading(false);
       }
     }
+
     fetchProducts();
   }, [category, page]);
 
