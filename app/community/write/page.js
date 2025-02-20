@@ -119,7 +119,7 @@ export default function WritePage() {
         console.log('[WritePage] Image upload successful:', imageData);
 
         // 이미지 URL 추출 수정
-        imageUrls = imageData.images || []; // data.images 배열 사용
+        imageUrls = imageData.data[0].imageUrls || []; // data[0].imageUrls 배열 사용
         console.log('[WritePage] Extracted image URLs:', imageUrls);
       }
 
