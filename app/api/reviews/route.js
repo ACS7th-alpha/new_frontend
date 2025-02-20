@@ -1,8 +1,8 @@
 export async function GET(request) {
   try {
     console.log('Related reviews fetch request received');
-
-    const url = `${process.env.BACKEND_URL}/reviews`;
+    const baseUrl = 'http://hama-review:3004';
+    const url = `${baseUrl}/reviews`;
     console.log('Fetching reviews from:', url);
 
     const response = await fetch(url, {
@@ -78,6 +78,14 @@ export async function POST(request) {
     console.log('Review creation request received');
     const authorization = request.headers.get('Authorization');
 
+    const baseUrl = 'http://hama-review:3004';
+
+    // 환경 변수 로깅 추가
+    console.log('Environment:', {
+      baseUrl,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+
     if (!authorization) {
       console.error('Missing Authorization header in review creation request');
       return new Response(
@@ -106,7 +114,7 @@ export async function POST(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews`;
+    const url = `${baseUrl}/reviews`;
     console.log('Sending review to backend:', {
       url,
       data: reviewData,
@@ -169,6 +177,8 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
+  const baseUrl = 'http://hama-review:3004';
+
   try {
     console.log('All reviews deletion request received');
     const authorization = request.headers.get('Authorization');
@@ -187,7 +197,7 @@ export async function DELETE(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews/all`;
+    const url = `${baseUrl}/reviews/all`;
     console.log('Deleting all reviews at:', url);
 
     const response = await fetch(url, {
