@@ -36,7 +36,16 @@ export async function POST(request) {
       throw new Error(data.message || '회원가입에 실패했습니다.');
     }
 
-    return new Response(JSON.stringify(data), {
+    // 응답 데이터에 사용자 정보 포함
+    const responseData = {
+      ...data,
+      user: {
+        ...data.user,
+        photo: body.user?.photo, // 사진 URL 추가
+      },
+    };
+
+    return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
