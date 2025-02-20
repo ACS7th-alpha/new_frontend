@@ -62,8 +62,9 @@ export default function CategoryProduct() {
 
         if (data.success) {
           setProducts(data.data);
-          // data.meta.total을 사용하여 전체 상품 수를 가져옴
-          const totalItems = data.meta?.total || 0;
+          // API 응답에서 total 값을 정확하게 가져옴
+          const totalItems = data.meta?.total ?? 0;
+          // 전체 페이지 수 계산 (최소 1페이지)
           const calculatedTotalPages = Math.max(
             Math.ceil(totalItems / limit),
             1
@@ -75,6 +76,7 @@ export default function CategoryProduct() {
             totalItems,
             currentPage: page,
             totalPages: calculatedTotalPages,
+            meta: data.meta, // 디버깅을 위해 meta 정보도 로깅
           });
         } else {
           console.error('[CategoryProduct] API Error:', data.error);
@@ -91,7 +93,7 @@ export default function CategoryProduct() {
     }
 
     fetchProducts();
-  }, [category, page]);
+  }, [category, page, limit]); // limit도 의존성 배열에 추가
 
   const handleCategoryClick = (categoryId) => {
     setCategory(categoryId);
