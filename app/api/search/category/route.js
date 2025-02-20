@@ -37,13 +37,21 @@ export async function GET(request) {
     }
 
     const data = await response.json();
-    console.log('[Category Search] Backend response:', data);
+    console.log('[Category Search] Backend response:', {
+      rawData: data,
+      isArray: Array.isArray(data),
+      hasData: Boolean(data.data),
+      productsLength: Array.isArray(data)
+        ? data.length
+        : data.data?.length || 0,
+      metaTotal: data.meta?.total,
+    });
 
     // 응답 데이터 구조화
     const products = Array.isArray(data) ? data : data.data || [];
     const total = data.meta?.total || products.length;
 
-    return Response.json({
+    const responseData = {
       success: true,
       data: products,
       meta: {
@@ -53,7 +61,11 @@ export async function GET(request) {
         category,
       },
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    console.log('[Category Search] Structured response:', responseData);
+
+    return Response.json(responseData);
   } catch (error) {
     console.error('[Category Search] Error:', error);
     return Response.json(
