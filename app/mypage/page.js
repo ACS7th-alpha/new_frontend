@@ -998,15 +998,30 @@ export default function MyPage() {
                       key={post._id}
                       className="p-4 bg-white rounded-lg shadow flex justify-between items-center"
                     >
-                      <div>
-                        <h3 className="font-semibold">{post.name}</h3>
-                        <p className="text-gray-600 text-sm">
-                          {post.description}
-                        </p>
-                        <p className="text-gray-500 text-xs">
-                          연령대: {post.ageGroup} |
-                          {post.recommended ? ' 추천함' : ' 추천안함'}
-                        </p>
+                      <div className="flex gap-4 items-center">
+                        <div className="w-20 h-20 flex-shrink-0">
+                          {post.thumbnailUrls && post.thumbnailUrls[0] ? (
+                            <img
+                              src={post.thumbnailUrls[0]}
+                              alt={post.name}
+                              className="w-full h-full object-cover rounded"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
+                              <span className="text-gray-400">No Image</span>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{post.name}</h3>
+                          <p className="text-gray-600 text-sm">
+                            {post.description}
+                          </p>
+                          <p className="text-gray-500 text-xs">
+                            연령대: {post.ageGroup} |
+                            {post.recommended ? ' 추천함' : ' 추천안함'}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Link
