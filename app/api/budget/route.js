@@ -201,6 +201,7 @@ export async function DELETE(request) {
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
+
     const baseUrl = 'http://hama-budget:3005';
     const url = `${baseUrl}/budget`;
     console.log('Deleting budget at:', url);
@@ -209,6 +210,19 @@ export async function DELETE(request) {
       method: 'DELETE',
       headers: { Authorization: authorization },
     });
+
+    // 404 응답을 성공으로 처리
+    if (response.status === 404) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: '예산 정보가 이미 존재하지 않습니다.',
+          timestamp: new Date().toISOString(),
+          path: '/api/budget',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
