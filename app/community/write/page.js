@@ -120,8 +120,8 @@ export default function WritePage() {
 
         // 리뷰 데이터 전송
         const reviewData = {
-          name: title.trim(),
-          description: content.trim(),
+          title: title.trim(),
+          content: content.trim(),
           ageGroup: age.trim(),
           purchaseLink: store.trim() || null,
           recommended: isRecommended,
