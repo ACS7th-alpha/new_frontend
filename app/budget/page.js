@@ -210,7 +210,7 @@ export default function BudgetPage() {
     }
   };
 
-  const fetchSpendingData = async () => {
+  const fetchSpendingData = async (year, month) => {
     try {
       const accessToken = localStorage.getItem('access_token');
       const response = await fetch('/api/budget/spending', {
@@ -255,8 +255,8 @@ export default function BudgetPage() {
             const filteredDetails = item.details.filter((detail) => {
               const detailDate = new Date(detail.date);
               return (
-                detailDate.getFullYear() === selectedYear &&
-                detailDate.getMonth() + 1 === selectedMonth
+                detailDate.getFullYear() === year &&
+                detailDate.getMonth() + 1 === month
               );
             });
 
@@ -310,8 +310,8 @@ export default function BudgetPage() {
   }, [currentDate]); // currentDate가 변경될 때마다 실행
 
   useEffect(() => {
-    fetchSpendingData();
-  }, []);
+    fetchSpendingData(currentDate.getFullYear(), currentDate.getMonth());
+  }, [currentDate]);
 
   // 카테고리 이름 변환 함수
   const getCategoryName = (category) => {

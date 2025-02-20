@@ -88,7 +88,7 @@ export default function StatisticsPage() {
         }
 
         const data = await response.json();
-        processData(data.spending || []);
+        processData(data?.data?.spending || []);
       } catch (error) {
         console.error('Error:', error);
         return new Response(
