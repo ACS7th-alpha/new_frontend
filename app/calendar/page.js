@@ -540,10 +540,9 @@ function CalendarContent() {
     formData.append('file', file);
 
     try {
-      // Authorization 헤더 제거하고 단순히 파일명만 전송
-      const response = await fetch('/api/upload/analyze', {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
-        body: formData, // FormData는 유지 (파일 정보 전달을 위해)
+        body: formData,
       });
 
       if (!response.ok) {

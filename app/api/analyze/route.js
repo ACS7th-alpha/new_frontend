@@ -3,15 +3,15 @@ export async function POST(request) {
     const formData = await request.formData();
     const file = formData.get('file');
 
-    console.log('Receipt analysis request data:', {
-      hasFile: !!file,
+    console.log('Receipt analysis request received:', {
       fileName: file?.name,
     });
 
     const baseUrl = 'http://hama-image-upload:3002';
     const url = `${baseUrl}/analyze`;
 
-    // 파일명만 전송
+    console.log('Sending request to:', url);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -24,41 +24,34 @@ export async function POST(request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Backend receipt analysis error:', {
+      console.error('Image analysis service error:', {
         status: response.status,
         error: errorText,
+        url: url,
       });
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Image analysis service error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+    console.log('Analysis service response:', data);
 
     return new Response(
       JSON.stringify({
         success: true,
         data: data,
         message: '영수증 분석이 성공적으로 완료되었습니다.',
-        timestamp: new Date().toISOString(),
-        path: '/api/upload/analyze',
       }),
       {
         status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, private',
-          Pragma: 'no-cache',
-        },
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
-    console.error('Receipt Analysis API Error:', error);
+    console.error('Analysis service error:', error);
     return new Response(
       JSON.stringify({
         error: '영수증 분석에 실패했습니다.',
         details: error.message,
-        timestamp: new Date().toISOString(),
-        path: '/api/upload/analyze',
       }),
       {
         status: 500,
