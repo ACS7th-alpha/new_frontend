@@ -23,7 +23,7 @@ export default function SearchPage() {
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/products/search?query=${encodeURIComponent(
+          `/api/search?keyword=${encodeURIComponent(
             query
           )}&page=${currentPage}&limit=${limit}`
         );
@@ -34,15 +34,15 @@ export default function SearchPage() {
         const data = await response.json();
         console.log('[SearchPage] API Response:', data);
 
-        // 응답 데이터가 배열인 경우 직접 사용
-        if (Array.isArray(data)) {
-          setProducts(data);
-          setTotalCount(data.length);
+        if (data.success) {
+          setProducts(data.data || []);
+          const totalItems = data.meta?.total || 0;
           const calculatedTotalPages = Math.max(
-            Math.ceil(data.length / limit),
+            Math.ceil(totalItems / limit),
             1
           );
           setTotalPages(calculatedTotalPages);
+          setTotalCount(totalItems);
         }
       } catch (error) {
         console.error('[SearchPage] Error:', error);
