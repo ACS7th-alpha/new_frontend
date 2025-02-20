@@ -1,74 +1,63 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/app/components/Header';
+import { unstable_noStore as noStore } from 'next/cache';
 
 // SearchContent 컴포넌트로 useSearchParams를 사용하는 부분을 분리
 function SearchContent() {
   const searchParams = useSearchParams();
-  const keyword = searchParams.get('keyword');
+  const router = useRouter();
+  const query = searchParams.get('query');
   const [products, setProducts] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0); // 총 건수 상태 추가
-  const [page, setPage] = useState(1);
   const limit = 40;
 
   useEffect(() => {
-    async function fetchSearchResults() {
-      console.log('검색 시작:', keyword);
+    const fetchSearchResults = async () => {
+      if (!query) return;
+
       setLoading(true);
       try {
-        const url =
-          keyword === '전체'
-            ? `/api/products?random=${Math.random()}`
-            : `/api/search?keyword=${encodeURIComponent(
-                keyword
-              )}&page=${page}&limit=${limit}`;
-
-        const response = await fetch(url, {
-          headers: {
-            'Cache-Control': 'no-store',
-          },
-        });
-        console.log('검색 응답 상태:', response.status);
+        const response = await fetch(
+          `/api/products/search?query=${encodeURIComponent(
+            query
+          )}&page=${currentPage}&limit=${limit}`
+        );
+        if (!response.ok) {
+          throw new Error('검색 실패');
+        }
 
         const data = await response.json();
-        console.log('검색된 상품 수:', data.data?.length || 0);
+        console.log('[SearchPage] API Response:', data);
 
         if (data.success) {
-          setProducts(Array.isArray(data.data) ? data.data : []);
-          setTotalPages(Math.ceil(data.meta?.total / limit));
-          setTotalCount(data.meta?.total || 0);
-          console.log('검색 완료:', {
-            keyword,
-            count: data.data.length,
-            firstProductName: data.data[0]?.name,
-            total: data.meta?.total,
-          });
-        } else {
-          console.log('검색 실패:', data.message);
-          setProducts([]);
-          setTotalCount(0);
+          setProducts(data.data || []);
+          // count가 실제 총 상품 수를 나타내므로 이를 사용
+          const totalItems = data.count ?? 0;
+          const calculatedTotalPages = Math.max(
+            Math.ceil(totalItems / limit),
+            1
+          );
+          setTotalPages(calculatedTotalPages);
+          setTotalCount(totalItems);
         }
       } catch (error) {
-        console.log('검색 오류:', error.message);
+        console.error('[SearchPage] Error:', error);
         setProducts([]);
         setTotalCount(0);
+        setTotalPages(1);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    if (keyword) {
-      fetchSearchResults();
-    } else {
-      console.log('검색어 없음');
-      setProducts([]);
-      setLoading(false);
-    }
-  }, [keyword, page, limit]);
+    fetchSearchResults();
+  }, [query, currentPage]);
 
   if (loading) {
     return (
@@ -79,7 +68,7 @@ function SearchContent() {
   }
 
   const getPageRange = () => {
-    const startPage = Math.floor((page - 1) / 5) * 5 + 1;
+    const startPage = Math.floor((currentPage - 1) / 5) * 5 + 1;
     const endPage = Math.min(startPage + 4, totalPages);
     return { startPage, endPage };
   };
@@ -93,7 +82,7 @@ function SearchContent() {
         {/* 검색 결과 헤더 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            &ldquo;{keyword}&rdquo; 검색 결과
+            &ldquo;{query}&rdquo; 검색 결과
           </h1>
           <p className="text-xl text-gray-600">
             총{' '}
@@ -142,8 +131,10 @@ function SearchContent() {
             {products.length > 0 && (
               <div className="flex justify-center items-center gap-1 mt-12">
                 <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
                   className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
                 >
                   ← 이전
@@ -157,9 +148,11 @@ function SearchContent() {
                   ).map((n) => (
                     <button
                       key={n}
-                      onClick={() => setPage(n)}
+                      onClick={() => setCurrentPage(n)}
                       className={`rounded-full text-pink-600 font-medium ${
-                        page === n ? 'bg-pink-100' : 'bg-white hover:bg-pink-50'
+                        currentPage === n
+                          ? 'bg-pink-100'
+                          : 'bg-white hover:bg-pink-50'
                       }`}
                     >
                       {n}
@@ -170,7 +163,7 @@ function SearchContent() {
                 {/* "Next" arrow for the next set of pages */}
                 {endPage < totalPages && (
                   <button
-                    onClick={() => setPage(endPage + 1)}
+                    onClick={() => setCurrentPage(endPage + 1)}
                     className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 transition-colors duration-200 font-medium"
                   >
                     → 다음
@@ -187,6 +180,7 @@ function SearchContent() {
 
 // 메인 페이지 컴포넌트
 export default function SearchPage() {
+  noStore();
   return (
     <Suspense
       fallback={
