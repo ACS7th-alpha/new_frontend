@@ -19,8 +19,12 @@ export default function MyPage() {
   }); // 새로운 자녀 정보 상태
   const [isAddingChild, setIsAddingChild] = useState(false); // 추가 모드 상태
   const [isEditing, setIsEditing] = useState(false);
-  const [newNickname, setNewNickname] = useState(userInfo?.nickname || '');
-  const [newBudget, setNewBudget] = useState(userInfo?.monthlyBudget || 0);
+  const [newNickname, setNewNickname] = useState(
+    userInfo?.user?.nickname || ''
+  );
+  const [newBudget, setNewBudget] = useState(
+    userInfo?.user?.monthlyBudget || 0
+  );
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -31,9 +35,9 @@ export default function MyPage() {
     if (userData) {
       const parsedData = JSON.parse(userData);
       console.log('[MyPage] Parsed user data:', {
-        nickname: parsedData.nickname,
-        hasChildren: !!parsedData.children,
-        childrenCount: parsedData.children?.length,
+        nickname: parsedData?.user?.nickname,
+        hasChildren: !!parsedData?.user?.children,
+        childrenCount: parsedData?.user?.children?.length,
       });
       setUserInfo(parsedData);
     }
@@ -141,7 +145,7 @@ export default function MyPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!userInfo) {
+    if (!userInfo?.user) {
       console.log('[MyPage] Delete account cancelled: No user info');
       return;
     }
@@ -226,7 +230,7 @@ export default function MyPage() {
   };
 
   const handleDeleteChild = async (index) => {
-    const childToDelete = userInfo.children[index];
+    const childToDelete = userInfo?.user?.children[index];
     const confirmDelete = window.confirm(
       `${childToDelete.name}의 정보를 정말 삭제하시겠습니까?`
     );
@@ -253,7 +257,7 @@ export default function MyPage() {
       }
 
       // 삭제 성공 시, 상태에서 해당 아기 정보 제거
-      const updatedChildren = userInfo.children.filter(
+      const updatedChildren = userInfo?.user?.children?.filter(
         (_, idx) => idx !== index
       );
       setUserInfo((prev) => {
@@ -271,7 +275,7 @@ export default function MyPage() {
 
   const handleEditChild = (index, field, value) => {
     setUserInfo((prev) => {
-      const updatedChildren = prev.children.map((child, i) =>
+      const updatedChildren = prev?.user?.children?.map((child, i) =>
         i === index ? { ...child, [field]: value } : child
       );
       const updatedUserInfo = { ...prev, children: updatedChildren };
@@ -285,7 +289,7 @@ export default function MyPage() {
   };
 
   const handleSaveChild = async (index) => {
-    const child = userInfo.children[index];
+    const child = userInfo?.user?.children[index];
     const originalName = childToEdit.originalName; // 수정 전의 이름
     const updatedName = child.name; // 수정된 이름
     const updatedGender = child.gender; // 수정된 성별
@@ -330,7 +334,7 @@ export default function MyPage() {
       }
 
       // 수정 성공 시, 상태에서 해당 아기 정보 업데이트
-      const updatedChildren = userInfo.children.map((child, idx) =>
+      const updatedChildren = userInfo?.user?.children?.map((child, idx) =>
         idx === index
           ? {
               ...child,
@@ -342,7 +346,10 @@ export default function MyPage() {
       );
 
       setUserInfo((prev) => {
-        const updatedUserInfo = { ...prev, children: updatedChildren };
+        const updatedUserInfo = {
+          ...prev,
+          user: { ...prev.user, children: updatedChildren },
+        };
         localStorage.setItem('user', JSON.stringify(updatedUserInfo));
         return updatedUserInfo;
       });
@@ -414,8 +421,8 @@ export default function MyPage() {
 
   const handleEditProfile = () => {
     setIsEditing(true);
-    setNewNickname(userInfo.nickname);
-    setNewBudget(userInfo.monthlyBudget);
+    setNewNickname(userInfo?.user?.nickname || '');
+    setNewBudget(userInfo?.user?.monthlyBudget || 0);
   };
 
   const handleSaveProfile = async () => {
@@ -452,11 +459,11 @@ export default function MyPage() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setNewNickname(userInfo.nickname);
-    setNewBudget(userInfo.monthlyBudget);
+    setNewNickname(userInfo?.user?.nickname || '');
+    setNewBudget(userInfo?.user?.monthlyBudget || 0);
   };
 
-  if (!userInfo) {
+  if (!userInfo?.user) {
     return (
       <div className="min-h-screen bg-pink-50">
         <Header />
@@ -476,7 +483,7 @@ export default function MyPage() {
           <div className="flex items-center gap-8">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-pink-200 shadow-lg">
               <img
-                src={userInfo.photo}
+                src={userInfo?.user?.photo}
                 alt="Profile"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
@@ -484,9 +491,9 @@ export default function MyPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                {userInfo.nickname} <span className="ml-2">👋</span>
+                {userInfo?.user?.nickname} <span className="ml-2">👋</span>
               </h1>
-              <p className="text-gray-600">{userInfo.email}</p>
+              <p className="text-gray-600">{userInfo?.user?.email}</p>
             </div>
           </div>
         </div>
@@ -545,7 +552,9 @@ export default function MyPage() {
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <p className="text-gray-600 mb-2">이메일</p>
-                  <p className="text-lg font-semibold">{userInfo.email}</p>
+                  <p className="text-lg font-semibold">
+                    {userInfo?.user?.email}
+                  </p>
                   <div className="mt-8">
                     <p className="text-gray-600 mb-2">당월 예산</p>
                     {isEditing ? (
@@ -557,7 +566,7 @@ export default function MyPage() {
                       />
                     ) : (
                       <p className="text-lg font-semibold">
-                        {Number(userInfo.monthlyBudget)?.toLocaleString(
+                        {Number(userInfo?.user?.monthlyBudget)?.toLocaleString(
                           'ko-KR'
                         )}
                         원
@@ -575,7 +584,9 @@ export default function MyPage() {
                       className="border border-gray-300 rounded-md p-2 w-full"
                     />
                   ) : (
-                    <p className="text-lg font-semibold">{userInfo.nickname}</p>
+                    <p className="text-lg font-semibold">
+                      {userInfo?.user?.nickname}
+                    </p>
                   )}
                 </div>
               </div>
@@ -678,8 +689,9 @@ export default function MyPage() {
                   </div>
                 </div>
               )}
-              {userInfo.children && userInfo.children.length > 0 ? (
-                userInfo.children.map((child, index) => (
+              {userInfo?.user?.children &&
+              userInfo?.user?.children.length > 0 ? (
+                userInfo?.user?.children.map((child, index) => (
                   <div
                     key={index}
                     className="rounded-2xl p-6 flex justify-between items-center"
@@ -777,7 +789,7 @@ export default function MyPage() {
                           >
                             수정
                           </button>
-                          {userInfo.children.length > 1 && (
+                          {userInfo?.user?.children?.length > 1 && (
                             <button
                               onClick={() => handleDeleteChild(index)}
                               className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
