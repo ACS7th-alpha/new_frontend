@@ -274,17 +274,46 @@ export default function MyPage() {
   };
 
   const handleEditChild = (index, field, value) => {
+    console.log('[MyPage] Editing child:', { index, field, value });
+
     setUserInfo((prev) => {
-      const updatedChildren = prev?.user?.children?.map((child, i) =>
-        i === index ? { ...child, [field]: value } : child
-      );
-      const updatedUserInfo = { ...prev, children: updatedChildren };
+      // 먼저 children 배열이 있는지 확인
+      if (!prev?.user?.children) {
+        console.error('[MyPage] No children array found in userInfo');
+        return prev;
+      }
+
+      // 기존 children 배열 복사
+      const updatedChildren = [...prev.user.children];
+
+      // 해당 인덱스의 child 업데이트
+      updatedChildren[index] = {
+        ...updatedChildren[index],
+        [field]: value,
+      };
+
+      console.log('[MyPage] Updated child:', updatedChildren[index]);
+
+      // 전체 userInfo 업데이트
+      const updatedUserInfo = {
+        ...prev,
+        user: {
+          ...prev.user,
+          children: updatedChildren,
+        },
+      };
+
+      console.log('[MyPage] Full updated userInfo:', updatedUserInfo);
+
+      // localStorage도 함께 업데이트
       localStorage.setItem('user', JSON.stringify(updatedUserInfo));
+
       return updatedUserInfo;
     });
   };
 
   const handleEditClick = (index, originalName) => {
+    console.log('[MyPage] Entering edit mode:', { index, originalName });
     setChildToEdit({ index, originalName });
   };
 
