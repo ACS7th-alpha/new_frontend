@@ -113,10 +113,17 @@ function SignupForm() {
             typeof userInfo === 'string' ? JSON.parse(userInfo) : userInfo;
           console.log('파싱된 userInfo:', parsedUserInfo);
 
+          // 메인페이지 구조에 맞게 데이터 구조화
+          const formattedUserInfo = {
+            user: {
+              ...parsedUserInfo, // id, email, name, photo, nickname, monthlyBudget, children 등
+            },
+          };
+
           // 토큰과 사용자 정보 저장
           localStorage.setItem('access_token', access_token);
           localStorage.setItem('refresh_token', refresh_token);
-          localStorage.setItem('user', JSON.stringify(parsedUserInfo)); // 객체를 문자열로 변환하여 저장
+          localStorage.setItem('user', JSON.stringify(formattedUserInfo));
           localStorage.removeItem('spendingData');
           localStorage.removeItem('budget');
 
