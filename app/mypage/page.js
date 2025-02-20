@@ -134,7 +134,7 @@ export default function MyPage() {
         count: responseData?.data?.length || 0,
       });
 
-      if (!responseData?.data) {
+      if (!Array.isArray(responseData.data)) {
         console.error('[MyPage] Invalid response format:', responseData);
         throw new Error('서버 응답 형식이 올바르지 않습니다.');
       }
