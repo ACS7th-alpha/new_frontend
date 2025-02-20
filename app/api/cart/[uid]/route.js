@@ -30,8 +30,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-  
-    const baseUrl = 'http://hama-cart:3003';
+    const baseUrl = 'http://hama-cart:3008';
     const url = `${baseUrl}/cart/${uid}`;
     console.log('Deleting cart item at:', url);
 
