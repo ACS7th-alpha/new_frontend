@@ -94,20 +94,24 @@ export default function WritePage() {
           imageFormData.append('files', image.file);
         });
 
+        const token = localStorage.getItem('access_token');
+        console.log(
+          '[WritePage] Token for upload:',
+          token ? 'Present' : 'Missing'
+        );
+
         console.log('[WritePage] Uploading images...');
         const imageUploadResponse = await fetch('/api/upload/multiple', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${token}`,
           },
           body: imageFormData,
         });
 
         if (!imageUploadResponse.ok) {
-          console.error(
-            '[WritePage] Image upload failed:',
-            await imageUploadResponse.text()
-          );
+          const errorData = await imageUploadResponse.json();
+          console.error('[WritePage] Image upload error:', errorData);
           throw new Error(`이미지 업로드 실패: ${imageUploadResponse.status}`);
         }
 
@@ -125,22 +129,25 @@ export default function WritePage() {
         imageUrls: images.map((image) => image.preview),
       };
 
-      console.log('전송할 리뷰 데이터:', reviewData);
+      const token = localStorage.getItem('access_token');
+      console.log(
+        '[WritePage] Token for review:',
+        token ? 'Present' : 'Missing'
+      );
 
+      console.log('전송할 리뷰 데이터:', reviewData);
       const reviewResponse = await fetch('/api/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(reviewData),
       });
 
       if (!reviewResponse.ok) {
-        console.error(
-          '[WritePage] Review submission failed:',
-          await reviewResponse.text()
-        );
+        const errorData = await reviewResponse.json();
+        console.error('[WritePage] Review submission error:', errorData);
         throw new Error(`리뷰 등록 실패: ${reviewResponse.status}`);
       }
 
