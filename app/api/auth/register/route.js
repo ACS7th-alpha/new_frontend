@@ -3,7 +3,6 @@ export async function POST(request) {
     const body = await request.json();
     console.log('[API] Register request received:', body);
 
-    // 백엔드 API 형식에 맞게 데이터 구조화
     const requestData = {
       user: {
         googleId: body.user?.googleId,
@@ -36,14 +35,22 @@ export async function POST(request) {
       throw new Error(data.message || '회원가입에 실패했습니다.');
     }
 
-    // 응답 데이터에 사용자 정보 포함
+    // 응답 데이터에 필요한 사용자 정보 포함
     const responseData = {
-      ...data,
+      access_token: data?.access_token,
+      refresh_token: data?.refresh_token,
       user: {
-        ...data.user,
-        photo: body.user?.photo, // 사진 URL 추가
+        ...data?.user,
+        photo: body.user?.photo,
+        email: body.user?.email,
+        name: body.user?.name,
+        nickname: body.additionalInfo?.nickname,
+        monthlyBudget: body.additionalInfo?.monthlyBudget,
+        children: body.additionalInfo?.children,
       },
     };
+
+    console.log('[API] Enhanced response data:', responseData);
 
     return new Response(JSON.stringify(responseData), {
       status: 200,
