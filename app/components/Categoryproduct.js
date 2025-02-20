@@ -57,8 +57,15 @@ export default function CategoryProduct() {
 
         const response = await fetch(url);
         const data = await response.json();
-        setProducts(Array.isArray(data.data) ? data.data : []);
-        setTotalPages(Math.ceil(data.total / limit)); // Calculate total pages
+
+        // route.js의 응답 구조에 맞게 수정
+        if (data.success) {
+          setProducts(data.data); // data.data에 정규화된 products 배열이 있음
+          setTotalPages(Math.ceil(data.meta.total / limit)); // meta에서 total 값 사용
+        } else {
+          console.error('Failed to fetch products:', data.error);
+          setProducts([]);
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
         setProducts([]);
