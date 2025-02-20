@@ -44,7 +44,7 @@ export async function GET(request) {
       status: response.status,
       hasData: !!data.data,
       dataLength: data.data?.length || 0,
-      total: data.meta?.total,
+      total: data.total,
       firstItem: data.data?.[0],
       metaInfo: data.meta,
     });
@@ -54,7 +54,7 @@ export async function GET(request) {
       success: true,
       data: data.data || [],
       meta: {
-        total: data.meta?.total || 0,
+        total: data.total || 0,
         page: Number(page),
         limit: Number(limit),
         keyword,
