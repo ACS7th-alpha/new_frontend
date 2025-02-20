@@ -153,27 +153,22 @@ export default function MyPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!userInfo?.user) {
-      console.log('[MyPage] Delete account cancelled: No user info');
+    if (!confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
       return;
     }
 
-    const confirmDelete = window.confirm('정말 계정을 삭제하시겠습니까?');
-    if (!confirmDelete) {
-      console.log('[MyPage] Delete account cancelled by user');
-      return;
-    }
+    console.log('[MyPage] Starting account deletion process');
 
     try {
-      const accessToken = localStorage.getItem('access_token');
-      console.log('[MyPage] Starting account deletion process');
+      const token = localStorage.getItem('access_token');
+      if (!token) throw new Error('로그인이 필요합니다.');
 
-      // 예산 삭제
+      // 예산 데이터 삭제
       console.log('[MyPage] Attempting to delete budget data');
       const budgetResponse = await fetch('/api/budget', {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -182,58 +177,38 @@ export default function MyPage() {
         ok: budgetResponse.ok,
       });
 
-      if (budgetResponse.status === 404) {
-        console.log('[MyPage] No budget data to delete');
-      } else if (!budgetResponse.ok) {
-        throw new Error('예산 삭제 실패');
+      // 예산 삭제가 실패하면 계정 삭제 중단
+      if (!budgetResponse.ok) {
+        throw new Error(
+          '예산 데이터 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.'
+        );
       }
 
-      // 리뷰 삭제
-      console.log('[MyPage] Attempting to delete all reviews');
-      const reviewsResponse = await fetch('/api/reviews', {
+      // 예산 삭제 성공 시 사용자 계정 삭제 진행
+      console.log(
+        '[MyPage] Budget deleted successfully, proceeding with account deletion'
+      );
+      const userResponse = await fetch('/api/users', {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      console.log('[MyPage] Reviews deletion response:', {
-        status: reviewsResponse.status,
-        ok: reviewsResponse.ok,
-      });
-
-      if (reviewsResponse.status === 404) {
-        console.log('[MyPage] No reviews to delete');
-      } else if (!reviewsResponse.ok) {
-        throw new Error('리뷰 삭제 실패');
+      if (!userResponse.ok) {
+        throw new Error('계정 삭제에 실패했습니다.');
       }
 
-      // 계정 삭제
-      console.log('[MyPage] Attempting to delete account');
-      const response = await fetch('/api/auth', {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      console.log('[MyPage] Account deletion response:', {
-        status: response.status,
-        ok: response.ok,
-      });
-
-      if (!response.ok) throw new Error('계정 삭제 실패');
-
-      localStorage.clear();
-      console.log('[MyPage] Account successfully deleted');
-      alert('계정이 삭제되었습니다.');
+      // 모든 과정이 성공적으로 완료되면 로그아웃 처리
+      localStorage.removeItem('access_token');
       router.push('/');
+      alert('회원 탈퇴가 완료되었습니다.');
     } catch (error) {
       console.error('[MyPage] Error during account deletion:', {
         message: error.message,
         stack: error.stack,
       });
-      alert('계정 삭제 중 오류가 발생했습니다.');
+      alert(error.message);
     }
   };
 

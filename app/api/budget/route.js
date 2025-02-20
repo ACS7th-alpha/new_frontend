@@ -112,7 +112,8 @@ export async function POST(request) {
       amount: requestBody.amount,
     });
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget`;
+    const baseUrl = 'http://hama-budget:3005';
+    const url = `${baseUrl}/budget`;
     console.log('Creating budget at:', url);
 
     const response = await fetch(url, {
@@ -200,8 +201,8 @@ export async function DELETE(request) {
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget`;
+    const baseUrl = 'http://hama-budget:3005';
+    const url = `${baseUrl}/budget`;
     console.log('Deleting budget at:', url);
 
     const response = await fetch(url, {
