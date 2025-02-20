@@ -540,19 +540,18 @@ function CalendarContent() {
     formData.append('file', file);
 
     try {
-      const accessToken =
-        typeof window !== 'undefined'
-          ? localStorage.getItem('access_token')
-          : null;
+      // Authorization 헤더 제거하고 단순히 파일명만 전송
       const response = await fetch('/api/upload/analyze', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: formData,
+        body: formData, // FormData는 유지 (파일 정보 전달을 위해)
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OCR 분석 실패:', {
+          status: response.status,
+          error: errorText,
+        });
         throw new Error('OCR 분석에 실패했습니다.');
       }
 
@@ -562,10 +561,10 @@ function CalendarContent() {
       // OCR 결과를 지출 항목으로 변환
       const newSpendingItems = data?.data?.analysisResult?.items.map(
         (item) => ({
-          date: item.date || '', // 날짜가 없으면 빈 문자열 사용
-          category: getCategoryValue(item.category), // 카테고리 매핑 함수 사용
+          date: item.date || '',
+          category: getCategoryValue(item.category),
           itemName: item.itemName,
-          amount: item.amount ? item.amount.toString() : '0', // 금액이 없으면 '0'으로 설정
+          amount: item.amount ? item.amount.toString() : '0',
         })
       );
 
