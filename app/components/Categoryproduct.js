@@ -47,13 +47,6 @@ export default function CategoryProduct() {
   // 상품 데이터 로드
   useEffect(() => {
     async function fetchProducts() {
-      console.log('[CategoryProduct] Fetching products:', {
-        category,
-        page,
-        limit,
-        timestamp: new Date().toISOString(),
-      });
-
       setLoading(true);
       try {
         let url = '/api/search/category';
@@ -64,16 +57,18 @@ export default function CategoryProduct() {
           url += `?page=${page}&limit=${limit}`;
         }
 
-        console.log('[CategoryProduct] Request URL:', url);
-
         const response = await fetch(url);
         const data = await response.json();
 
         if (data.success) {
           setProducts(data.data);
-          // 최상위 레벨의 total 값을 사용
-          const totalItems = data.total;
-          const calculatedTotalPages = Math.ceil(totalItems / limit);
+          // data.data.length를 사용하여 현재 페이지의 상품 수를 확인
+          const totalItems = data.data.length;
+          // 최소 1페이지는 보여주도록 설정
+          const calculatedTotalPages = Math.max(
+            Math.ceil(totalItems / limit),
+            1
+          );
           setTotalPages(calculatedTotalPages);
 
           console.log('[CategoryProduct] Products loaded:', {
@@ -85,12 +80,12 @@ export default function CategoryProduct() {
         } else {
           console.error('[CategoryProduct] API Error:', data.error);
           setProducts([]);
-          setTotalPages(0);
+          setTotalPages(1); // 최소 1페이지
         }
       } catch (error) {
         console.error('[CategoryProduct] Failed to fetch products:', error);
         setProducts([]);
-        setTotalPages(0);
+        setTotalPages(1); // 최소 1페이지
       } finally {
         setLoading(false);
       }
