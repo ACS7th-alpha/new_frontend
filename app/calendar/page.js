@@ -30,6 +30,7 @@ function CalendarContent() {
   ]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [data, setData] = useState(null); // localStorage 데이터를 위한 상태
+  const [userData, setUserData] = useState(null); // user 데이터를 위한 state 추가
 
   // 전체 지출 내역 조회
   useEffect(() => {
@@ -73,14 +74,15 @@ function CalendarContent() {
     });
 
     if (userStr) {
-      const userData = JSON.parse(userStr);
+      const parsedData = JSON.parse(userStr);
       console.log('[CalendarPage] Parsed user data:', {
-        fullUserObject: userData,
-        userInfo: userData?.user,
-        monthlyBudget: userData?.user?.monthlyBudget,
-        parsedBudget: Number(userData?.user?.monthlyBudget),
+        fullUserObject: parsedData,
+        userInfo: parsedData?.user,
+        monthlyBudget: parsedData?.user?.monthlyBudget,
+        parsedBudget: Number(parsedData?.user?.monthlyBudget),
       });
-      setMonthlyBudget(userData?.user?.monthlyBudget || 0);
+      setUserData(parsedData.user); // user 데이터 저장
+      setMonthlyBudget(parsedData?.user?.monthlyBudget || 0);
     }
 
     // 전체 지출 내역 조회
@@ -702,7 +704,7 @@ function CalendarContent() {
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-semibold mb-2 text-black">예산</h3>
               <p className="text-2xl font-bold text-blue-600">
-                {Number(user?.monthlyBudget)?.toLocaleString('ko-KR') || 0}원
+                {monthlyBudget?.toLocaleString('ko-KR') || '0'}원
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
