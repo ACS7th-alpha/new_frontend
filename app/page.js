@@ -157,6 +157,7 @@ export default function HomePage() {
       });
 
       const data = await response.json();
+      console.log('[GoogleLogin] Full data structure:', data);
       console.log('[GoogleLogin] Auth response:', {
         status: response.status,
         ok: response.ok,
@@ -165,14 +166,8 @@ export default function HomePage() {
       });
 
       if (response.ok && data.success) {
-        localStorage.setItem(
-          'access_token',
-          JSON.stringify(data.meta.tokens.accessToken)
-        );
-        localStorage.setItem(
-          'refresh_token',
-          JSON.stringify(data.meta.tokens.refreshToken)
-        );
+        localStorage.setItem('access_token', data.meta?.tokens?.accessToken);
+        localStorage.setItem('refresh_token', data.meta?.tokens?refreshToken);
         localStorage.setItem('user', JSON.stringify(data.data));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
