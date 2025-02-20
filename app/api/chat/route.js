@@ -35,7 +35,7 @@ export async function POST(request) {
       );
     }
     const baseUrl = 'http://hama-chat:3009';
-    const url = `${baseUrl}/chat`;
+    const url = `${baseUrl}/perplexity/ask`;
     console.log('Sending chat request to:', url);
 
     const response = await fetch(url, {
