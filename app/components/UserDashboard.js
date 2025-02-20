@@ -14,6 +14,13 @@ export default function UserDashboard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAgeInfo, setShowAgeInfo] = useState(false);
 
+  console.log('[UserDashboard] Received userInfo:', {
+    hasUserInfo: !!userInfo,
+    monthlyBudget: userInfo?.monthlyBudget,
+    parsedBudget: Number(userInfo?.monthlyBudget),
+    formatted: Number(userInfo?.monthlyBudget)?.toLocaleString('ko-KR'),
+  });
+
   useEffect(() => {
     fetchAgeBasedProducts();
   }, [childAge]);
@@ -209,8 +216,11 @@ export default function UserDashboard({
                   </p>
                   <div className="flex justify-between items-center mt-1">
                     <p className="text-3xl font-bold text-black">
-                      {Number(userInfo.monthlyBudget)?.toLocaleString('ko-KR')}
-                      원
+                      {userInfo?.monthlyBudget
+                        ? `${Number(userInfo.monthlyBudget).toLocaleString(
+                            'ko-KR'
+                          )}원`
+                        : '0원'}
                     </p>
                     <p className="text-2xl font-bold text-gray-600 mr-1">
                       {spendingPercentage2.toLocaleString()}%
