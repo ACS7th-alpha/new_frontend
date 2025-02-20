@@ -164,8 +164,10 @@ export default function SearchPage() {
             {products.length > 0 && (
               <div className="flex justify-center items-center gap-1 mt-12">
                 <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
                   className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
                 >
                   ← 이전
@@ -179,9 +181,11 @@ export default function SearchPage() {
                   ).map((n) => (
                     <button
                       key={n}
-                      onClick={() => setPage(n)}
+                      onClick={() => setCurrentPage(n)}
                       className={`rounded-full text-pink-600 font-medium ${
-                        page === n ? 'bg-pink-100' : 'bg-white hover:bg-pink-50'
+                        currentPage === n
+                          ? 'bg-pink-100'
+                          : 'bg-white hover:bg-pink-50'
                       }`}
                     >
                       {n}
@@ -192,7 +196,7 @@ export default function SearchPage() {
                 {/* "Next" arrow for the next set of pages */}
                 {endPage < totalPages && (
                   <button
-                    onClick={() => setPage(endPage + 1)}
+                    onClick={() => setCurrentPage(endPage + 1)}
                     className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 transition-colors duration-200 font-medium"
                   >
                     → 다음
