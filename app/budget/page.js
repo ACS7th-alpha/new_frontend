@@ -247,27 +247,27 @@ export default function BudgetPage() {
         };
 
         data.data.spending.forEach((item) => {
-          // spending details 설정
-          spendingMap[item.category] = item.details;
-
-          // 선택된 년월에 해당하는 지출만 필터링하여 합산
-          if (item.details && Array.isArray(item.details)) {
-            const filteredDetails = item.details.filter((detail) => {
+          // 선택된 년월에 해당하는 지출만 필터링
+          const filteredDetails =
+            item.details?.filter((detail) => {
               const detailDate = new Date(detail.date);
               return (
                 detailDate.getFullYear() === year &&
                 detailDate.getMonth() + 1 === month
               );
-            });
+            }) || [];
 
-            const total = filteredDetails.reduce(
-              (sum, detail) => sum + (detail.amount || 0),
-              0
-            );
-            const categoryName = categoryMapping[item.category];
-            if (categoryName) {
-              categoryTotals[categoryName] = total;
-            }
+          // spending details 설정 (필터링된 데이터만)
+          spendingMap[item.category] = filteredDetails;
+
+          // 필터링된 데이터의 총액 계산
+          const total = filteredDetails.reduce(
+            (sum, detail) => sum + (detail.amount || 0),
+            0
+          );
+          const categoryName = categoryMapping[item.category];
+          if (categoryName) {
+            categoryTotals[categoryName] = total;
           }
         });
 
