@@ -167,7 +167,7 @@ export default function HomePage() {
 
       if (response.ok && data.success) {
         localStorage.setItem('access_token', data.meta?.tokens?.accessToken);
-        localStorage.setItem('refresh_token', data.meta?.tokens?refreshToken);
+        localStorage.setItem('refresh_token', data.meta?.tokens?.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.data));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
