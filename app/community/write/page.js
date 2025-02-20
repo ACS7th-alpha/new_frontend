@@ -12,6 +12,7 @@ export default function WritePage() {
   const [store, setStore] = useState('');
   const [isRecommended, setIsRecommended] = useState(null);
   const [images, setImages] = useState([]); // 여러 이미지를 담을 배열
+  const [isLoading, setIsLoading] = useState(false); // 추가: loading state
   const router = useRouter();
 
   useEffect(() => {
@@ -86,42 +87,32 @@ export default function WritePage() {
     console.log('[WritePage] Preparing form data');
 
     try {
-      // 이미지 업로드를 위한 FormData 생성 및 전송
-      const imageFormData = new FormData();
-      for (const image of images) {
-        imageFormData.append('files', image.file);
-      }
-
-      // 이미지 먼저 업로드
-      let imageUrls = [];
-
+      // 이미지 업로드
       if (images.length > 0) {
-        try {
-          const imageUploadResponse = await fetch('/api/upload/multiple', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-            body: imageFormData,
-          });
+        const imageFormData = new FormData();
+        images.forEach((image) => {
+          imageFormData.append('files', image.file);
+        });
 
-          if (!imageUploadResponse.ok) {
-            console.error(
-              '이미지 업로드 응답:',
-              await imageUploadResponse.text()
-            );
-            throw new Error(
-              `이미지 업로드 실패: ${imageUploadResponse.status}`
-            );
-          }
+        console.log('[WritePage] Uploading images...');
+        const imageUploadResponse = await fetch('/api/upload/multiple', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+          body: imageFormData,
+        });
 
-          const response = await imageUploadResponse.json();
-          imageUrls = response.imageUrls || [];
-          console.log('업로드된 이미지 URL:', imageUrls);
-        } catch (imageError) {
-          console.error('이미지 업로드 에러:', imageError);
-          throw new Error('이미지 업로드 중 오류가 발생했습니다.');
+        if (!imageUploadResponse.ok) {
+          console.error(
+            '[WritePage] Image upload failed:',
+            await imageUploadResponse.text()
+          );
+          throw new Error(`이미지 업로드 실패: ${imageUploadResponse.status}`);
         }
+
+        const imageData = await imageUploadResponse.json();
+        console.log('[WritePage] Image upload successful:', imageData);
       }
 
       // 리뷰 데이터 생성 및 전송
@@ -131,7 +122,7 @@ export default function WritePage() {
         ageGroup: age.trim(),
         purchaseLink: store.trim() || null,
         recommended: isRecommended,
-        imageUrls: imageUrls, // 배열 형태로 직접 전달
+        imageUrls: images.map((image) => image.preview),
       };
 
       console.log('전송할 리뷰 데이터:', reviewData);
@@ -139,34 +130,30 @@ export default function WritePage() {
       const reviewResponse = await fetch('/api/reviews', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
         body: JSON.stringify(reviewData),
       });
 
-      const responseText = await reviewResponse.text();
-      console.log('서버 응답:', responseText);
-
       if (!reviewResponse.ok) {
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.message;
-        } catch (e) {
-          errorMessage = responseText || '리뷰 등록에 실패했습니다.';
-        }
-        throw new Error(errorMessage);
+        console.error(
+          '[WritePage] Review submission failed:',
+          await reviewResponse.text()
+        );
+        throw new Error(`리뷰 등록 실패: ${reviewResponse.status}`);
       }
 
-      alert('리뷰가 성공적으로 등록되었습니다.');
-      window.location.href = '/community';
+      const data = await reviewResponse.json();
+      console.log('[WritePage] Review submission successful:', data);
+
+      if (data.success) {
+        console.log('[WritePage] Redirecting to community page');
+        router.push('/community');
+      }
     } catch (error) {
-      console.error('[WritePage] Error during submission:', {
-        message: error.message,
-        stack: error.stack,
-      });
-      alert('리뷰 등록 중 오류가 발생했습니다.');
+      console.error('[WritePage] Submission error:', error);
+      alert(error.message || '게시글 작성에 실패했습니다.');
     } finally {
       console.log('[WritePage] Form submission completed');
       setIsLoading(false);
