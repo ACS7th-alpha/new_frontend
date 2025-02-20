@@ -28,22 +28,38 @@ export default function CategoryProduct() {
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
+    console.log('[CategoryProduct] Loading user data:', {
+      hasUserData: !!userData,
+      timestamp: new Date().toISOString(),
+    });
+
     if (userData) {
       try {
         const parsedUserData = JSON.parse(userData);
+        console.log('[CategoryProduct] Parsed user data:', {
+          userInfo: parsedUserData,
+          hasChildren: parsedUserData.children?.length > 0,
+          firstChildName: parsedUserData.children?.[0]?.name,
+        });
         setUserInfo(parsedUserData);
         if (parsedUserData.children && parsedUserData.children.length > 0) {
-          const firstChild = parsedUserData.children[0];
-          setChildName(firstChild.name);
+          setChildName(parsedUserData.children[0].name);
         }
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('[CategoryProduct] Error parsing user data:', error);
       }
     }
   }, []);
 
   useEffect(() => {
     async function fetchProducts() {
+      console.log('[CategoryProduct] Fetching products:', {
+        category,
+        page,
+        limit,
+        timestamp: new Date().toISOString(),
+      });
+
       setLoading(true);
       try {
         let url = '/api/search';
@@ -55,19 +71,43 @@ export default function CategoryProduct() {
           url += `?page=${page}&limit=${limit}`;
         }
 
-        const response = await fetch(url);
-        const data = await response.json();
+        console.log('[CategoryProduct] Request URL:', url);
 
-        // route.js의 응답 구조에 맞게 수정
+        const response = await fetch(url);
+        console.log('[CategoryProduct] API Response:', {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText,
+        });
+
+        const data = await response.json();
+        console.log('[CategoryProduct] Products data:', {
+          success: data.success,
+          totalProducts: data.data?.length || 0,
+          meta: data.meta,
+          timestamp: new Date().toISOString(),
+        });
+
         if (data.success) {
-          setProducts(data.data); // data.data에 정규화된 products 배열이 있음
-          setTotalPages(Math.ceil(data.meta.total / limit)); // meta에서 total 값 사용
+          setProducts(data.data);
+          setTotalPages(Math.ceil(data.meta.total / limit));
+          console.log('[CategoryProduct] Updated state:', {
+            productsCount: data.data.length,
+            totalPages: Math.ceil(data.meta.total / limit),
+            currentPage: page,
+          });
         } else {
-          console.error('Failed to fetch products:', data.error);
+          console.error(
+            '[CategoryProduct] Failed to fetch products:',
+            data.error
+          );
           setProducts([]);
         }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('[CategoryProduct] Error fetching products:', {
+          error: error.message,
+          stack: error.stack,
+        });
         setProducts([]);
       } finally {
         setLoading(false);
@@ -77,14 +117,25 @@ export default function CategoryProduct() {
   }, [category, page]);
 
   const handleCategoryClick = (categoryId) => {
+    console.log('[CategoryProduct] Category clicked:', {
+      from: category,
+      to: categoryId,
+      timestamp: new Date().toISOString(),
+    });
     setCategory(categoryId);
-    setPage(1); // 카테고리 변경 시 페이지 1로 리셋
+    setPage(1);
   };
 
   // Get the current page range (5 pages per group)
   const getPageRange = () => {
     const startPage = Math.floor((page - 1) / 5) * 5 + 1;
     const endPage = Math.min(startPage + 4, totalPages);
+    console.log('[CategoryProduct] Page range calculated:', {
+      currentPage: page,
+      startPage,
+      endPage,
+      totalPages,
+    });
     return { startPage, endPage };
   };
 
@@ -96,6 +147,13 @@ export default function CategoryProduct() {
     const savedCategory = sessionStorage.getItem('prevCategory');
     const savedScrollPosition = sessionStorage.getItem('scrollPosition');
 
+    console.log('[CategoryProduct] Restoring saved state:', {
+      savedPage,
+      savedCategory,
+      savedScrollPosition,
+      timestamp: new Date().toISOString(),
+    });
+
     if (savedPage) {
       setPage(parseInt(savedPage));
       sessionStorage.removeItem('prevPage');
@@ -105,7 +163,6 @@ export default function CategoryProduct() {
       sessionStorage.removeItem('prevCategory');
     }
     if (savedScrollPosition) {
-      // 약간의 지연을 주어 컨텐츠가 로드된 후 스크롤 위치를 복원
       setTimeout(() => {
         window.scrollTo(0, parseInt(savedScrollPosition));
         sessionStorage.removeItem('scrollPosition');
@@ -115,6 +172,10 @@ export default function CategoryProduct() {
 
   // 상품 클릭 핸들러 추가
   const handleProductClick = (uid) => {
+    console.log('[CategoryProduct] Product clicked:', {
+      uid,
+      timestamp: new Date().toISOString(),
+    });
     router.push(`/product/${uid}`);
   };
 
