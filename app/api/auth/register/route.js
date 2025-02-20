@@ -2,13 +2,6 @@ export async function POST(request) {
   try {
     console.log('User registration request received');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_AUTH_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     const signupData = await request.json();
     console.log('Registration data:', {
       hasEmail: !!signupData.email,
@@ -28,7 +21,8 @@ export async function POST(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/register`;
+    const baseUrl = 'http://hama-auth:3001';
+    const url = `${baseUrl}/auth/register`;
     console.log('Registering user at:', url);
 
     const response = await fetch(url, {
