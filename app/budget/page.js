@@ -97,18 +97,15 @@ export default function BudgetPage() {
         availableData: data,
       });
 
-      const currentBudget = data.find((budget) => {
-        const budgetYear = parseInt(budget.year);
-        const budgetMonth = parseInt(budget.month);
-        console.log(
-          'Comparing:',
-          budgetYear,
-          budgetMonth,
-          'with',
-          selectedYear,
-          selectedMonth
-        );
-        return budgetYear === selectedYear && budgetMonth === selectedMonth;
+      const currentBudget = data.data.find((budget) => {
+        console.log('[BudgetPage] Checking budget:', {
+          budget,
+          year: budget.year,
+          month: budget.month,
+          matches:
+            budget.year === selectedYear && budget.month === selectedMonth,
+        });
+        return budget.year === selectedYear && budget.month === selectedMonth;
       });
 
       console.log('[BudgetPage] Found budget data:', currentBudget);
@@ -228,6 +225,16 @@ export default function BudgetPage() {
 
       const data = await response.json();
       console.log('Fetched spending data:', data);
+      console.log('[BudgetPage] Spending data structure:', {
+        hasData: !!data?.data,
+        categories: data?.data?.categories,
+        period: data?.data?.period,
+      });
+
+      if (!data?.data?.categories) {
+        console.log('[BudgetPage] No categories in spending data');
+        return;
+      }
 
       const spendingMap = {};
       data.spending.forEach((item) => {
