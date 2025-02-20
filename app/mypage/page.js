@@ -188,9 +188,10 @@ export default function MyPage() {
         );
       }
 
-      // 예산 삭제 성공 또는 예산이 없는 경우 사용자 계정 삭제 진행
+      // 계정 삭제 API 엔드포인트 수정
       console.log('[MyPage] Proceeding with account deletion');
-      const userResponse = await fetch('/api/users', {
+      const userResponse = await fetch('/api/auth/delete', {
+        // 수정된 엔드포인트
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -199,7 +200,8 @@ export default function MyPage() {
       });
 
       if (!userResponse.ok) {
-        throw new Error('계정 삭제에 실패했습니다.');
+        const errorData = await userResponse.json();
+        throw new Error(errorData.error || '계정 삭제에 실패했습니다.');
       }
 
       // 모든 과정이 성공적으로 완료되면 로그아웃 처리
