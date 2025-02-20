@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/app/components/Header';
 import { Plus, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function WritePage() {
   const [title, setTitle] = useState('');
@@ -11,6 +12,24 @@ export default function WritePage() {
   const [store, setStore] = useState('');
   const [isRecommended, setIsRecommended] = useState(null);
   const [images, setImages] = useState([]); // 여러 이미지를 담을 배열
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log('[WritePage] Component mounted');
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    console.log('[WritePage] Checking authentication...');
+    const token = localStorage.getItem('access_token');
+    console.log('[WritePage] Access token:', token ? 'Present' : 'Not found');
+
+    if (!token) {
+      console.log('[WritePage] No token found, redirecting to login');
+      router.push('/login');
+      return;
+    }
+  };
 
   // 이미지 업로드 핸들러
   const handleImageUpload = (event) => {
@@ -34,14 +53,39 @@ export default function WritePage() {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async () => {
-    try {
-      // 필수 입력값 검증
-      if (!title || !content || !age || isRecommended === null) {
-        alert('필수 항목을 모두 입력해주세요.');
-        return;
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log('[WritePage] Form submission started:', {
+      title,
+      content,
+      age,
+      store,
+      isRecommended,
+      images: images.length,
+    });
 
+    if (
+      !title.trim() ||
+      !content.trim() ||
+      !age ||
+      isRecommended === null ||
+      images.length === 0
+    ) {
+      console.log('[WritePage] Validation failed:', {
+        title: !title.trim(),
+        content: !content.trim(),
+        age: !age,
+        isRecommended: isRecommended === null,
+        images: images.length === 0,
+      });
+      alert('필수 항목을 모두 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    console.log('[WritePage] Preparing form data');
+
+    try {
       // 이미지 업로드를 위한 FormData 생성 및 전송
       const imageFormData = new FormData();
       for (const image of images) {
@@ -118,8 +162,14 @@ export default function WritePage() {
       alert('리뷰가 성공적으로 등록되었습니다.');
       window.location.href = '/community';
     } catch (error) {
-      alert(error.message || '리뷰 등록 중 오류가 발생했습니다.');
-      console.error('Error:', error);
+      console.error('[WritePage] Error during submission:', {
+        message: error.message,
+        stack: error.stack,
+      });
+      alert('리뷰 등록 중 오류가 발생했습니다.');
+    } finally {
+      console.log('[WritePage] Form submission completed');
+      setIsLoading(false);
     }
   };
 

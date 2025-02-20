@@ -39,7 +39,7 @@ export default function CategoryProduct() {
           : undefined;
         setChildName(firstChildName);
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        //console.error('Error parsing user data:', error);
       }
     }
   }, []);
@@ -59,30 +59,33 @@ export default function CategoryProduct() {
 
         const response = await fetch(url);
         const data = await response.json();
-        
-        console.log('[CategoryProduct] Raw API Response:', data); // 전체 응답 로깅
-        
+
+        //console.log('[CategoryProduct] Raw API Response:', data); // 전체 응답 로깅
+
         if (data.success) {
           setProducts(data.data || []);
           const totalItems = data.meta?.total ?? 0;
-          const calculatedTotalPages = Math.max(Math.ceil(totalItems / limit), 1);
+          const calculatedTotalPages = Math.max(
+            Math.ceil(totalItems / limit),
+            1
+          );
           setTotalPages(calculatedTotalPages);
-          
-          console.log('[CategoryProduct] Products loaded:', {
-            currentPageCount: data.data?.length || 0,
-            totalItems,
-            currentPage: page,
-            totalPages: calculatedTotalPages,
-            meta: data.meta,
-            hasData: data.data?.length > 0
-          });
+
+          // console.log('[CategoryProduct] Products loaded:', {
+          //   currentPageCount: data.data?.length || 0,
+          //   totalItems,
+          //   currentPage: page,
+          //   totalPages: calculatedTotalPages,
+          //   meta: data.meta,
+          //   hasData: data.data?.length > 0
+          // });
         } else {
-          console.error('[CategoryProduct] API Error:', data.error);
+          //console.error('[CategoryProduct] API Error:', data.error);
           setProducts([]);
           setTotalPages(1);
         }
       } catch (error) {
-        console.error('[CategoryProduct] Failed to fetch products:', error);
+        //console.error('[CategoryProduct] Failed to fetch products:', error);
         setProducts([]);
         setTotalPages(1);
       } finally {
