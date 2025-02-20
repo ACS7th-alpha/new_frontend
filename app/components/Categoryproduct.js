@@ -26,22 +26,25 @@ export default function CategoryProduct() {
     { id: '패션의류_잡화', name: '패션의류/잡화', icon: '👕' },
   ];
 
+  // 사용자 정보 로드
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem('userData');
     if (userData) {
       try {
-        const parsedUserData = JSON.parse(userData);
-        setUserInfo(parsedUserData);
-        if (parsedUserData.children && parsedUserData.children.length > 0) {
-          const firstChild = parsedUserData.children[0];
-          setChildName(firstChild.name);
-        }
+        const parsedData = JSON.parse(userData);
+        setUserInfo(parsedData);
+        const hasChildren = parsedData?.userInfo?.user?.children?.length > 0;
+        const firstChildName = hasChildren
+          ? parsedData.userInfo.user.children[0].name
+          : undefined;
+        setChildName(firstChildName);
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
     }
   }, []);
 
+  // 상품 데이터 로드
   useEffect(() => {
     async function fetchProducts() {
       console.log('[CategoryProduct] Fetching products:', {
@@ -75,7 +78,6 @@ export default function CategoryProduct() {
         }
 
         const data = await response.json();
-        console.log('[CategoryProduct] Raw API Response:', data);
 
         if (data.success) {
           setProducts(data.data);
@@ -110,7 +112,7 @@ export default function CategoryProduct() {
     setPage(1); // 카테고리 변경 시 페이지 1로 리셋
   };
 
-  // Get the current page range (5 pages per group)
+  // 페이지 범위 계산
   const getPageRange = () => {
     const startPage = Math.floor((page - 1) / 5) * 5 + 1;
     const endPage = Math.min(startPage + 4, totalPages);
@@ -119,31 +121,12 @@ export default function CategoryProduct() {
 
   const { startPage, endPage } = getPageRange();
 
-  // 컴포넌트 마운트 시 저장된 상태와 스크롤 위치 복원
-  useEffect(() => {
-    const savedPage = sessionStorage.getItem('prevPage');
-    const savedCategory = sessionStorage.getItem('prevCategory');
-    const savedScrollPosition = sessionStorage.getItem('scrollPosition');
-
-    if (savedPage) {
-      setPage(parseInt(savedPage));
-      sessionStorage.removeItem('prevPage');
-    }
-    if (savedCategory) {
-      setCategory(savedCategory);
-      sessionStorage.removeItem('prevCategory');
-    }
-    if (savedScrollPosition) {
-      // 약간의 지연을 주어 컨텐츠가 로드된 후 스크롤 위치를 복원
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPosition));
-        sessionStorage.removeItem('scrollPosition');
-      }, 100);
-    }
-  }, []);
-
-  // 상품 클릭 핸들러 추가
+  // 상품 클릭 핸들러
   const handleProductClick = (uid) => {
+    // 현재 상태 저장
+    sessionStorage.setItem('prevPage', page.toString());
+    sessionStorage.setItem('prevCategory', category);
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
     router.push(`/product/${uid}`);
   };
 
