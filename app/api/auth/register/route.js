@@ -35,24 +35,32 @@ export async function POST(request) {
       throw new Error(data.message || '회원가입에 실패했습니다.');
     }
 
-    // 응답 데이터에 필요한 사용자 정보 포함
+    // 사용자 정보를 포함한 응답 데이터 구성
+    const userInfo = {
+      id: data.user.id || body.user.googleId,
+      email: body.user?.email,
+      name: body.user?.name,
+      photo: body.user?.photo,
+      nickname: body.additionalInfo?.nickname,
+      monthlyBudget: body.additionalInfo?.monthlyBudget,
+      children: body.additionalInfo?.children,
+    };
+
     const responseData = {
       access_token: data?.access_token,
       refresh_token: data?.refresh_token,
-      user: {
-        ...data?.user,
-        photo: body.user?.photo,
-        email: body.user?.email,
-        name: body.user?.name,
-        nickname: body.additionalInfo?.nickname,
-        monthlyBudget: body.additionalInfo?.monthlyBudget,
-        children: body.additionalInfo?.children,
-      },
+      user: userInfo,
     };
 
-    console.log('[API] Enhanced response data:', responseData);
+    // 로컬 스토리지에 사용자 정보 저장을 위한 데이터 추가
+    const storageData = {
+      ...responseData,
+      userInfo: JSON.stringify(userInfo), // 로컬 스토리지용 사용자 정보
+    };
 
-    return new Response(JSON.stringify(responseData), {
+    console.log('[API] Enhanced response data with storage info:', storageData);
+
+    return new Response(JSON.stringify(storageData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
