@@ -234,7 +234,6 @@ export default function BudgetPage() {
         const spendingMap = {};
         const categoryTotals = {};
 
-        // 카테고리 매핑 정의
         const categoryMapping = {
           diaper: '기저귀/물티슈',
           sanitary: '생활/위생용품',
@@ -251,9 +250,17 @@ export default function BudgetPage() {
           // spending details 설정
           spendingMap[item.category] = item.details;
 
-          // 각 카테고리의 details 배열을 순회하며 총액 계산
+          // 선택된 년월에 해당하는 지출만 필터링하여 합산
           if (item.details && Array.isArray(item.details)) {
-            const total = item.details.reduce(
+            const filteredDetails = item.details.filter((detail) => {
+              const detailDate = new Date(detail.date);
+              return (
+                detailDate.getFullYear() === selectedYear &&
+                detailDate.getMonth() + 1 === selectedMonth
+              );
+            });
+
+            const total = filteredDetails.reduce(
               (sum, detail) => sum + (detail.amount || 0),
               0
             );
