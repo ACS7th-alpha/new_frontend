@@ -82,31 +82,27 @@ export default function HomePage() {
             const spendingData = await response.json();
             console.log('[HomePage] Raw spending data:', spendingData);
 
-            // 현재 년월 구하기
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth(); // 0-11 그대로 사용
+            const { spending, period, totalAmount } = spendingData.data;
 
-            // 현재 월의 예산 데이터 찾기
-            const currentMonthData = spendingData.data?.find(
-              (budget) =>
-                budget.year === currentYear && budget.month === currentMonth
-            );
-
-            console.log('[HomePage] Current month budget:', {
-              year: currentYear,
-              month: currentMonth,
-              found: !!currentMonthData,
-              categories: currentMonthData?.categories,
+            console.log('[HomePage] Current month spending:', {
+              period,
+              categories: spending.map((cat) => cat.category),
+              totalAmount,
             });
 
             let currentMonthTotal = 0;
-            if (currentMonthData?.categories) {
-              currentMonthTotal = Object.values(
-                currentMonthData.categories
-              ).reduce((sum, amount) => sum + (amount || 0), 0);
+            if (Array.isArray(spending)) {
+              // 각 카테고리의 details 배열의 금액을 합산
+              currentMonthTotal = spending.reduce((total, category) => {
+                const categoryTotal = category.details.reduce(
+                  (sum, detail) => sum + (Number(detail.amount) || 0),
+                  0
+                );
+                return total + categoryTotal;
+              }, 0);
             }
 
+            console.log('[HomePage] Calculated total:', currentMonthTotal);
             setMonthlySpending(currentMonthTotal);
           } else {
             const errorText = await response.text();
