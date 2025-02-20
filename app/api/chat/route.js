@@ -1,14 +1,5 @@
 export async function POST(request) {
   try {
-    console.log('Chat request received');
-
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_CHAT_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     const authorization = request.headers.get('Authorization');
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
@@ -43,8 +34,8 @@ export async function POST(request) {
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_CHAT_URL}/chat`;
+    const baseUrl = 'http://hama-chat:3009';
+    const url = `${baseUrl}/chat`;
     console.log('Sending chat request to:', url);
 
     const response = await fetch(url, {
