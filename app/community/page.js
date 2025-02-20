@@ -14,7 +14,7 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const accessToken = localStorage.getItem('access_token'); // 액세스 토큰 가져오기
+        const accessToken = localStorage.getItem('access_token');
         const response = await fetch('/api/reviews', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -25,11 +25,12 @@ export default function CommunityPage() {
           throw new Error('데이터를 불러오는데 실패했습니다.');
         }
 
-        const data = await response.json();
-        console.log('받아온 데이터:', data);
+        const responseData = await response.json();
+        console.log('받아온 데이터:', responseData);
 
-        // createdAt 기준으로 최신순 정렬
-        const sortedData = data.sort((a, b) => {
+        // data 배열에 접근하여 정렬
+        const reviews = responseData.data || [];
+        const sortedData = reviews.sort((a, b) => {
           const dateA = new Date(a.createdAt);
           const dateB = new Date(b.createdAt);
           return dateB - dateA; // 내림차순 정렬 (최신순)
