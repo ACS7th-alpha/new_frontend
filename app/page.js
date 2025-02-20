@@ -93,19 +93,21 @@ export default function HomePage() {
 
             // 현재 월의 지출액만 필터링하여 합산
             let currentMonthTotal = 0;
-            spendingData.spending.forEach((category) => {
-              if (category.details && Array.isArray(category.details)) {
-                category.details.forEach((detail) => {
-                  const spendingDate = new Date(detail.date);
-                  if (
-                    spendingDate.getFullYear() === currentYear &&
-                    spendingDate.getMonth() === currentMonth
-                  ) {
-                    currentMonthTotal += detail.amount;
-                  }
-                });
-              }
-            });
+            if (spendingData.spending && Array.isArray(spendingData.spending)) {
+              spendingData.spending.forEach((category) => {
+                if (category.details && Array.isArray(category.details)) {
+                  category.details.forEach((detail) => {
+                    const spendingDate = new Date(detail.date);
+                    if (
+                      spendingDate.getFullYear() === currentYear &&
+                      spendingDate.getMonth() === currentMonth
+                    ) {
+                      currentMonthTotal += detail.amount;
+                    }
+                  });
+                }
+              });
+            }
 
             setMonthlySpending(currentMonthTotal);
           } else {
