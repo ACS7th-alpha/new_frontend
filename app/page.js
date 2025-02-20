@@ -23,6 +23,12 @@ export default function HomePage() {
     const signupComplete = urlParams.get('signupComplete');
     const token = urlParams.get('token');
 
+    console.log('[HomePage] URL Parameters:', {
+      signupComplete,
+      hasToken: !!token,
+      tokenPreview: token ? `...${token.slice(-10)}` : 'none',
+    });
+
     if (signupComplete && token) {
       // 토큰 저장 및 자동 로그인 처리
       localStorage.setItem('access_token', token);
@@ -33,6 +39,12 @@ export default function HomePage() {
     const fetchData = async () => {
       const userData = localStorage.getItem('user');
       const accessToken = localStorage.getItem('access_token');
+
+      console.log('[HomePage] Storage Check:', {
+        hasUserData: !!userData,
+        hasAccessToken: !!accessToken,
+        tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
+      });
 
       if (userData && accessToken) {
         const parsedUser = JSON.parse(userData);
@@ -50,14 +62,29 @@ export default function HomePage() {
 
         // 지출 내역 조회 및 현재 월 지출액 계산
         try {
+          console.log(
+            '[HomePage] Fetching budget data with token:',
+            accessToken?.slice(-10)
+          );
+
           const response = await fetch('/api/budget/spending', {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           });
 
+          console.log('[HomePage] Budget API Response:', {
+            status: response.status,
+            ok: response.ok,
+          });
+
           if (response.ok) {
             const spendingData = await response.json();
+            console.log('[HomePage] Budget data received:', {
+              success: spendingData.success,
+              hasData: !!spendingData.spending,
+              categoriesCount: spendingData.spending?.length,
+            });
 
             // 현재 년월 구하기
             const now = new Date();
@@ -82,11 +109,18 @@ export default function HomePage() {
 
             setMonthlySpending(currentMonthTotal);
           } else {
-            console.warn('지출 내역을 가져오는데 실패했습니다.');
+            const errorText = await response.text();
+            console.error('[HomePage] Budget API Error:', {
+              status: response.status,
+              error: errorText,
+            });
             setMonthlySpending(0);
           }
         } catch (error) {
-          console.error('Error fetching spending:', error);
+          console.error('[HomePage] Budget fetch error:', {
+            message: error.message,
+            stack: error.stack,
+          });
           setMonthlySpending(0);
         }
       }
@@ -97,10 +131,22 @@ export default function HomePage() {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      console.log('1. Google 로그인 응답:', credentialResponse);
-      const decoded = jwtDecode(credentialResponse.credential);
-      console.log('2. 디코드된 Google 정보:', decoded);
+      console.log('[GoogleLogin] Received response:', {
+        hasCredential: !!credentialResponse.credential,
+        credentialPreview: credentialResponse.credential
+          ? `...${credentialResponse.credential.slice(-10)}`
+          : 'none',
+      });
 
+      const decoded = jwtDecode(credentialResponse.credential);
+      console.log('[GoogleLogin] Decoded token:', {
+        sub: decoded.sub,
+        email: decoded.email,
+        name: decoded.name,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log('[GoogleLogin] Sending auth request to backend');
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: {
@@ -111,36 +157,59 @@ export default function HomePage() {
         }),
       });
 
+      console.log('[GoogleLogin] Auth response status:', {
+        status: response.status,
+        ok: response.ok,
+      });
+
       const data = await response.json();
-      console.log('3. 백엔드 로그인 응답:', data);
+      console.log('[GoogleLogin] Auth response data:', {
+        success: data.success,
+        hasTokens: !!data.meta?.tokens,
+        hasUserData: !!data.data,
+      });
 
       if (response.ok && data.success) {
-        // 토큰 및 사용자 정보 저장 부분 수정
+        console.log('[GoogleLogin] Login successful, storing tokens');
         localStorage.setItem('access_token', data.meta.tokens.accessToken);
         localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.data)); // 백엔드에서 받은 사용자 정보
+        localStorage.setItem('user', JSON.stringify(data.data));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
 
         // 예산 데이터 가져오기
         try {
+          console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
               Authorization: `Bearer ${data.meta.tokens.accessToken}`,
             },
           });
 
+          console.log('[GoogleLogin] Budget response:', {
+            status: budgetResponse.status,
+            ok: budgetResponse.ok,
+          });
+
           if (budgetResponse.ok) {
             const budgetData = await budgetResponse.json();
+            console.log('[GoogleLogin] Budget data received:', {
+              success: budgetData.success,
+              hasData: !!budgetData.data,
+            });
             localStorage.setItem('budget', JSON.stringify(budgetData));
           }
         } catch (error) {
-          console.error('예산 데이터 가져오기 실패:', error);
+          console.error('[GoogleLogin] Budget fetch error:', {
+            message: error.message,
+            stack: error.stack,
+          });
         }
 
+        console.log('[GoogleLogin] Reloading page');
         window.location.reload();
       } else {
-        // 회원가입이 필요한 경우
+        console.log('[GoogleLogin] New user detected, redirecting to signup');
         const userData = {
           id: decoded.sub,
           email: decoded.email,
@@ -152,34 +221,64 @@ export default function HomePage() {
         );
       }
     } catch (error) {
-      console.error('로그인 처리 중 오류:', error);
+      console.error('[GoogleLogin] Error:', {
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
     }
   };
 
   const handleGoToStatistics = async () => {
+    console.log('[Statistics] Starting navigation');
     setLoading(true);
     const accessToken = localStorage.getItem('access_token');
 
+    console.log('[Statistics] Token check:', {
+      hasToken: !!accessToken,
+      tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
+    });
+
     try {
+      console.log('[Statistics] Fetching spending data');
       const response = await fetch('/api/budget/spending', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
+      console.log('[Statistics] Spending response:', {
+        status: response.status,
+        ok: response.ok,
+      });
+
       if (response.ok) {
         const data = await response.json();
-        // 데이터를 로컬 스토리지에 저장
+        console.log('[Statistics] Data received:', {
+          success: data.success,
+          hasData: !!data.spending,
+          categoriesCount: data.spending?.length,
+        });
+
         localStorage.setItem('spendingData', JSON.stringify(data));
-        // 통계 페이지로 이동
+        console.log('[Statistics] Data stored, navigating to statistics page');
         router.push('/statistics');
       } else {
-        console.error('Failed to fetch spending data');
+        const errorText = await response.text();
+        console.error('[Statistics] Failed to fetch spending data:', {
+          status: response.status,
+          error: errorText,
+        });
       }
     } catch (error) {
-      console.error('Error fetching spending data:', error);
+      console.error('[Statistics] Error:', {
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
     } finally {
       setLoading(false);
+      console.log('[Statistics] Loading state cleared');
     }
   };
 
