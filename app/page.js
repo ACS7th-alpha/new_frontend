@@ -104,27 +104,30 @@ export default function HomePage() {
             const spendingData = await response.json();
             console.log('[HomePage] Raw spending data:', spendingData);
 
-            const { spending, period, totalAmount } = spendingData.data;
-
-            // console.log('[HomePage] Current month spending:', {
-            //   period,
-            //   categories: spending.map((cat) => cat.category),
-            //   totalAmount,
-            // });
+            const { spending, period } = spendingData.data;
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1; // JavaScript의 월은 0부터 시작
 
             let currentMonthTotal = 0;
             if (Array.isArray(spending)) {
-              // 각 카테고리의 details 배열의 금액을 합산
+              // 현재 년월의 지출만 합산
               currentMonthTotal = spending.reduce((total, category) => {
-                const categoryTotal = category.details.reduce(
-                  (sum, detail) => sum + (Number(detail.amount) || 0),
-                  0
-                );
+                const categoryTotal = category.details.reduce((sum, detail) => {
+                  const detailDate = new Date(detail.date);
+                  if (
+                    detailDate.getFullYear() === currentYear &&
+                    detailDate.getMonth() + 1 === currentMonth
+                  ) {
+                    return sum + (Number(detail.amount) || 0);
+                  }
+                  return sum;
+                }, 0);
                 return total + categoryTotal;
               }, 0);
             }
 
-            console.log('[HomePage] Calculated total:', currentMonthTotal);
+            console.log('[HomePage] Current month total:', currentMonthTotal);
             setMonthlySpending(currentMonthTotal);
           } else {
             const errorText = await response.text();
