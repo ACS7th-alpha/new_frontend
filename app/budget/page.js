@@ -46,15 +46,24 @@ export default function BudgetPage() {
   const fetchBudgetData = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
+      console.log('[BudgetPage] Fetching budget data:', {
+        hasToken: !!accessToken,
+        tokenPreview: accessToken?.slice(-10),
+      });
+
       const response = await fetch('/api/budget', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      // 404 에러(데이터 없음) 처리
+      console.log('[BudgetPage] Budget API response:', {
+        status: response.status,
+        ok: response.ok,
+      });
+
       if (response.status === 404) {
-        console.log('No budget data found');
+        console.log('[BudgetPage] No budget data found');
         // 기본 카테고리 구조로 초기화
         const defaultCategories = [
           { name: '기저귀/물티슈', budget: 0 },
@@ -76,13 +85,17 @@ export default function BudgetPage() {
       }
 
       const data = await response.json();
+      console.log('[BudgetPage] Budget data received:', data);
 
       // 선택된 월의 예산 데이터 찾기
       const selectedYear = parseInt(currentDate.getFullYear());
       const selectedMonth = parseInt(currentDate.getMonth() + 1);
 
-      console.log('Selected Date:', selectedYear, selectedMonth);
-      console.log('Available Budget Data:', data);
+      console.log('[BudgetPage] Looking for budget:', {
+        selectedYear,
+        selectedMonth,
+        availableData: data,
+      });
 
       const currentBudget = data.find((budget) => {
         const budgetYear = parseInt(budget.year);
@@ -98,7 +111,7 @@ export default function BudgetPage() {
         return budgetYear === selectedYear && budgetMonth === selectedMonth;
       });
 
-      console.log('Found Budget:', currentBudget);
+      console.log('[BudgetPage] Found budget data:', currentBudget);
 
       // 기본 카테고리 구조 정의
       const defaultCategories = [
@@ -140,7 +153,7 @@ export default function BudgetPage() {
         setCategories(defaultCategories);
       }
     } catch (error) {
-      console.error('Error fetching budget data:', error);
+      console.error('[BudgetPage] Error fetching budget data:', error);
       // 에러 발생 시에도 기본 카테고리로 초기화
       const defaultCategories = [
         { name: '기저귀/물티슈', budget: 0 },
@@ -233,15 +246,26 @@ export default function BudgetPage() {
   useEffect(() => {
     // 사용자 정보와 당월 예산 설정
     const userStr = localStorage.getItem('user');
+    console.log('[BudgetPage] Local storage user data:', {
+      hasUserData: !!userStr,
+      rawData: userStr,
+    });
+
     if (userStr) {
       const user = JSON.parse(userStr);
-      setMonthlyBudget(user.monthlyBudget || 0);
+      console.log('[BudgetPage] Parsed user data:', {
+        fullUserObject: user,
+        userInfo: user.user,
+        monthlyBudget: user.user?.monthlyBudget,
+        parsedBudget: Number(user.user?.monthlyBudget),
+      });
+      setMonthlyBudget(user.user.monthlyBudget || 0);
     }
 
     // 현재 예산 데이터 불러오기
     fetchBudgetData();
     setLoading(false);
-  }, []); // 컴포넌트 마운트 시에만 실행
+  }, []);
 
   // 현재 월의 지출 데이터 계산
   useEffect(() => {

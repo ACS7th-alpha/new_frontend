@@ -23,11 +23,11 @@ export default function HomePage() {
     const signupComplete = urlParams.get('signupComplete');
     const token = urlParams.get('token');
 
-    console.log('[HomePage] URL Parameters:', {
-      signupComplete,
-      hasToken: !!token,
-      tokenPreview: token ? `...${token.slice(-10)}` : 'none',
-    });
+    // console.log('[HomePage] URL Parameters:', {
+    //   signupComplete,
+    //   hasToken: !!token,
+    //   tokenPreview: token ? `...${token.slice(-10)}` : 'none',
+    // });
 
     if (signupComplete && token) {
       // 토큰 저장 및 자동 로그인 처리
@@ -40,44 +40,44 @@ export default function HomePage() {
       const userData = localStorage.getItem('user');
       const accessToken = localStorage.getItem('access_token');
 
-      console.log('[HomePage] Storage Check:', {
-        hasUserData: !!userData,
-        hasAccessToken: !!accessToken,
-        tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
-      });
+      // console.log('[HomePage] Storage Check:', {
+      //   hasUserData: !!userData,
+      //   hasAccessToken: !!accessToken,
+      //   tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
+      // });
 
       if (userData && accessToken) {
         const parsedUser = JSON.parse(userData);
         setUserInfo(parsedUser);
 
         // 아기의 개월 수 계산
-        console.log('[HomePage] User data for age calculation:', {
-          hasChildren: !!parsedUser?.user?.children,
-          children: parsedUser?.user?.children,
-          firstChild: parsedUser?.user?.children?.[0],
-        });
+        // console.log('[HomePage] User data for age calculation:', {
+        //   hasChildren: !!parsedUser?.user?.children,
+        //   children: parsedUser?.user?.children,
+        //   firstChild: parsedUser?.user?.children?.[0],
+        // });
 
         if (parsedUser?.user?.children && parsedUser?.user?.children[0]) {
           const birthDate = new Date(parsedUser?.user?.children[0]?.birthdate);
           const today = new Date();
 
-          console.log('[HomePage] Child age calculation:', {
-            birthDateString: parsedUser?.user?.children[0]?.birthdate,
-            parsedBirthDate: birthDate,
-            today,
-            yearDiff: today.getFullYear() - birthDate.getFullYear(),
-            monthDiff: today.getMonth() - birthDate.getMonth(),
-            calculation: {
-              yearPart: (today.getFullYear() - birthDate.getFullYear()) * 12,
-              monthPart: today.getMonth() - birthDate.getMonth(),
-            },
-          });
+          // console.log('[HomePage] Child age calculation:', {
+          //   birthDateString: parsedUser?.user?.children[0]?.birthdate,
+          //   parsedBirthDate: birthDate,
+          //   today,
+          //   yearDiff: today.getFullYear() - birthDate.getFullYear(),
+          //   monthDiff: today.getMonth() - birthDate.getMonth(),
+          //   calculation: {
+          //     yearPart: (today.getFullYear() - birthDate.getFullYear()) * 12,
+          //     monthPart: today.getMonth() - birthDate.getMonth(),
+          //   },
+          // });
 
           const monthDiff =
             (today.getFullYear() - birthDate.getFullYear()) * 12 +
             (today.getMonth() - birthDate.getMonth());
 
-          console.log('[HomePage] Final monthDiff:', monthDiff);
+          // console.log('[HomePage] Final monthDiff:', monthDiff);
 
           setChildAge(monthDiff);
         }
@@ -95,10 +95,10 @@ export default function HomePage() {
             },
           });
 
-          console.log('[HomePage] Budget API Response:', {
-            status: response.status,
-            ok: response.ok,
-          });
+          // console.log('[HomePage] Budget API Response:', {
+          //   status: response.status,
+          //   ok: response.ok,
+          // });
 
           if (response.ok) {
             const spendingData = await response.json();
@@ -106,11 +106,11 @@ export default function HomePage() {
 
             const { spending, period, totalAmount } = spendingData.data;
 
-            console.log('[HomePage] Current month spending:', {
-              period,
-              categories: spending.map((cat) => cat.category),
-              totalAmount,
-            });
+            // console.log('[HomePage] Current month spending:', {
+            //   period,
+            //   categories: spending.map((cat) => cat.category),
+            //   totalAmount,
+            // });
 
             let currentMonthTotal = 0;
             if (Array.isArray(spending)) {
@@ -128,17 +128,17 @@ export default function HomePage() {
             setMonthlySpending(currentMonthTotal);
           } else {
             const errorText = await response.text();
-            console.error('[HomePage] Budget API Error:', {
-              status: response.status,
-              error: errorText,
-            });
+            // console.error('[HomePage] Budget API Error:', {
+            //   status: response.status,
+            //   error: errorText,
+            // });
             setMonthlySpending(0);
           }
         } catch (error) {
-          console.error('[HomePage] Budget fetch error:', {
-            message: error.message,
-            stack: error.stack,
-          });
+          // console.error('[HomePage] Budget fetch error:', {
+          //   message: error.message,
+          //   stack: error.stack,
+          // });
           setMonthlySpending(0);
         }
       }
@@ -175,13 +175,13 @@ export default function HomePage() {
       });
 
       const data = await response.json();
-      console.log('[GoogleLogin] Full data structure:', data);
-      console.log('[GoogleLogin] Auth response:', {
-        status: response.status,
-        ok: response.ok,
-        success: data.success,
-        hasTokens: !!data.meta?.tokens,
-      });
+      // console.log('[GoogleLogin] Full data structure:', data);
+      // console.log('[GoogleLogin] Auth response:', {
+      //   status: response.status,
+      //   ok: response.ok,
+      //   success: data.success,
+      //   hasTokens: !!data.meta?.tokens,
+      // });
 
       if (response.ok && data.success) {
         localStorage.setItem('access_token', data.data.access_token);
@@ -192,40 +192,40 @@ export default function HomePage() {
 
         // 예산 데이터 가져오기
         try {
-          console.log('[GoogleLogin] Fetching budget data with new token');
+          // console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
               Authorization: `Bearer ${data.data.access_token}`,
             },
           });
 
-          console.log('[GoogleLogin] Budget response:', {
-            status: budgetResponse.status,
-            ok: budgetResponse.ok,
-          });
+          // console.log('[GoogleLogin] Budget response:', {
+          //   status: budgetResponse.status,
+          //   ok: budgetResponse.ok,
+          // });
 
           if (budgetResponse.ok) {
             const budgetData = await budgetResponse.json();
-            console.log('[GoogleLogin] Budget data received:', {
-              success: budgetData.success,
-              hasData:
-                Array.isArray(budgetData.data) && budgetData.data.length > 0,
-              dataLength: budgetData.data?.length || 0,
-              sampleData: budgetData.data?.[0],
-            });
+            // console.log('[GoogleLogin] Budget data received:', {
+            //   success: budgetData.success,
+            //   hasData:
+            //     Array.isArray(budgetData.data) && budgetData.data.length > 0,
+            //   dataLength: budgetData.data?.length || 0,
+            //   sampleData: budgetData.data?.[0],
+            // });
             localStorage.setItem('budget', JSON.stringify(budgetData));
           }
         } catch (error) {
-          console.error('[GoogleLogin] Budget fetch error:', {
-            message: error.message,
-            stack: error.stack,
-          });
+          // console.error('[GoogleLogin] Budget fetch error:', {
+          //   message: error.message,
+          //   stack: error.stack,
+          // });
         }
 
-        console.log('[GoogleLogin] Reloading page');
+        //console.log('[GoogleLogin] Reloading page');
         window.location.reload();
       } else {
-        console.log('[GoogleLogin] New user detected, redirecting to signup');
+        //console.log('[GoogleLogin] New user detected, redirecting to signup');
         const userData = {
           id: decoded.sub,
           email: decoded.email,
@@ -250,51 +250,51 @@ export default function HomePage() {
     setLoading(true);
     const accessToken = localStorage.getItem('access_token');
 
-    console.log('[Statistics] Token check:', {
-      hasToken: !!accessToken,
-      tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
-    });
+    // console.log('[Statistics] Token check:', {
+    //   hasToken: !!accessToken,
+    //   tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
+    // });
 
     try {
-      console.log('[Statistics] Fetching spending data');
+      //console.log('[Statistics] Fetching spending data');
       const response = await fetch('/api/budget/spending', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      console.log('[Statistics] Spending response:', {
-        status: response.status,
-        ok: response.ok,
-      });
+      // console.log('[Statistics] Spending response:', {
+      //   status: response.status,
+      //   ok: response.ok,
+      // });
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[Statistics] Data received:', {
-          success: data.success,
-          hasData: !!data.spending,
-          categoriesCount: data.spending?.length,
-        });
+        // console.log('[Statistics] Data received:', {
+        //   success: data.success,
+        //   hasData: !!data.spending,
+        //   categoriesCount: data.spending?.length,
+        // });
 
         localStorage.setItem('spendingData', JSON.stringify(data));
-        console.log('[Statistics] Data stored, navigating to statistics page');
+        // console.log('[Statistics] Data stored, navigating to statistics page');
         router.push('/statistics');
       } else {
         const errorText = await response.text();
-        console.error('[Statistics] Failed to fetch spending data:', {
-          status: response.status,
-          error: errorText,
-        });
+        // console.error('[Statistics] Failed to fetch spending data:', {
+        //   status: response.status,
+        //   error: errorText,
+        // });
       }
     } catch (error) {
-      console.error('[Statistics] Error:', {
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
-      });
+      // console.error('[Statistics] Error:', {
+      //   message: error.message,
+      //   stack: error.stack,
+      //   timestamp: new Date().toISOString(),
+      // });
     } finally {
       setLoading(false);
-      console.log('[Statistics] Loading state cleared');
+      // console.log('[Statistics] Loading state cleared');
     }
   };
 
