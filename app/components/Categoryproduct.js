@@ -10,7 +10,7 @@ export default function CategoryProduct() {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('수유_이유용품');
   const [childName, setChildName] = useState('');
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const router = useRouter();
   const limit = 40;
 
@@ -51,6 +51,20 @@ export default function CategoryProduct() {
     }
   }, []);
 
+  // 페이지 범위 계산
+  const calculatePageRange = (currentPage, totalPages) => {
+    const maxPages = 5; // 한 번에 보여줄 페이지 버튼 수
+    let startPage = Math.max(1, currentPage - Math.floor(maxPages / 2));
+    let endPage = startPage + maxPages - 1;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, endPage - maxPages + 1);
+    }
+
+    return { startPage, endPage };
+  };
+
   useEffect(() => {
     async function fetchProducts() {
       console.log('[CategoryProduct] Fetching products:', {
@@ -70,67 +84,42 @@ export default function CategoryProduct() {
           url += `?page=${page}&limit=${limit}`;
         }
 
-        console.log('[CategoryProduct] Request URL:', url);
-
-        // Authorization 헤더 추가
-        const accessToken = localStorage.getItem('access_token');
-        const headers = {
-          Accept: 'application/json',
-          'Cache-Control': 'no-cache',
-        };
-
-        if (accessToken) {
-          headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        const response = await fetch(url, { headers });
-
-        console.log('[CategoryProduct] Raw Response:', {
-          status: response.status,
-          ok: response.ok,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
+        const response = await fetch(url, {
+          headers: {
+            'Cache-Control': 'no-store',
+          },
         });
 
         const data = await response.json();
-        console.log('[CategoryProduct] Raw API Response:', {
-          ...data,
-          requestedCategory: category,
-          encodedUrl: url,
-        });
 
         if (data.success) {
-          // 데이터가 비어있는 경우 추가 로깅
-          if (!data.data || data.data.length === 0) {
-            console.log('[CategoryProduct] No products found:', {
-              category,
-              meta: data.meta,
-              headers: headers,
-            });
-          }
+          setProducts(data.data);
+          // 전체 페이지 수 계산
+          const total = data.meta.total;
+          const calculatedTotalPages = Math.ceil(total / limit);
+          setTotalPages(calculatedTotalPages);
 
-          setProducts(data.data || []);
-          setTotalPages(Math.ceil((data.meta?.total || 0) / limit));
-        } else {
-          console.error('[CategoryProduct] Failed to fetch products:', {
-            error: data.error,
-            message: data.message,
+          console.log('[CategoryProduct] Products loaded:', {
+            count: data.data.length,
+            total,
+            totalPages: calculatedTotalPages,
+            currentPage: page,
           });
-          setProducts([]);
         }
       } catch (error) {
-        console.error('[CategoryProduct] Error fetching products:', {
-          error: error.message,
-          stack: error.stack,
-        });
+        console.error('[CategoryProduct] Error:', error);
         setProducts([]);
+        setTotalPages(0);
       } finally {
         setLoading(false);
       }
     }
 
     fetchProducts();
-  }, [category, page]);
+  }, [category, page]); // category나 page가 변경될 때마다 실행
+
+  // 페이지 범위 계산
+  const { startPage, endPage } = calculatePageRange(page, totalPages);
 
   const handleCategoryClick = (categoryId) => {
     console.log('[CategoryProduct] Category clicked:', {
@@ -141,21 +130,6 @@ export default function CategoryProduct() {
     setCategory(categoryId);
     setPage(1);
   };
-
-  // Get the current page range (5 pages per group)
-  const getPageRange = () => {
-    const startPage = Math.floor((page - 1) / 5) * 5 + 1;
-    const endPage = Math.min(startPage + 4, totalPages);
-    console.log('[CategoryProduct] Page range calculated:', {
-      currentPage: page,
-      startPage,
-      endPage,
-      totalPages,
-    });
-    return { startPage, endPage };
-  };
-
-  const { startPage, endPage } = getPageRange();
 
   // 컴포넌트 마운트 시 저장된 상태와 스크롤 위치 복원
   useEffect(() => {
@@ -289,43 +263,50 @@ export default function CategoryProduct() {
               </div>
             )}
 
-            {products.length > 0 && (
-              <div className="flex justify-center items-center gap-1 mt-12">
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-12">
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                   disabled={page === 1}
-                  className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+                  className="px-4 py-2 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ← 이전
                 </button>
 
-                {/* 페이지 번호 목록 */}
-                <div className="flex gap-1">
+                {/* 페이지 번호 */}
+                <div className="flex gap-2">
                   {Array.from(
                     { length: endPage - startPage + 1 },
-                    (_, idx) => startPage + idx
-                  ).map((n) => (
+                    (_, i) => startPage + i
+                  ).map((pageNum) => (
                     <button
-                      key={n}
-                      onClick={() => setPage(n)}
-                      className={`rounded-full text-pink-600 font-medium ${
-                        page === n ? 'bg-pink-100' : 'bg-white hover:bg-pink-50'
-                      }`}
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`
+                        w-10 h-10 rounded-full
+                        ${
+                          pageNum === page
+                            ? 'bg-pink-100 text-pink-600'
+                            : 'bg-white hover:bg-pink-50 text-gray-700'
+                        }
+                        font-medium
+                      `}
                     >
-                      {n}
+                      {pageNum}
                     </button>
                   ))}
                 </div>
 
-                {/* "Next" arrow for the next set of pages */}
-                {endPage < totalPages && (
-                  <button
-                    onClick={() => setPage(endPage + 1)}
-                    className="px-6 py-3 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 transition-colors duration-200 font-medium"
-                  >
-                    → 다음
-                  </button>
-                )}
+                <button
+                  onClick={() =>
+                    setPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={page === totalPages}
+                  className="px-4 py-2 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  다음 →
+                </button>
               </div>
             )}
           </>

@@ -4,7 +4,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const page = searchParams.get('page') || '1';
-    const limit = searchParams.get('limit') || '20';
+    const limit = searchParams.get('limit') || '40';
 
     console.log('[Category Search] Parameters:', { category, page, limit });
 
