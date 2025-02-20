@@ -12,7 +12,7 @@ export async function POST(request) {
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     if (!authorization) {
-      console.error('Missing Authorization header in multiple upload request');
+      console.error('Missing Authorization header in upload request');
       return new Response(
         JSON.stringify({
           error: 'Authorization header is required',
@@ -34,17 +34,26 @@ export async function POST(request) {
     const url = `${process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL}/upload/multiple`;
     console.log('Uploading multiple files to:', url);
 
+    const uploadFormData = new FormData();
+    files.forEach((file) => {
+      uploadFormData.append('files', file);
+    });
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: { Authorization: authorization },
-      body: formData,
+      headers: {
+        Authorization: authorization, // 원본 Authorization 헤더 그대로 전달
+      },
+      body: uploadFormData,
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Backend multiple upload error:', errorText);
+      const errorData = await response.json();
+      console.error('Backend multiple upload error:', errorData);
       throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
+        `HTTP error! status: ${response.status}, message: ${JSON.stringify(
+          errorData
+        )}`
       );
     }
 

@@ -2,7 +2,7 @@ export async function GET(request) {
   try {
     console.log('Related reviews fetch request received');
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews`;
+    const url = `${process.env.BACKEND_URL}/reviews`;
     console.log('Fetching reviews from:', url);
 
     const response = await fetch(url, {
@@ -20,7 +20,11 @@ export async function GET(request) {
     }
 
     const data = await response.json();
-    const normalizedReviews = data.reviews.map((review) => ({
+    console.log('Reviews data received:', data);
+
+    // data.reviews가 없으면 빈 배열 사용
+    const reviews = data.reviews || [];
+    const normalizedReviews = reviews.map((review) => ({
       _id: review._id || review.id,
       title: review.title,
       content: review.content,
@@ -41,8 +45,6 @@ export async function GET(request) {
           timestamp: new Date().toISOString(),
         },
         message: '관련 리뷰 목록을 성공적으로 불러왔습니다.',
-        timestamp: new Date().toISOString(),
-        path: '/api/reviews',
       }),
       {
         status: 200,
@@ -59,7 +61,6 @@ export async function GET(request) {
         error: '관련 리뷰 목록을 불러오는데 실패했습니다.',
         details: error.message,
         timestamp: new Date().toISOString(),
-        path: '/api/reviews',
       }),
       {
         status: 500,
