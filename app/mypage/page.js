@@ -449,30 +449,26 @@ export default function MyPage() {
         status: response.status,
         ok: response.ok,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
       });
 
-      // 응답 본문을 텍스트로 먼저 받아보기
-      const responseText = await response.text();
-      console.log('[MyPage] Raw response:', responseText);
+      const data = await response.json();
+      console.log('[MyPage] Parsed response data:', data);
 
-      // 응답이 있을 때만 JSON 파싱 시도
-      if (responseText) {
-        const data = JSON.parse(responseText);
-        console.log('[MyPage] Parsed response data:', data);
+      if (response.ok) {
+        // 기존 user 데이터 구조 유지
+        const updatedUserData = {
+          user: data.user, // 서버 응답의 user 객체를 사용
+        };
 
-        if (response.ok) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          setUserInfo(data.user);
-          setIsEditing(false);
-          alert('프로필이 업데이트되었습니다.');
-        } else {
-          console.error('[MyPage] Error updating profile:', data.message);
-          alert(data.message || '프로필 업데이트에 실패했습니다.');
-        }
+        console.log('[MyPage] Updating localStorage with:', updatedUserData);
+
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        setUserInfo(updatedUserData); // userInfo도 같은 구조로 업데이트
+        setIsEditing(false);
+        alert('프로필이 업데이트되었습니다.');
       } else {
-        console.error('[MyPage] Empty response received');
-        throw new Error('서버로부터 빈 응답을 받았습니다.');
+        console.error('[MyPage] Error updating profile:', data.message);
+        alert(data.message || '프로필 업데이트에 실패했습니다.');
       }
     } catch (error) {
       console.error('[MyPage] Profile update error:', {
