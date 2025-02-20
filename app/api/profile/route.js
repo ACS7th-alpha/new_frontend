@@ -2,13 +2,6 @@ export async function GET(request) {
   try {
     console.log('Profile fetch request received');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_AUTH_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     const authorization = request.headers.get('Authorization');
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
@@ -24,7 +17,8 @@ export async function GET(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/profile`;
+    const baseUrl = 'http://hama-auth:3001';
+    const url = `${baseUrl}/auth/profile`;
     console.log('Fetching profile from:', url);
 
     const response = await fetch(url, {
@@ -107,7 +101,8 @@ export async function PUT(request) {
       hasAvatar: !!requestBody.avatar,
     });
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/profile`;
+    const baseUrl = 'http://hama-auth:3001';
+    const url = `${baseUrl}/auth/profile`;
     console.log('Updating profile at:', url);
 
     const response = await fetch(url, {
