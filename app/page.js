@@ -51,7 +51,13 @@ export default function HomePage() {
         setUserInfo(parsedUser);
 
         // 아기의 개월 수 계산
-        if (parsedUser.children && parsedUser.children[0]) {
+        console.log('[HomePage] User data for age calculation:', {
+          hasChildren: !!parsedUser?.children,
+          children: parsedUser?.children,
+          firstChild: parsedUser?.children?.[0],
+        });
+
+        if (parsedUser?.children && parsedUser.children[0]) {
           const birthDate = new Date(parsedUser.children[0].birthdate);
           const today = new Date();
 
