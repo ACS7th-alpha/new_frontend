@@ -23,10 +23,13 @@ export async function GET(request, { params }) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL}/products/${uid}`;
-    console.log('Fetching product detail from:', url);
+    // 백엔드 요청 URL 구성
+    const baseUrl = 'http://hama-product:3007';
+    const url = new URL(`/products/${uid}`, baseUrl);
 
-    const response = await fetch(url, {
+    console.log('Fetching product detail from:', url.toString());
+
+    const response = await fetch(url.toString(), {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
