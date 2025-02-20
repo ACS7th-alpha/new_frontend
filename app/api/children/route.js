@@ -120,59 +120,6 @@ export async function POST(request) {
   }
 }
 
-export async function PUT(request) {
-  try {
-    console.log('[Children API] PUT: Updating child info');
-    const authorization = request.headers.get('Authorization');
-
-    if (!authorization) {
-      console.error('[Children API] PUT: Missing Authorization header');
-      return new Response(
-        JSON.stringify({
-          error: 'Authorization header is required',
-          timestamp: new Date().toISOString(),
-        }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const requestBody = await request.json();
-    const childName = requestBody.name;
-    console.log('[Children API] PUT: Updating child:', childName);
-
-    const baseUrl = 'http://hama-auth:3001';
-    const response = await fetch(
-      `${baseUrl}/auth/children/${encodeURIComponent(childName)}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: authorization,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Children API] PUT: Backend error:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('[Children API] PUT Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-}
-
 export async function DELETE(request) {
   try {
     console.log('[Children API] DELETE: Removing child');
