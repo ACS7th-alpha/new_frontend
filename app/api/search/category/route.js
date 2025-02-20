@@ -9,8 +9,11 @@ export async function GET(request) {
     console.log('[Category Search] Parameters:', { category, page, limit });
 
     const baseUrl = 'http://hama-product:3007';
-    const url = new URL('/search', baseUrl);
-    url.searchParams.set('category', category);
+    // 백엔드 API 경로 수정
+    const url = new URL(
+      `/products/category/${encodeURIComponent(category)}`,
+      baseUrl
+    );
     url.searchParams.set('page', page);
     url.searchParams.set('limit', limit);
 
@@ -24,15 +27,21 @@ export async function GET(request) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error('[Category Search] Backend error:', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      const errorText = await response.text();
+      console.error('[Category Search] Error details:', errorText);
+      throw new Error(`Backend error: ${response.status}`);
     }
 
     const data = await response.json();
     console.log('[Category Search] Backend response:', data);
 
     // 응답 데이터 구조화
-    const products = Array.isArray(data.data) ? data.data : [];
-    const total = data.meta?.total || 0;
+    const products = Array.isArray(data) ? data : data.data || [];
+    const total = data.meta?.total || products.length;
 
     return Response.json({
       success: true,
@@ -54,7 +63,7 @@ export async function GET(request) {
         timestamp: new Date().toISOString(),
       },
       {
-        status: 500,
+        status: error.message.includes('Backend error: 400') ? 400 : 500,
         headers: {
           'Content-Type': 'application/json',
         },
