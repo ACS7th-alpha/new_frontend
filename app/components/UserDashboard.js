@@ -16,9 +16,10 @@ export default function UserDashboard({
 
   console.log('[UserDashboard] Received userInfo:', {
     hasUserInfo: !!userInfo,
-    monthlyBudget: userInfo?.monthlyBudget,
-    parsedBudget: Number(userInfo?.monthlyBudget),
-    formatted: Number(userInfo?.monthlyBudget)?.toLocaleString('ko-KR'),
+    hasUser: !!userInfo?.user,
+    monthlyBudget: userInfo?.user?.monthlyBudget,
+    parsedBudget: Number(userInfo?.user?.monthlyBudget),
+    formatted: Number(userInfo?.user?.monthlyBudget)?.toLocaleString('ko-KR'),
   });
 
   useEffect(() => {
@@ -149,12 +150,12 @@ export default function UserDashboard({
   const currentProducts = products.slice(currentIndex, currentIndex + 4);
 
   // 프로그레스 바의 퍼센테이지 계산
-  const spendingPercentage = userInfo.monthlyBudget
-    ? Math.min((monthlySpending / userInfo.monthlyBudget) * 100, 100)
+  const spendingPercentage = userInfo.user?.monthlyBudget
+    ? Math.min((monthlySpending / userInfo.user.monthlyBudget) * 100, 100)
     : 0;
 
-  const spendingPercentage2 = userInfo.monthlyBudget
-    ? Math.floor((monthlySpending / userInfo.monthlyBudget) * 100)
+  const spendingPercentage2 = userInfo.user?.monthlyBudget
+    ? Math.floor((monthlySpending / userInfo.user.monthlyBudget) * 100)
     : 0;
 
   // 상품 클릭 핸들러 추가
@@ -216,8 +217,8 @@ export default function UserDashboard({
                   </p>
                   <div className="flex justify-between items-center mt-1">
                     <p className="text-3xl font-bold text-black">
-                      {userInfo?.monthlyBudget
-                        ? `${Number(userInfo.monthlyBudget).toLocaleString(
+                      {userInfo?.user?.monthlyBudget
+                        ? `${Number(userInfo.user.monthlyBudget).toLocaleString(
                             'ko-KR'
                           )}원`
                         : '0원'}
@@ -249,7 +250,7 @@ export default function UserDashboard({
 
               {/* 새로운 귀여운 네모 칸 추가 */}
               <div className="bg-white rounded-2xl p-4 mt-6 shadow-md border-2 border-blue-10">
-                {monthlySpending > userInfo.monthlyBudget ? ( // 조건부 렌더링
+                {monthlySpending > userInfo.user?.monthlyBudget ? ( // 조건부 렌더링
                   <p className="text-xl font-semibold text-red-500 text-center">
                     이번 달 예산을 다 쓰셔서, 아끼셔야 해요! 😢
                   </p>
@@ -262,7 +263,7 @@ export default function UserDashboard({
                     <span className="text-green-500 font-bold text-lg">
                       {(() => {
                         const remainingBudget =
-                          userInfo.monthlyBudget - monthlySpending;
+                          userInfo.user?.monthlyBudget - monthlySpending;
                         const remainingDays =
                           new Date(
                             new Date().getFullYear(),
