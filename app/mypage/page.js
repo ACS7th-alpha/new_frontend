@@ -178,8 +178,8 @@ export default function MyPage() {
         ok: budgetResponse.ok,
       });
 
-      // 예산 삭제가 실패하면 상세 에러 메시지 확인
-      if (!budgetResponse.ok) {
+      // 예산 데이터가 없는 경우(404)는 무시하고 진행
+      if (!budgetResponse.ok && budgetResponse.status !== 404) {
         const errorData = await budgetResponse.json();
         console.error('[MyPage] Budget deletion error details:', errorData);
         throw new Error(
@@ -188,10 +188,8 @@ export default function MyPage() {
         );
       }
 
-      // 예산 삭제 성공 시 사용자 계정 삭제 진행
-      console.log(
-        '[MyPage] Budget deleted successfully, proceeding with account deletion'
-      );
+      // 예산 삭제 성공 또는 예산이 없는 경우 사용자 계정 삭제 진행
+      console.log('[MyPage] Proceeding with account deletion');
       const userResponse = await fetch('/api/users', {
         method: 'DELETE',
         headers: {
