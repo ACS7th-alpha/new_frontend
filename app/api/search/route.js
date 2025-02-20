@@ -7,17 +7,17 @@ export async function GET(request) {
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '40';
 
+    // BACKEND_URL 환경 변수 사용
+    const backendUrl = process.env.BACKEND_URL || 'http://hama-product:3007';
+
     console.log('[Search API] Request received:', {
       keyword,
       page,
       limit,
-      env: process.env.NEXT_PUBLIC_API_URL,
+      backendUrl,
     });
 
-    // 백엤드 API는 /products 엔드포인트를 사용
-    const apiUrl = `${
-      process.env.NEXT_PUBLIC_API_URL
-    }/products?keyword=${encodeURIComponent(
+    const apiUrl = `${backendUrl}/products?keyword=${encodeURIComponent(
       keyword
     )}&page=${page}&limit=${limit}`;
     console.log('[Search API] Calling backend URL:', apiUrl);
