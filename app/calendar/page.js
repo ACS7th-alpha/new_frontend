@@ -65,6 +65,25 @@ function CalendarContent() {
       }
     };
 
+    // 사용자 정보와 당월 예산 설정
+    const userStr = localStorage.getItem('user');
+    console.log('[CalendarPage] Local storage user data:', {
+      hasUserData: !!userStr,
+      rawData: userStr,
+    });
+
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      console.log('[CalendarPage] Parsed user data:', {
+        fullUserObject: userData,
+        userInfo: userData?.user,
+        monthlyBudget: userData?.user?.monthlyBudget,
+        parsedBudget: Number(userData?.user?.monthlyBudget),
+      });
+      setMonthlyBudget(userData?.user?.monthlyBudget || 0);
+    }
+
+    // 전체 지출 내역 조회
     fetchSpending();
   }, []);
 
