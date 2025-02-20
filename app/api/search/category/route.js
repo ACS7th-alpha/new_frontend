@@ -23,7 +23,16 @@ export async function GET(request) {
       },
     });
 
-    // ... 응답 처리 ...
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[Category Search] Backend response:', data);
+
+    // 응답 데이터 구조화
+    const products = Array.isArray(data.data) ? data.data : [];
+    const total = data.meta?.total || 0;
 
     return Response.json({
       success: true,
@@ -34,6 +43,7 @@ export async function GET(request) {
         limit,
         category,
       },
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('[Category Search] Error:', error);
@@ -41,8 +51,14 @@ export async function GET(request) {
       {
         success: false,
         error: error.message,
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
   }
 }
