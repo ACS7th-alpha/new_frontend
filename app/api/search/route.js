@@ -9,6 +9,7 @@ export async function GET(request) {
 
     const backendUrl = process.env.BACKEND_URL || 'http://hama-product:3007';
 
+    // 요청 파라미터 로깅
     console.log('[Search API] Request received:', {
       keyword,
       page,
@@ -38,11 +39,14 @@ export async function GET(request) {
     }
 
     const data = await response.json();
-    console.log('[Search API] Backend response:', {
+    // 백엔드 응답 상세 로깅
+    console.log('[Search API] Backend response details:', {
       status: response.status,
-      data: data,
-      resultCount: data.data?.length || 0,
-      firstProduct: data.data?.[0]?.name,
+      hasData: !!data.data,
+      dataLength: data.data?.length || 0,
+      total: data.meta?.total,
+      firstItem: data.data?.[0],
+      metaInfo: data.meta,
     });
 
     // 응답 데이터 구조화
