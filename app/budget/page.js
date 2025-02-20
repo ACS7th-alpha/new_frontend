@@ -229,7 +229,6 @@ export default function BudgetPage() {
         },
       });
 
-      // spending details 처리 및 카테고리별 총액 계산
       if (data?.data?.spending) {
         const spendingMap = {};
         const categoryTotals = {};
@@ -247,13 +246,17 @@ export default function BudgetPage() {
         };
 
         data.data.spending.forEach((item) => {
-          // 선택된 년월에 해당하는 지출만 필터링
+          // 다음 달의 데이터를 가져오기 위해 month + 1
+          const targetMonth = month + 1;
+          const targetYear = year + (targetMonth > 12 ? 1 : 0);
+          const adjustedMonth = targetMonth > 12 ? 1 : targetMonth;
+
           const filteredDetails =
             item.details?.filter((detail) => {
               const detailDate = new Date(detail.date);
               return (
-                detailDate.getFullYear() === year &&
-                detailDate.getMonth() === month
+                detailDate.getFullYear() === targetYear &&
+                detailDate.getMonth() + 1 === adjustedMonth
               );
             }) || [];
 
