@@ -3,22 +3,22 @@ export async function POST(request) {
     const body = await request.json();
     console.log('[API] Register request received:', body);
 
-    // 요청 데이터 구조화
-    const { user, additionalInfo } = body;
-
-    // 회원가입 요청 데이터 구성
-    const registerData = {
-      email: user?.email,
-      googleId: user?.googleId,
-      name: user?.name,
-      photo: user?.photo,
-      nickname: additionalInfo?.nickname,
-      monthlyBudget: additionalInfo?.monthlyBudget,
-      children: additionalInfo?.children,
-      password: user?.googleId, // Google ID를 임시 비밀번호로 사용
+    // 백엔드 API 형식에 맞게 데이터 구조화
+    const requestData = {
+      user: {
+        googleId: body.user?.googleId,
+        email: body.user?.email,
+        name: body.user?.name,
+        photo: body.user?.photo,
+      },
+      additionalInfo: {
+        nickname: body.additionalInfo?.nickname,
+        monthlyBudget: body.additionalInfo?.monthlyBudget,
+        children: body.additionalInfo?.children,
+      },
     };
 
-    console.log('[API] Structured register data:', registerData);
+    console.log('[API] Structured register data:', requestData);
 
     const baseUrl = 'http://hama-auth:3001';
     const response = await fetch(`${baseUrl}/auth/register`, {
@@ -26,7 +26,7 @@ export async function POST(request) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(registerData),
+      body: JSON.stringify(requestData),
     });
 
     const data = await response.json();
