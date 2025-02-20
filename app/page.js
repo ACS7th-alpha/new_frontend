@@ -165,9 +165,18 @@ export default function HomePage() {
       });
 
       if (response.ok && data.success) {
-        localStorage.setItem('access_token', data.meta.tokens.accessToken);
-        localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.data));
+        // 토큰과 유저 데이터 저장
+        if (data.meta?.tokens?.accessToken) {
+          localStorage.setItem('access_token', data.meta.tokens.accessToken);
+        }
+        if (data.meta?.tokens?.refreshToken) {
+          localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
+        }
+        if (data.data) {
+          localStorage.setItem('user', JSON.stringify(data.data));
+        }
+
+        // 캐시된 데이터 삭제
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
 
