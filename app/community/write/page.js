@@ -84,9 +84,9 @@ export default function WritePage() {
     }
 
     setIsLoading(true);
-    console.log('[WritePage] Preparing form data');
 
     try {
+      let imageUrls = [];
       // 이미지 업로드
       if (images.length > 0) {
         const imageFormData = new FormData();
@@ -118,50 +118,54 @@ export default function WritePage() {
         const imageData = await imageUploadResponse.json();
         console.log('[WritePage] Image upload successful:', imageData);
 
-        // 리뷰 데이터 전송
-        const reviewData = {
-          title: title.trim(),
-          content: content.trim(),
-          ageGroup: age.trim(),
-          purchaseLink: store.trim() || null,
-          recommended: isRecommended,
-          imageUrls: imageData.data.map((img) => img.url),
-        };
+        // 이미지 URL 추출
+        imageUrls = imageData.data.map((img) => img.url);
+        console.log('[WritePage] Extracted image URLs:', imageUrls);
+      }
 
-        console.log(
-          '[WritePage] Token for review:',
-          token ? 'Present' : 'Missing'
-        );
+      // 리뷰 데이터 전송
+      const reviewData = {
+        name: title.trim(), // title -> name
+        description: content.trim(), // content -> description
+        ageGroup: age.trim(),
+        purchaseLink: store.trim() || null,
+        recommended: isRecommended,
+        imageUrls: imageUrls,
+      };
 
-        console.log('[WritePage] Submitting review:', reviewData);
-        const reviewResponse = await fetch('/api/reviews', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(reviewData),
-        });
+      const token = localStorage.getItem('access_token');
+      console.log(
+        '[WritePage] Token for review:',
+        token ? 'Present' : 'Missing'
+      );
+      console.log('[WritePage] Submitting review:', reviewData);
 
-        if (!reviewResponse.ok) {
-          const errorData = await reviewResponse.json();
-          console.error('[WritePage] Review submission error:', errorData);
-          throw new Error(`리뷰 등록 실패: ${reviewResponse.status}`);
-        }
+      const reviewResponse = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(reviewData),
+      });
 
-        const data = await reviewResponse.json();
-        console.log('[WritePage] Review submission successful:', data);
+      if (!reviewResponse.ok) {
+        const errorData = await reviewResponse.json();
+        console.error('[WritePage] Review submission error:', errorData);
+        throw new Error(`리뷰 등록 실패: ${reviewResponse.status}`);
+      }
 
-        if (data.success) {
-          console.log('[WritePage] Redirecting to community page');
-          router.push('/community');
-        }
+      const data = await reviewResponse.json();
+      console.log('[WritePage] Review submission successful:', data);
+
+      if (data.success) {
+        console.log('[WritePage] Redirecting to community page');
+        router.push('/community');
       }
     } catch (error) {
       console.error('[WritePage] Submission error:', error);
       alert(error.message || '게시글 작성에 실패했습니다.');
     } finally {
-      console.log('[WritePage] Form submission completed');
       setIsLoading(false);
     }
   };
