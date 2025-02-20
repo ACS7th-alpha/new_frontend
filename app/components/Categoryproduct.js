@@ -60,11 +60,19 @@ export default function CategoryProduct() {
         const response = await fetch(url);
         const data = await response.json();
 
+        // API 응답 구조 확인을 위한 로그
+        console.log('[CategoryProduct] API Response Structure:', {
+          fullResponse: data,
+          metaData: data.meta,
+          totalInMeta: data.meta?.total,
+          totalDirectly: data.total,
+          dataLength: data.data?.length,
+        });
+
         if (data.success) {
           setProducts(data.data);
-          // data.data.length를 사용하여 현재 페이지의 상품 수를 확인
-          const totalItems = data.data.length;
-          // 최소 1페이지는 보여주도록 설정
+          // 로그 확인 후 올바른 total 값을 사용하도록 수정 예정
+          const totalItems = data.meta?.total || data.total || 0;
           const calculatedTotalPages = Math.max(
             Math.ceil(totalItems / limit),
             1
@@ -72,7 +80,7 @@ export default function CategoryProduct() {
           setTotalPages(calculatedTotalPages);
 
           console.log('[CategoryProduct] Products loaded:', {
-            count: data.data.length,
+            currentPageCount: data.data.length,
             totalItems,
             currentPage: page,
             totalPages: calculatedTotalPages,
@@ -80,12 +88,12 @@ export default function CategoryProduct() {
         } else {
           console.error('[CategoryProduct] API Error:', data.error);
           setProducts([]);
-          setTotalPages(1); // 최소 1페이지
+          setTotalPages(1);
         }
       } catch (error) {
         console.error('[CategoryProduct] Failed to fetch products:', error);
         setProducts([]);
-        setTotalPages(1); // 최소 1페이지
+        setTotalPages(1);
       } finally {
         setLoading(false);
       }
