@@ -229,7 +229,7 @@ export default function BudgetPage() {
         },
       });
 
-      /*
+      // categories 처리
       if (data?.data?.categories) {
         data.data.categories.forEach((category) => {
           setCategorySpending((prev) => ({
@@ -239,18 +239,17 @@ export default function BudgetPage() {
         });
       }
 
-      const spendingMap = {};
-      data.spending.forEach((item) => {
-        spendingMap[item.category] = item.details;
-      });
-      setSpendingDetails(spendingMap);
-      */
+      // spending details 처리
+      if (data?.data?.spending) {
+        const spendingMap = {};
+        data.data.spending.forEach((item) => {
+          spendingMap[item.category] = item.details;
+        });
+        setSpendingDetails(spendingMap);
+      }
     } catch (error) {
       console.error('[BudgetPage] Error in fetchSpendingData:', error);
     }
-    // finally {
-    //   setLoading(false);
-    // }
   };
 
   useEffect(() => {
