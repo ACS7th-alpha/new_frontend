@@ -1,10 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Loading from '../components/Loading';
 
-export default function SearchPage() {
+function SearchResults() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const query = searchParams.get('query');
   const [products, setProducts] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -113,5 +114,14 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// 메인 페이지 컴포넌트
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <SearchResults />
+    </Suspense>
   );
 }
