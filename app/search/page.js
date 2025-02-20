@@ -67,11 +67,32 @@ export default function SearchPage() {
         </p>
       </div>
 
-      {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map((product) => (
-          <ProductCard key={product.uid} product={product} />
+          <div
+            key={product.uid}
+            onClick={() => router.push(`/product/${product.uid}`)}
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200 cursor-pointer"
+          >
+            <div className="relative pb-[100%]">
+              <img
+                src={product.img}
+                alt={product.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-4">
+              <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
+              <h3 className="text-md font-semibold text-gray-800 mb-2 line-clamp-2">
+                {product.name}
+              </h3>
+              <p className="text-lg font-bold text-black-500">
+                {Number(product.sale_price).toLocaleString()}원
+              </p>
+            </div>
+          </div>
         ))}
-      </div> */}
+      </div>
 
       {/* 페이지네이션 */}
       {totalCount > limit && (
