@@ -51,20 +51,6 @@ export default function CategoryProduct() {
     }
   }, []);
 
-  // 페이지 범위 계산
-  const calculatePageRange = (currentPage, totalPages) => {
-    const maxPages = 5; // 한 번에 보여줄 페이지 버튼 수
-    let startPage = Math.max(1, currentPage - Math.floor(maxPages / 2));
-    let endPage = startPage + maxPages - 1;
-
-    if (endPage > totalPages) {
-      endPage = totalPages;
-      startPage = Math.max(1, endPage - maxPages + 1);
-    }
-
-    return { startPage, endPage };
-  };
-
   useEffect(() => {
     async function fetchProducts() {
       console.log('[CategoryProduct] Fetching products:', {
@@ -94,16 +80,15 @@ export default function CategoryProduct() {
 
         if (data.success) {
           setProducts(data.data);
-          // 전체 페이지 수 계산
+          // 전체 페이지 수 계산 (백엔드에서 받은 total 사용)
           const total = data.meta.total;
-          const calculatedTotalPages = Math.ceil(total / limit);
-          setTotalPages(calculatedTotalPages);
+          setTotalPages(Math.ceil(total / limit));
 
           console.log('[CategoryProduct] Products loaded:', {
-            count: data.data.length,
-            total,
-            totalPages: calculatedTotalPages,
+            productsCount: data.data.length,
+            totalProducts: total,
             currentPage: page,
+            totalPages: Math.ceil(total / limit),
           });
         }
       } catch (error) {
@@ -118,9 +103,6 @@ export default function CategoryProduct() {
     fetchProducts();
   }, [category, page]); // category나 page가 변경될 때마다 실행
 
-  // 페이지 범위 계산
-  const { startPage, endPage } = calculatePageRange(page, totalPages);
-
   const handleCategoryClick = (categoryId) => {
     console.log('[CategoryProduct] Category clicked:', {
       from: category,
@@ -130,6 +112,21 @@ export default function CategoryProduct() {
     setCategory(categoryId);
     setPage(1);
   };
+
+  // Get the current page range (5 pages per group)
+  const getPageRange = () => {
+    const startPage = Math.floor((page - 1) / 5) * 5 + 1;
+    const endPage = Math.min(startPage + 4, totalPages);
+    console.log('[CategoryProduct] Page range calculated:', {
+      currentPage: page,
+      startPage,
+      endPage,
+      totalPages,
+    });
+    return { startPage, endPage };
+  };
+
+  const { startPage, endPage } = getPageRange();
 
   // 컴포넌트 마운트 시 저장된 상태와 스크롤 위치 복원
   useEffect(() => {
@@ -298,15 +295,14 @@ export default function CategoryProduct() {
                   ))}
                 </div>
 
-                <button
-                  onClick={() =>
-                    setPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={page === totalPages}
-                  className="px-4 py-2 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  다음 →
-                </button>
+                {endPage < totalPages && (
+                  <button
+                    onClick={() => setPage(endPage + 1)}
+                    className="px-4 py-2 rounded-full bg-white text-gray-700 border-2 border-pink-200 hover:bg-pink-50"
+                  >
+                    다음 →
+                  </button>
+                )}
               </div>
             )}
           </>
