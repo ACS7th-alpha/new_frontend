@@ -24,17 +24,17 @@ export default function ProductList() {
   // 로그인 상태 확인
   useEffect(() => {
     const userData = localStorage.getItem('user');
-    console.log('[ProductList] Checking user data:', {
-      hasUserData: !!userData,
-      rawData: userData,
-    });
+    // console.log('[ProductList] Checking user data:', {
+    //   hasUserData: !!userData,
+    //   rawData: userData,
+    // });
 
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      console.log('[ProductList] Parsed user data:', {
-        userInfo: parsedUser,
-        isLoggedIn: !!parsedUser,
-      });
+      // console.log('[ProductList] Parsed user data:', {
+      //   userInfo: parsedUser,
+      //   isLoggedIn: !!parsedUser,
+      // });
       setUserInfo(parsedUser);
     }
   }, []);
@@ -47,10 +47,10 @@ export default function ProductList() {
     }
 
     async function fetchProducts() {
-      console.log('[ProductList] Fetching products:', {
-        category,
-        limit,
-      });
+      // console.log('[ProductList] Fetching products:', {
+      //   category,
+      //   limit,
+      // });
 
       setLoading(true);
       try {
@@ -63,7 +63,7 @@ export default function ProductList() {
           )}&random=${Math.random()}`;
         }
 
-        console.log('[ProductList] Fetching URL:', url);
+        // console.log('[ProductList] Fetching URL:', url);
 
         const response = await fetch(url, {
           headers: {
@@ -71,33 +71,33 @@ export default function ProductList() {
           },
         });
 
-        console.log('[ProductList] API Response status:', response.status);
+        // console.log('[ProductList] API Response status:', response.status);
 
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
 
         const data = await response.json();
-        console.log('[ProductList] Products data:', {
-          hasData: !!data.data,
-          productsCount: data.data?.length || 0,
-          rawData: data,
-        });
+        // console.log('[ProductList] Products data:', {
+        //   hasData: !!data.data,
+        //   productsCount: data.data?.length || 0,
+        //   rawData: data,
+        // });
 
         if (Array.isArray(data.data)) {
           const shuffledProducts = shuffleArray(data.data);
-          console.log('[ProductList] Shuffled products:', {
-            originalCount: data.data.length,
-            shuffledCount: shuffledProducts.length,
-            limitedCount: Math.min(shuffledProducts.length, limit),
-          });
+          // console.log('[ProductList] Shuffled products:', {
+          //   originalCount: data.data.length,
+          //   shuffledCount: shuffledProducts.length,
+          //   limitedCount: Math.min(shuffledProducts.length, limit),
+          // });
           setProducts(shuffledProducts.slice(0, limit));
         } else {
-          console.log('[ProductList] No products data available');
+          // console.log('[ProductList] No products data available');
           setProducts([]);
         }
       } catch (error) {
-        console.error('[ProductList] Error fetching products:', error);
+        // console.error('[ProductList] Error fetching products:', error);
         setProducts([]);
       } finally {
         setLoading(false);
@@ -108,15 +108,15 @@ export default function ProductList() {
   }, [category, userInfo]);
 
   const handleCategoryChange = (newCategory) => {
-    console.log('[ProductList] Category changed:', {
-      from: category,
-      to: newCategory,
-    });
+    // console.log('[ProductList] Category changed:', {
+    //   from: category,
+    //   to: newCategory,
+    // });
     setCategory(newCategory);
   };
 
   if (userInfo) {
-    console.log('[ProductList] User is logged in, returning null');
+    // console.log('[ProductList] User is logged in, returning null');
     return null;
   }
 

@@ -26,14 +26,22 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     try {
-      // 로컬 스토리지에서 토큰 가져오기
-      const accessToken = localStorage.getItem('access_token'); // 액세스 토큰 가져오기
+      const accessToken = localStorage.getItem('access_token');
+      console.log('[ProductDetail] Adding to cart:', {
+        hasToken: !!accessToken,
+        productInfo: {
+          name: product.name,
+          category: product.category,
+          price: product.sale_price,
+        },
+      });
+
       if (!accessToken) {
+        console.log('[ProductDetail] No access token found');
         alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
-      // POST 요청으로 상품을 장바구니에 추가
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
@@ -53,33 +61,69 @@ export default function ProductDetail() {
         }),
       });
 
+      console.log('[ProductDetail] Cart API Response:', {
+        status: response.status,
+        ok: response.ok,
+      });
+
       if (response.ok) {
         const result = await response.json();
+        console.log('[ProductDetail] Cart success:', result);
         alert('상품이 장바구니에 담겼습니다.');
         router.push('/shoppingcart');
       } else {
         const errorData = await response.json();
+        console.error('[ProductDetail] Cart error:', errorData);
         alert(errorData.message || '장바구니 담기에 실패했습니다.');
       }
     } catch (error) {
-      console.error('장바구니 담기 오류:', error);
+      console.error('[ProductDetail] Cart error:', {
+        error: error.message,
+        stack: error.stack,
+      });
       alert('장바구니 담기에 실패했습니다.');
     }
   };
 
   useEffect(() => {
     async function fetchProduct() {
-      if (!params?.uid) return; // params.uid가 없으면 요청하지 않음
+      if (!params?.uid) {
+        console.log('[ProductDetail] No UID provided, skipping fetch');
+        return;
+      }
+
+      console.log('[ProductDetail] Starting product fetch:', {
+        uid: params.uid,
+        timestamp: new Date().toISOString(),
+      });
 
       setLoading(true);
       try {
         const response = await fetch(`/api/search/products/${params.uid}`);
-        if (!response.ok) throw new Error('상품을 불러올 수 없습니다.');
+        console.log('[ProductDetail] API Response:', {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText,
+        });
+
+        if (!response.ok) {
+          throw new Error('상품을 불러올 수 없습니다.');
+        }
 
         const data = await response.json();
-        setProduct(data); // 배열이 아니라 단일 객체로 받음
+        console.log('[ProductDetail] Product data:', {
+          hasData: !!data,
+          productInfo: data,
+          additionalInfo: data?.additionalInfo,
+          reviewSummary: data?.additionalInfo?.review_summary,
+        });
+
+        setProduct(data);
       } catch (error) {
-        console.error('Error fetching product:', error);
+        console.error('[ProductDetail] Error fetching product:', {
+          error: error.message,
+          stack: error.stack,
+        });
         setProduct(null);
       } finally {
         setLoading(false);
@@ -87,20 +131,42 @@ export default function ProductDetail() {
     }
 
     fetchProduct();
-  }, [params?.uid]); // params.uid 변경 시 다시 요청
+  }, [params?.uid]);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
-    console.log('Access Token:', accessToken ? 'exists' : 'not found');
-    console.log('User Info:', userInfo);
+    const userStr = localStorage.getItem('user');
 
-    if (userInfo) {
+    console.log('[ProductDetail] Auth check:', {
+      hasAccessToken: !!accessToken,
+      tokenPreview: accessToken ? accessToken.substring(0, 10) + '...' : null,
+      hasUserData: !!userStr,
+    });
+
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      console.log('[ProductDetail] User data:', {
+        isLoggedIn: true,
+        userInfo: userData,
+      });
       setIsLoggedIn(true);
-      console.log('User is logged in');
     } else {
-      console.log('User is not logged in');
+      console.log('[ProductDetail] No user data found');
     }
-  }, [userInfo]);
+  }, []);
+
+  // 리뷰 데이터 관련 로그
+  useEffect(() => {
+    console.log('[ProductDetail] Review data check:', {
+      hasProduct: !!product,
+      hasAdditionalInfo: !!product?.additionalInfo,
+      hasReviewSummary: !!product?.additionalInfo?.review_summary,
+      advantages:
+        product?.additionalInfo?.review_summary?.advantages?.length || 0,
+      disadvantages:
+        product?.additionalInfo?.review_summary?.disadvantages?.length || 0,
+    });
+  }, [product]);
 
   // 리뷰 데이터 존재 여부 체크 - 실제 데이터 존재 여부 확인
   const hasReviewData =
