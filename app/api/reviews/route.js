@@ -91,7 +91,10 @@ export async function POST(request) {
     }
 
     const reviewData = await request.json();
-    if (!reviewData.title || !reviewData.content) {
+    console.log('Received review data:', reviewData);
+
+    // 필수 필드 검증
+    if (!reviewData.name?.trim() || !reviewData.description?.trim()) {
       console.error('Invalid review data:', reviewData);
       return new Response(
         JSON.stringify({
@@ -103,8 +106,11 @@ export async function POST(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews`;
-    console.log('Creating review at:', url);
+    const url = `${process.env.BACKEND_URL}/reviews`;
+    console.log('Sending review to backend:', {
+      url,
+      data: reviewData,
+    });
 
     const response = await fetch(url, {
       method: 'POST',
@@ -112,17 +118,29 @@ export async function POST(request) {
         Authorization: authorization,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(reviewData),
+      body: JSON.stringify({
+        name: reviewData.name.trim(),
+        description: reviewData.description.trim(),
+        ageGroup: reviewData.ageGroup?.trim(),
+        purchaseLink: reviewData.purchaseLink?.trim() || null,
+        recommended: reviewData.recommended,
+        imageUrls: reviewData.imageUrls || [],
+      }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorData = await response.json();
+      console.error('Backend review creation error:', errorData);
       throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
+        `Backend error: ${response.status}, message: ${JSON.stringify(
+          errorData
+        )}`
       );
     }
 
     const data = await response.json();
+    console.log('Review creation successful:', data);
+
     return new Response(
       JSON.stringify({
         success: true,
