@@ -455,15 +455,24 @@ export default function MyPage() {
       console.log('[MyPage] Parsed response data:', data);
 
       if (response.ok) {
-        // 기존 user 데이터 구조 유지
+        // 현재 localStorage의 user 데이터를 가져옴
+        const currentUserData = JSON.parse(localStorage.getItem('user'));
+        console.log('[MyPage] Current user data:', currentUserData);
+
+        // 새로운 데이터로 기존 데이터 업데이트
         const updatedUserData = {
-          user: data.user, // 서버 응답의 user 객체를 사용
+          ...currentUserData,
+          user: {
+            ...currentUserData.user,
+            nickname: data.user.nickname,
+            monthlyBudget: data.user.monthlyBudget,
+          },
         };
 
-        console.log('[MyPage] Updating localStorage with:', updatedUserData);
+        console.log('[MyPage] Updated user data:', updatedUserData);
 
         localStorage.setItem('user', JSON.stringify(updatedUserData));
-        setUserInfo(updatedUserData); // userInfo도 같은 구조로 업데이트
+        setUserInfo(updatedUserData);
         setIsEditing(false);
         alert('프로필이 업데이트되었습니다.');
       } else {
