@@ -18,6 +18,12 @@ export default function SearchPage() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 40;
 
+  // 페이지네이션 계산
+  const pageGroupSize = 5; // 한 번에 보여줄 페이지 버튼 수
+  const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
+  const startPage = currentGroup * pageGroupSize + 1;
+  const endPage = Math.min(startPage + pageGroupSize - 1, totalPages);
+
   console.log('[SearchPage] Render start:', { query, currentPage, loading });
 
   useEffect(() => {
@@ -193,7 +199,6 @@ export default function SearchPage() {
                   ))}
                 </div>
 
-                {/* "Next" arrow for the next set of pages */}
                 {endPage < totalPages && (
                   <button
                     onClick={() => setCurrentPage(endPage + 1)}
