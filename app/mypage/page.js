@@ -124,14 +124,22 @@ export default function MyPage() {
         statusText: response.statusText,
       });
 
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error('내가 쓴 글을 불러오는 데 실패했습니다.');
+      }
 
       const data = await response.json();
       console.log('[MyPage] Posts fetched successfully:', {
-        count: data.length,
+        data,
+        count: data?.reviews?.length || 0,
       });
-      setMyPosts(data);
+
+      if (!data?.reviews) {
+        console.error('[MyPage] Invalid response format:', data);
+        throw new Error('서버 응답 형식이 올바르지 않습니다.');
+      }
+
+      setMyPosts(data.reviews);
     } catch (error) {
       console.error('[MyPage] Error fetching posts:', {
         message: error.message,
@@ -982,85 +990,47 @@ export default function MyPage() {
                 내가 쓴 글 <span className="ml-2">📝</span>
               </h2>
               {loading ? (
-                <p className="text-gray-600">불러오는 중...</p>
-              ) : myPosts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center py-8">
+                  <p>로딩 중...</p>
+                </div>
+              ) : myPosts?.length > 0 ? (
+                <div className="space-y-4">
                   {myPosts.map((post) => (
                     <div
                       key={post._id}
-                      className="bg-white rounded-2xl border-2 border-gray-100 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer"
-                      onClick={() => router.push(`/community/${post._id}`)}
+                      className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
                     >
-                      {/* 삭제 버튼 */}
-                      <button
-                        onClick={(e) => handleDeletePost(e, post._id)}
-                        className=" px-3 py-1.5 bg-pink-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
-                      >
-                        삭제
-                      </button>
-                      <div className="flex flex-col h-full">
-                        {/* 이미지 섹션 */}
-                        <div className="relative aspect-[4/3] mb-4 rounded-xl overflow-hidden bg-gray-100">
-                          {post.thumbnailUrls &&
-                          post.thumbnailUrls.length > 0 ? (
-                            <img
-                              src={post.thumbnailUrls[0]}
-                              alt={post.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              No Image
-                            </div>
-                          )}
-                          <div className="absolute top-3 left-3">
-                            <span
-                              className={`px-3 py-2 rounded-full text-m font-semibold ${
-                                post.recommended
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-red-100 text-red-600'
-                              }`}
-                            >
-                              {post.recommended ? '추천템' : '😢 비추천템'}
-                            </span>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">
+                            {post.title}
+                          </h3>
+                          <p className="text-gray-600">{post.content}</p>
+                          <div className="mt-2 text-sm text-gray-500">
+                            {new Date(post.createdAt).toLocaleDateString()}
                           </div>
                         </div>
-
-                        {/* 컨텐츠 섹션 */}
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-gray-800 mb-1">
-                            {post.name}
-                          </h3>
-                          <p className="text-m text-gray-500 mb-2">
-                            사용 연령: {post.ageGroup}
-                          </p>
-                          <p className="text-gray-600 text-m line-clamp-2 mb-4">
-                            {post.description}
-                          </p>
-                          <p className="text-m text-gray-500">
-                            구매처: {post.purchaseLink || '미기재'}
-                          </p>
-                          <div className="flex justify-end mt-16">
-                            <span className="text-xl font-bold text-pink-600">
-                              자세히 보기 →
-                            </span>
-                          </div>
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/reviews/${post._id}`}
+                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          >
+                            보기
+                          </Link>
+                          <button
+                            onClick={(e) => handleDeletePost(e, post._id)}
+                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                          >
+                            삭제
+                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 mb-4">
-                    아직 작성한 글이 없습니다 📝
-                  </p>
-                  <Link
-                    href="/community"
-                    className="inline-block px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                  >
-                    첫 글 작성하러 가기
-                  </Link>
+                <div className="text-center py-8">
+                  <p className="text-gray-600">작성한 글이 없습니다.</p>
                 </div>
               )}
             </div>

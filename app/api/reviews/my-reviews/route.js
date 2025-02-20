@@ -1,14 +1,7 @@
 export async function GET(request) {
   try {
-    console.log('My reviews fetch request received');
     const authorization = request.headers.get('Authorization');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     if (!authorization) {
@@ -23,7 +16,8 @@ export async function GET(request) {
       );
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews/my-reviews`;
+    const baseUrl = 'http://hama-review:3004';
+    const url = `${baseUrl}/reviews/my-reviews`;
     console.log('Fetching my reviews from:', url);
 
     const response = await fetch(url, {
