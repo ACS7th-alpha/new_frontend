@@ -23,7 +23,10 @@ export async function GET(request) {
       );
     }
 
-    const baseUrl = 'http://hama-cart:3003'; // 카트 서비스의 내부 URL로 변경
+    // Docker 컨테이너 간 통신을 위한 내부 URL
+    const baseUrl =
+      process.env.NEXT_PUBLIC_CART_SERVICE_URL || 'http://hama-cart:3003';
+    console.log('[Cart API] Using base URL:', baseUrl);
     const url = `${baseUrl}/cart`;
     console.log('Fetching cart items from:', url);
 
@@ -105,65 +108,80 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    console.log('Cart item addition request received');
-    const authorization = request.headers.get('Authorization');
+    const accessToken = request.headers.get('Authorization');
+    console.log('[Cart API] Request received:', {
+      hasToken: !!accessToken,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+    });
 
-    if (!authorization) {
-      console.error('Missing Authorization header in cart addition request');
-      return new Response(
-        JSON.stringify({
-          error: 'Authorization header is required',
-          timestamp: new Date().toISOString(),
-          path: '/api/cart',
-        }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const cartData = await request.json();
+    console.log('[Cart API] Request body:', {
+      uid: cartData.uid,
+      name: cartData.name,
+      category: cartData.category,
+      price: cartData.sale_price,
+    });
 
-    const productData = await request.json();
-    if (!productData.uid || !productData.name) {
-      return new Response(
-        JSON.stringify({
-          error: '상품 정보가 올바르지 않습니다.',
-          timestamp: new Date().toISOString(),
-          path: '/api/cart',
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const baseUrl = 'http://hama-cart:3003';
+    console.log('[Cart API] Forwarding request to:', `${baseUrl}/cart`);
 
-    const baseUrl = 'http://hama-cart:3003'; // 카트 서비스의 내부 URL로 변경
-    const url = `${baseUrl}/cart/add`;
-    const response = await fetch(url, {
+    const response = await fetch(`${baseUrl}/cart`, {
       method: 'POST',
       headers: {
-        Authorization: authorization,
+        Authorization: accessToken,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(cartData),
+    });
+
+    console.log('[Cart API] Backend response details:', {
+      status: response.status,
+      ok: response.ok,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
+      console.error('[Cart API] Backend error response:', {
+        status: response.status,
+        error: errorText,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: '장바구니 추가에 실패했습니다.',
+          details: `HTTP error! status: ${response.status}, message: ${errorText}`,
+          timestamp: new Date().toISOString(),
+          path: '/api/cart',
+        }),
+        {
+          status: response.status,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: '장바구니에 상품이 추가되었습니다.',
-        data: {
-          productId: productData.uid,
-          timestamp: new Date().toISOString(),
-        },
-        path: '/api/cart',
-      }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
-    );
+    const data = await response.json();
+    console.log('[Cart API] Backend success response:', data);
+
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   } catch (error) {
-    console.error('Error adding item to cart:', error);
+    console.error('[Cart API] Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause,
+    });
+
     return new Response(
       JSON.stringify({
         error: '장바구니 추가에 실패했습니다.',
@@ -171,7 +189,12 @@ export async function POST(request) {
         timestamp: new Date().toISOString(),
         path: '/api/cart',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
   }
 }

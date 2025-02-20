@@ -27,21 +27,29 @@ export default function ProductDetail() {
   const handleAddToCart = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      console.log('[ProductDetail] Adding to cart:', {
-        hasToken: !!accessToken,
-        productInfo: {
-          name: product.name,
-          category: product.category,
-          price: product.sale_price,
-        },
+      console.log('[ProductDetail] Starting add to cart process');
+      console.log(
+        '[ProductDetail] Access Token:',
+        accessToken ? 'exists' : 'missing'
+      );
+
+      console.log('[ProductDetail] Product info:', {
+        uid: product.uid,
+        name: product.name,
+        category: product.category,
+        price: product.sale_price,
+        brand: product.brand,
+        site: product.site,
+        link: product.link,
       });
 
       if (!accessToken) {
-        console.log('[ProductDetail] No access token found');
+        console.log('[ProductDetail] Add to cart failed: No access token');
         alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
+      console.log('[ProductDetail] Sending cart request...');
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
@@ -61,25 +69,33 @@ export default function ProductDetail() {
         }),
       });
 
-      console.log('[ProductDetail] Cart API Response:', {
+      console.log('[ProductDetail] Cart API Response details:', {
         status: response.status,
         ok: response.ok,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('[ProductDetail] Cart success:', result);
+        console.log('[ProductDetail] Cart success response:', result);
         alert('상품이 장바구니에 담겼습니다.');
         router.push('/shoppingcart');
       } else {
         const errorData = await response.json();
-        console.error('[ProductDetail] Cart error:', errorData);
+        console.error('[ProductDetail] Cart error response:', {
+          status: response.status,
+          error: errorData,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
         alert(errorData.message || '장바구니 담기에 실패했습니다.');
       }
     } catch (error) {
-      console.error('[ProductDetail] Cart error:', {
-        error: error.message,
+      console.error('[ProductDetail] Cart error details:', {
+        name: error.name,
+        message: error.message,
         stack: error.stack,
+        cause: error.cause,
       });
       alert('장바구니 담기에 실패했습니다.');
     }
