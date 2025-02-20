@@ -49,15 +49,17 @@ export async function GET(request) {
     const data = await response.json();
     console.log('[Budget API] Backend response data:', {
       success: true,
-      dataLength: data?.length,
-      sampleData: data?.[0],
+      dataLength: data?.length || 0,
+      sampleData: data?.[0] || null,
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        data,
-        message: '예산 데이터를 성공적으로 불러왔습니다.',
+        data: data || [],
+        message: data?.length
+          ? '예산 데이터를 성공적으로 불러왔습니다.'
+          : '예산 데이터가 없습니다.',
         timestamp: new Date().toISOString(),
         path: '/api/budget',
       }),
