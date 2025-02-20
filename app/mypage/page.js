@@ -24,26 +24,49 @@ export default function MyPage() {
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
+    console.log('[MyPage] Initializing user data:', {
+      hasUserData: !!userData,
+      timestamp: new Date().toISOString(),
+    });
     if (userData) {
-      setUserInfo(JSON.parse(userData));
+      const parsedData = JSON.parse(userData);
+      console.log('[MyPage] Parsed user data:', {
+        nickname: parsedData.nickname,
+        hasChildren: !!parsedData.children,
+        childrenCount: parsedData.children?.length,
+      });
+      setUserInfo(parsedData);
     }
   }, []);
 
   useEffect(() => {
     if (activeTab === 'posts') {
+      console.log('[MyPage] Fetching posts for active tab:', activeTab);
       fetchMyPosts();
     }
   }, [activeTab]);
 
   const handleDeletePost = async (e, id) => {
-    e.stopPropagation(); // 클릭 이벤트 전파 방지
+    e.stopPropagation();
+    console.log('[MyPage] Attempting to delete post:', id);
 
     const confirmDelete = window.confirm('이 글을 정말 삭제하시겠습니까?');
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+      console.log('[MyPage] Post deletion cancelled by user');
+      return;
+    }
 
     try {
       const token = localStorage.getItem('access_token');
-      if (!token) throw new Error('로그인이 필요합니다.');
+      console.log('[MyPage] Delete post request initiated:', {
+        postId: id,
+        hasToken: !!token,
+      });
+
+      if (!token) {
+        console.error('[MyPage] Delete post failed: No access token');
+        throw new Error('로그인이 필요합니다.');
+      }
 
       const response = await fetch(`/api/reviews/${id}`, {
         method: 'DELETE',
@@ -52,21 +75,37 @@ export default function MyPage() {
         },
       });
 
+      console.log('[MyPage] Delete post response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
+      });
+
       if (!response.ok) throw new Error('글 삭제 실패');
 
-      // 글 삭제 성공 시, 화면에서 해당 글 제거
       setMyPosts(myPosts.filter((post) => post._id !== id));
+      console.log('[MyPage] Post successfully deleted:', id);
       alert('글이 삭제되었습니다.');
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error('[MyPage] Error deleting post:', {
+        postId: id,
+        error: error.message,
+        stack: error.stack,
+      });
       alert('글 삭제 중 오류가 발생했습니다.');
     }
   };
 
   const fetchMyPosts = async () => {
     setLoading(true);
+    console.log('[MyPage] Starting to fetch posts');
+
     try {
       const token = localStorage.getItem('access_token');
+      console.log('[MyPage] Fetch posts request initiated:', {
+        hasToken: !!token,
+      });
+
       if (!token) throw new Error('로그인이 필요합니다.');
 
       const response = await fetch('/api/reviews/my-reviews', {
@@ -75,29 +114,50 @@ export default function MyPage() {
         },
       });
 
+      console.log('[MyPage] Fetch posts response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
+      });
+
       if (!response.ok)
         throw new Error('내가 쓴 글을 불러오는 데 실패했습니다.');
 
       const data = await response.json();
+      console.log('[MyPage] Posts fetched successfully:', {
+        count: data.length,
+      });
       setMyPosts(data);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('[MyPage] Error fetching posts:', {
+        message: error.message,
+        stack: error.stack,
+      });
       alert(error.message);
     } finally {
       setLoading(false);
+      console.log('[MyPage] Fetch posts completed');
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!userInfo) return;
+    if (!userInfo) {
+      console.log('[MyPage] Delete account cancelled: No user info');
+      return;
+    }
 
     const confirmDelete = window.confirm('정말 계정을 삭제하시겠습니까?');
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+      console.log('[MyPage] Delete account cancelled by user');
+      return;
+    }
 
     try {
       const accessToken = localStorage.getItem('access_token');
+      console.log('[MyPage] Starting account deletion process');
 
-      // 예산 삭제 요청
+      // 예산 삭제
+      console.log('[MyPage] Attempting to delete budget data');
       const budgetResponse = await fetch('/api/budget', {
         method: 'DELETE',
         headers: {
@@ -105,15 +165,19 @@ export default function MyPage() {
         },
       });
 
+      console.log('[MyPage] Budget deletion response:', {
+        status: budgetResponse.status,
+        ok: budgetResponse.ok,
+      });
+
       if (budgetResponse.status === 404) {
-        console.log('예산 데이터가 없습니다.'); // 예외 처리
+        console.log('[MyPage] No budget data to delete');
       } else if (!budgetResponse.ok) {
         throw new Error('예산 삭제 실패');
-      } else {
-        console.log('예산 삭제 성공');
       }
 
-      // 리뷰 삭제 요청
+      // 리뷰 삭제
+      console.log('[MyPage] Attempting to delete all reviews');
       const reviewsResponse = await fetch('/api/reviews', {
         method: 'DELETE',
         headers: {
@@ -121,15 +185,19 @@ export default function MyPage() {
         },
       });
 
+      console.log('[MyPage] Reviews deletion response:', {
+        status: reviewsResponse.status,
+        ok: reviewsResponse.ok,
+      });
+
       if (reviewsResponse.status === 404) {
-        console.log('리뷰 데이터가 없습니다.'); // 예외 처리
+        console.log('[MyPage] No reviews to delete');
       } else if (!reviewsResponse.ok) {
         throw new Error('리뷰 삭제 실패');
-      } else {
-        console.log('리뷰 전체 삭제 성공');
       }
 
-      // 회원 탈퇴 요청
+      // 계정 삭제
+      console.log('[MyPage] Attempting to delete account');
       const response = await fetch('/api/auth', {
         method: 'DELETE',
         headers: {
@@ -137,14 +205,22 @@ export default function MyPage() {
         },
       });
 
+      console.log('[MyPage] Account deletion response:', {
+        status: response.status,
+        ok: response.ok,
+      });
+
       if (!response.ok) throw new Error('계정 삭제 실패');
 
-      // 계정 삭제 성공 시 로컬 저장소 데이터 삭제 후 메인 페이지로 이동
-      localStorage.clear(); // 모든 로컬 저장소 데이터 삭제
+      localStorage.clear();
+      console.log('[MyPage] Account successfully deleted');
       alert('계정이 삭제되었습니다.');
-      router.push('/'); // 로그인 전의 메인 페이지로 이동
+      router.push('/');
     } catch (error) {
-      console.error('Error deleting account:', error);
+      console.error('[MyPage] Error during account deletion:', {
+        message: error.message,
+        stack: error.stack,
+      });
       alert('계정 삭제 중 오류가 발생했습니다.');
     }
   };
