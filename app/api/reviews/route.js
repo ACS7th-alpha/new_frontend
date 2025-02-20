@@ -22,26 +22,13 @@ export async function GET(request) {
     const data = await response.json();
     console.log('Reviews data received:', data);
 
-    // data.reviews가 없으면 빈 배열 사용
-    const reviews = data.reviews || [];
-    const normalizedReviews = reviews.map((review) => ({
-      _id: review._id || review.id,
-      title: review.title,
-      content: review.content,
-      author: review.author,
-      createdAt: review.createdAt || new Date().toISOString(),
-      updatedAt: review.updatedAt || new Date().toISOString(),
-      imageUrl: review.imageUrl || null,
-      likes: review.likes || 0,
-      comments: review.comments || [],
-    }));
-
+    // 백엔드에서 받은 데이터를 그대로 전달
     return new Response(
       JSON.stringify({
         success: true,
-        data: normalizedReviews,
+        data: data, // 배열을 직접 전달
         metadata: {
-          totalCount: normalizedReviews.length,
+          totalCount: data.length,
           timestamp: new Date().toISOString(),
         },
         message: '관련 리뷰 목록을 성공적으로 불러왔습니다.',
