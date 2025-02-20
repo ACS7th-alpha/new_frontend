@@ -1,11 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 //import ProductCard from '../components/ProductCard';
 import Loading from '../components/Loading';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export default function SearchPage() {
+  noStore(); // 서버 사이드 캐싱 비활성화
   const searchParams = useSearchParams();
+  const router = useRouter();
   const query = searchParams.get('query');
   const [products, setProducts] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
