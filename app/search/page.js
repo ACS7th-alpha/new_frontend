@@ -1,14 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-//import ProductCard from '../components/ProductCard';
+import { useSearchParams } from 'next/navigation';
+import ProductCard from '../components/ProductCard';
 import Loading from '../components/Loading';
-import { unstable_noStore as noStore } from 'next/cache';
 
 export default function SearchPage() {
-  noStore(); // 서버 사이드 캐싱 비활성화
   const searchParams = useSearchParams();
-  const router = useRouter();
   const query = searchParams.get('query');
   const [products, setProducts] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -69,28 +66,7 @@ export default function SearchPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map((product) => (
-          <div
-            key={product.uid}
-            onClick={() => router.push(`/product/${product.uid}`)}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200 cursor-pointer"
-          >
-            <div className="relative pb-[100%]">
-              <img
-                src={product.img}
-                alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
-              <h3 className="text-md font-semibold text-gray-800 mb-2 line-clamp-2">
-                {product.name}
-              </h3>
-              <p className="text-lg font-bold text-black-500">
-                {Number(product.sale_price).toLocaleString()}원
-              </p>
-            </div>
-          </div>
+          <ProductCard key={product.uid} product={product} />
         ))}
       </div>
 
