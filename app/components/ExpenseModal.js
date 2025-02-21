@@ -68,7 +68,9 @@ export default function ExpenseModal({ isOpen, onClose, item }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify([requestData]),
+        body: JSON.stringify({
+          spendings: [requestData],
+        }),
       });
 
       if (!response.ok) {
