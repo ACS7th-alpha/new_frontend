@@ -19,7 +19,7 @@ export async function GET(request) {
     console.log('[Budget API] Token found:', token?.slice(-10));
 
     // 백엔드 요청 URL 구성
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-budget:3005';
 
     const url = new URL('/budget', baseUrl);
 
@@ -113,7 +113,7 @@ export async function POST(request) {
       amount: requestBody.amount,
     });
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-budget:3005';
     const url = `${baseUrl}/budget`;
     console.log('Creating budget at:', url);
 
@@ -203,7 +203,7 @@ export async function DELETE(request) {
       );
     }
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-budget:3005';
     const url = `${baseUrl}/budget`;
     console.log('Deleting budget at:', url);
 

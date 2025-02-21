@@ -7,7 +7,7 @@ export async function GET(request) {
       headers: Object.fromEntries(request.headers.entries()),
     });
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-cart:3008';
     console.log('[Cart API] Fetching cart items from:', `${baseUrl}/cart`);
 
     const response = await fetch(`${baseUrl}/cart`, {
@@ -93,7 +93,7 @@ export async function POST(request) {
     const cartData = await request.json();
     console.log('[Cart API] Request body:', cartData);
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-cart:3008';
     // 정확한 엔드포인트로 수정 (예: /cart/add 또는 /cart/items)
     const endpoint = '/cart/add'; // 또는 실제 백엔드 엔드포인트
 

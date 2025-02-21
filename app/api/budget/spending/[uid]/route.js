@@ -12,7 +12,7 @@ export async function PUT(request, { params }) {
       hasAmount: !!requestBody.amount,
     });
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-budget:3005';
     const url = `${baseUrl}/budget/spending/${uid}`;
     console.log('Updating spending at:', url);
 
@@ -104,7 +104,7 @@ export async function DELETE(request, { params }) {
       spendingId: uid,
       hasAuthorization: !!authorization,
     });
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-budget:3005';
     const url = `${baseUrl}/budget/spending/${uid}`;
     console.log('Deleting spending at:', url);
 

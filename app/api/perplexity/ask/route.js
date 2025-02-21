@@ -3,7 +3,7 @@ export async function POST(request) {
     const body = await request.json();
     console.log('AI chat request received:', body);
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-chat:3006';
     const url = `${baseUrl}/perplexity/ask`;
 
     console.log('Sending request to:', url);

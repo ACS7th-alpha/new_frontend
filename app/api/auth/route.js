@@ -15,7 +15,7 @@ export async function POST(request) {
       });
     }
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-auth:3001';
     // 백엔드 URL 확인
     const url = `${baseUrl}/auth/google/login`;
     console.log('Authenticating at:', url);

@@ -17,7 +17,7 @@ export async function DELETE(request) {
       );
     }
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-auth:3001';
     const url = `${baseUrl}/auth/delete`;
     console.log('[API] Deleting account at:', url);
 
