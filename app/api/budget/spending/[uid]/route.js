@@ -1,17 +1,7 @@
 export async function PUT(request, { params }) {
   try {
-    console.log('Spending update request received');
-
     const { uid } = params;
     const authorization = request.headers.get('Authorization');
-
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     // 요청 본문 검증
     const requestBody = await request.json();
@@ -22,7 +12,8 @@ export async function PUT(request, { params }) {
       hasAmount: !!requestBody.amount,
     });
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget/spending/${uid}`;
+    const baseUrl = 'http://haproxy/budget';
+    const url = `${baseUrl}/budget/spending/${uid}`;
     console.log('Updating spending at:', url);
 
     const response = await fetch(url, {
@@ -113,8 +104,8 @@ export async function DELETE(request, { params }) {
       spendingId: uid,
       hasAuthorization: !!authorization,
     });
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL}/budget/spending/${uid}`;
+    const baseUrl = 'http://haproxy/budget';
+    const url = `${baseUrl}/budget/spending/${uid}`;
     console.log('Deleting spending at:', url);
 
     const response = await fetch(url, {

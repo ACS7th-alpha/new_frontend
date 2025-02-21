@@ -1,14 +1,5 @@
 export async function DELETE(request) {
   try {
-    console.log('Cart clear request received');
-
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_CART_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     const authorization = request.headers.get('Authorization');
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 

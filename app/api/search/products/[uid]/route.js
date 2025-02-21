@@ -1,15 +1,6 @@
 export async function GET(request, { params }) {
   try {
-    console.log('Product detail fetch request received');
     const { uid } = params;
-
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-    console.log('Product ID:', uid);
 
     if (!uid) {
       console.error('Missing product ID in request');

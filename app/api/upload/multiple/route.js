@@ -3,14 +3,6 @@ export async function POST(request) {
     console.log('Multiple images upload request received');
     const authorization = request.headers.get('Authorization');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
-
     if (!authorization) {
       console.error('Missing Authorization header in upload request');
       return new Response(
@@ -31,7 +23,8 @@ export async function POST(request) {
       fileNames: files.map((file) => file.name),
     });
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL}/upload/multiple`;
+    const baseUrl = 'http://haproxy/upload';
+    const url = `${baseUrl}/upload/multiple`;
     console.log('Uploading multiple files to:', url);
 
     const uploadFormData = new FormData();

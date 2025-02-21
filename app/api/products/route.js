@@ -2,13 +2,6 @@ export async function GET(request) {
   try {
     console.log('Products fetch request received');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     // 요청 URL에서 검색 파라미터 추출
     const requestUrl = new URL(request.url);
     const page = requestUrl.searchParams.get('page') || '1';

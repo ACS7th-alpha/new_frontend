@@ -2,13 +2,6 @@ export async function POST(request) {
   try {
     console.log('Authentication request received');
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_AUTH_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-
     const requestBody = await request.json();
     console.log('Auth request data:', {
       hasGoogleId: !!requestBody.googleId,
@@ -22,8 +15,9 @@ export async function POST(request) {
       });
     }
 
+    const baseUrl = 'http://haproxy/auth';
     // 백엔드 URL 확인
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/google/login`;
+    const url = `${baseUrl}/auth/google/login`;
     console.log('Authenticating at:', url);
 
     const response = await fetch(url, {

@@ -5,12 +5,10 @@ export async function POST(request) {
   try {
     const { credential } = await request.json();
 
-    const backendResponse = await api.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_AUTH_URL}/auth/google/login`,
-      {
-        credential,
-      }
-    );
+    const baseUrl = 'http://haproxy/auth';
+    const backendResponse = await api.post(`${baseUrl}/auth/google/login`, {
+      credential,
+    });
 
     if (backendResponse.data.isNewUser) {
       return NextResponse.json({

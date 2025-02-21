@@ -3,15 +3,8 @@ export async function GET(request, { params }) {
     console.log('Review detail fetch request received');
     const { id } = params;
 
-    // 디버깅을 위한 로그
-    console.log('Request URL:', request.url);
-    console.log('Environment:', {
-      BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL,
-      NODE_ENV: process.env.NODE_ENV,
-    });
-    console.log('Review ID:', id);
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews/${id}`;
+    const baseUrl = 'http://haproxy/reviews';
+    const url = `${baseUrl}/reviews/${id}`;
     console.log('Fetching review detail from:', url);
 
     const response = await fetch(url, {
@@ -95,8 +88,8 @@ export async function DELETE(request, { params }) {
       reviewId: id,
       hasAuthorization: !!authorization,
     });
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL}/reviews/${id}`;
+    const baseUrl = 'http://haproxy/reviews';
+    const url = `${baseUrl}/reviews/${id}`;
     console.log('Deleting review at:', url);
 
     const response = await fetch(url, {
