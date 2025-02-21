@@ -17,7 +17,7 @@ export async function GET(request) {
       );
     }
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-auth:3001';
     const url = `${baseUrl}/auth/profile`;
     console.log('Fetching profile from:', url);
 
@@ -101,7 +101,7 @@ export async function PUT(request) {
       hasAvatar: !!requestBody.avatar,
     });
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-auth:3001';
     const url = `${baseUrl}/auth/profile`;
     console.log('Updating profile at:', url);
 
@@ -199,7 +199,7 @@ export async function PATCH(request) {
       hasMonthlyBudget: !!requestBody.monthlyBudget,
     });
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-auth:3001';
     const url = `${baseUrl}/auth/update`;
     console.log('[Profile API] Forwarding PATCH request to:', url);
 

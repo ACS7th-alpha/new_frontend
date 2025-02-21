@@ -5,7 +5,7 @@ export async function POST(request) {
   try {
     const { credential } = await request.json();
 
-    const baseUrl = 'http://haproxy';
+    const baseUrl = 'http://hama-auth:3001';
     const backendResponse = await api.post(`${baseUrl}/auth/google/login`, {
       credential,
     });
