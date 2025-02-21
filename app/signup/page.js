@@ -185,7 +185,7 @@ function SignupForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-[400px] space-y-8 bg-white p-8 shadow-lg rounded-lg">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-900">회원가입</h2>
