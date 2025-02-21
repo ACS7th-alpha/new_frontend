@@ -21,7 +21,7 @@ export async function PUT(request, { params }) {
       newData: requestBody,
     });
 
-    const baseUrl = 'http://haproxy/auth';
+    const baseUrl = 'http://haproxy';
     const response = await fetch(
       `${baseUrl}/auth/children/${encodeURIComponent(name)}`,
       {

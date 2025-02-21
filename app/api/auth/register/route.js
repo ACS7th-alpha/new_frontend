@@ -19,7 +19,7 @@ export async function POST(request) {
 
     console.log('[API] Structured register data:', requestData);
 
-    const baseUrl = 'http://haproxy/auth';
+    const baseUrl = 'http://haproxy';
     const response = await fetch(`${baseUrl}/auth/register`, {
       method: 'POST',
       headers: {

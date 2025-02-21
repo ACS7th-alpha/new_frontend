@@ -8,7 +8,7 @@ export async function GET(request) {
 
     console.log('[Category Search] Parameters:', { category, page, limit });
 
-    const baseUrl = 'http://haproxy/products';
+    const baseUrl = 'http://haproxy';
     // 백엔드 API 경로 수정
     const url = new URL(
       `/products/category/${encodeURIComponent(category)}`,

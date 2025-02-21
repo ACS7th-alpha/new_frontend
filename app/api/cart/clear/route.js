@@ -22,7 +22,7 @@ export async function DELETE(request) {
       );
     }
 
-    const baseUrl = 'http://haproxy/cart';
+    const baseUrl = 'http://haproxy';
     const url = `${baseUrl}/cart/clear`;
     console.log('Clearing cart at:', url);
 

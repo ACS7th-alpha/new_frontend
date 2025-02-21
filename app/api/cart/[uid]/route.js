@@ -8,7 +8,7 @@ export async function DELETE(request, { params }) {
       headers: Object.fromEntries(request.headers.entries()),
     });
 
-    const baseUrl = 'http://haproxy/cart';
+    const baseUrl = 'http://haproxy';
     const endpoint = `/cart/remove/${params.uid}`;
 
     console.log(

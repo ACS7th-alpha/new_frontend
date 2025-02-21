@@ -15,7 +15,7 @@ export async function POST(request) {
       });
     }
 
-    const baseUrl = 'http://haproxy/auth';
+    const baseUrl = 'http://haproxy';
     // 백엔드 URL 확인
     const url = `${baseUrl}/auth/google/login`;
     console.log('Authenticating at:', url);
