@@ -17,7 +17,7 @@ export async function GET(request) {
     console.log('Query parameters:', { page, limit });
 
     // 백엔드 요청 URL 구성
-    const baseUrl = 'http://hama-product:3007';
+    const baseUrl = 'http://haproxy/products';
     const url = new URL('/products', baseUrl);
     url.searchParams.set('page', page);
     url.searchParams.set('limit', limit);

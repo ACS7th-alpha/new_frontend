@@ -5,7 +5,7 @@ export async function GET(request) {
     const authorization = request.headers.get('Authorization');
     console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
-    const baseUrl = 'http://hama-budget:3005';
+    const baseUrl = 'http://haproxy/budget';
     const url = `${baseUrl}/budget/spending`;
     console.log('Fetching spending data from:', url);
 
@@ -96,7 +96,7 @@ export async function POST(request) {
       hasAmount: !!requestBody.amount,
     });
 
-    const baseUrl = 'http://hama-budget:3005';
+    const baseUrl = 'http://haproxy/budget';
     const url = `${baseUrl}/budget/spendings`;
     console.log('Creating spending at:', url);
 

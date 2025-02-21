@@ -7,7 +7,7 @@ export async function POST(request) {
       fileName: file?.name,
     });
 
-    const baseUrl = 'http://hama-ocr:3006';
+    const baseUrl = 'http://haproxy/ocr';
     const url = `${baseUrl}/analyze`;
 
     console.log('Sending request to:', url);

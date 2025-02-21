@@ -16,7 +16,7 @@ export async function GET(request) {
       );
     }
 
-    const baseUrl = 'http://hama-review:3004';
+    const baseUrl = 'http://haproxy/reviews';
     const url = `${baseUrl}/reviews/my-reviews`;
     console.log('Fetching my reviews from:', url);
 

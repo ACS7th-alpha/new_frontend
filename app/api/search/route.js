@@ -7,8 +7,7 @@ export async function GET(request) {
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '40';
 
-    const backendUrl = process.env.BACKEND_URL || 'http://hama-product:3007';
-
+    const backendUrl = 'http://haproxy/products';
     // 요청 파라미터 로깅
     console.log('[Search API] Request received:', {
       keyword,
