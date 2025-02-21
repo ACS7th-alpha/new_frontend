@@ -9,19 +9,20 @@ jobs:
   build-and-push:
     runs-on: self-hosted  # Self-hosted runner 사용
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
 
       - name: Login to Harbor
         run: |
-          docker login https://192.168.2.76:443 -u yurim -p ${{ secrets.HARBOR_PASSWORD }}
-
-      - name: Placeholder for Docker Build (Dockerfile 없음)
+          docker login https://192.168.2.76:443 -u ${{ secrets.HARBOR_USERNAME }} -p ${{ secrets.HARBOR_PASSWORD }}
+      - name: Build and push Docker images
         run: |
-          echo "Dockerfile 없음 - 나중에 빌드 추가 예정"
-          
-      # Dockerfile이 생기면 아래 코드 활성화
-      # - name: Build and Push Docker Image
-      #   run: |
-      #     docker build -t 192.168.2.76:443/my-project/my-image:latest .
-      #     docker push 192.168.2.76:443/my-project/my-image:latest
+          BUILD_NUMBER=${{ github.run_number }} # GitHub Actions 빌드 번호
+          docker build -t 192.168.2.76:443/hama/hama-frontend:$BUILD_NUMBER .
+          docker push 192.168.2.76:443/hama/hama-frontend:$BUILD_NUMBER
