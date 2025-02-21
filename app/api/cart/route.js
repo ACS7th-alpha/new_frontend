@@ -7,7 +7,7 @@ export async function GET(request) {
       headers: Object.fromEntries(request.headers.entries()),
     });
 
-    const baseUrl = 'http://http://hama-cart:3008';
+    const baseUrl = 'http://hama-cart:3008';
     console.log('[Cart API] Fetching cart items from:', `${baseUrl}/cart`);
 
     const response = await fetch(`${baseUrl}/cart`, {
