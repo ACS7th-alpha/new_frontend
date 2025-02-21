@@ -6,7 +6,7 @@ export async function POST(request) {
     console.log('Receipt analysis request received:', {
       fileName: file?.name,
     });
-
+    //
     const baseUrl = 'http://hama-ocr:3006';
     const url = `${baseUrl}/analyze`;
 
