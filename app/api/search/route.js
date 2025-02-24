@@ -10,18 +10,19 @@ export async function GET(request) {
     //const backendUrl = 'http://hama-product:3007';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL;
     // 요청 파라미터 로깅
-    console.log('[Search API] Request received:', {
-      keyword,
-      page,
-      limit,
-      backendUrl,
-    });
+    // console.log('[Search API] Request received:', {
+    //   keyword,
+    //   page,
+    //   limit,
+    //   backendUrl,
+    // });
 
     // 검색 전용 엔드포인트 사용
     const apiUrl = `${baseUrl}/search?keyword=${encodeURIComponent(
       keyword
     )}&page=${page}&limit=${limit}`;
-    console.log('[Search API] Calling backend URL:', apiUrl);
+
+    //console.log('[Search API] Calling backend URL:', apiUrl);
 
     const response = await fetch(apiUrl, {
       headers: {
