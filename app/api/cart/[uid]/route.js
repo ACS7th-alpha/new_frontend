@@ -8,7 +8,8 @@ export async function DELETE(request, { params }) {
       headers: Object.fromEntries(request.headers.entries()),
     });
 
-    const baseUrl = 'http://hama-cart:3008';
+    //const baseUrl = 'http://hama-cart:3008';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CART_URL;
     const endpoint = `/cart/remove/${params.uid}`;
 
     console.log(

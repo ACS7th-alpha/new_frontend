@@ -7,7 +7,8 @@ export async function POST(request) {
       fileName: file?.name,
     });
     //
-    const baseUrl = 'http://hama-ocr:3006';
+    //const baseUrl = 'http://hama-ocr:3006';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_OCR_URL;
     const url = `${baseUrl}/analyze`;
 
     console.log('Sending request to:', url);

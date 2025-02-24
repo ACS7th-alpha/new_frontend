@@ -3,7 +3,8 @@ export async function GET(request) {
     const accessToken = request.headers.get('Authorization');
     console.log('Authorization header:', accessToken ? 'Present' : 'Missing');
 
-    const baseUrl = 'http://hama-auth:3001';
+    //const baseUrl = 'http://hama-auth:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_AUTH_URL;
     const url = `${baseUrl}/auth/children`;
     console.log('Fetching children data from:', url);
 
@@ -90,7 +91,8 @@ export async function POST(request) {
     const requestBody = await request.json();
     console.log('[Children API] POST: Request body:', requestBody);
 
-    const baseUrl = 'http://hama-auth:3001';
+    //const baseUrl = 'http://hama-auth:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_AUTH_URL;
     const response = await fetch(`${baseUrl}/auth/children`, {
       method: 'POST',
       headers: {
@@ -171,7 +173,8 @@ export async function DELETE(request) {
 
     console.log('[Children API] DELETE: Removing child:', childName);
 
-    const baseUrl = 'http://hama-auth:3001';
+    //const baseUrl = 'http://hama-auth:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_AUTH_URL;
     const response = await fetch(
       `${baseUrl}/auth/children/${encodeURIComponent(childName)}`,
       {

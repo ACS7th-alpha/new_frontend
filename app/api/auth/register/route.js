@@ -19,7 +19,8 @@ export async function POST(request) {
 
     console.log('[API] Structured register data:', requestData);
 
-    const baseUrl = 'http://hama-auth:3001';
+    //const baseUrl = 'http://hama-auth:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_AUTH_URL;
     const response = await fetch(`${baseUrl}/auth/register`, {
       method: 'POST',
       headers: {

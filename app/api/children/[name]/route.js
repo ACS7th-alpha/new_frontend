@@ -21,7 +21,8 @@ export async function PUT(request, { params }) {
       newData: requestBody,
     });
 
-    const baseUrl = 'http://hama-auth:3001';
+    //const baseUrl = 'http://hama-auth:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_AUTH_URL;
     const response = await fetch(
       `${baseUrl}/auth/children/${encodeURIComponent(name)}`,
       {

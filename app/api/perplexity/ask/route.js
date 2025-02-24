@@ -3,7 +3,8 @@ export async function POST(request) {
     const body = await request.json();
     console.log('AI chat request received:', body);
 
-    const baseUrl = 'http://hama-chat:3009';
+    //const baseUrl = 'http://hama-chat:3009';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CHAT_URL;
     const url = `${baseUrl}/perplexity/ask`;
 
     console.log('Sending request to:', url);

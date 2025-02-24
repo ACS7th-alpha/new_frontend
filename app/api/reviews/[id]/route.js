@@ -3,7 +3,8 @@ export async function GET(request, { params }) {
     console.log('Review detail fetch request received');
     const { id } = params;
 
-    const baseUrl = 'http://hama-review:3004';
+    //const baseUrl = 'http://hama-review:3004';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL;
     const url = `${baseUrl}/reviews/${id}`;
     console.log('Fetching review detail from:', url);
 
@@ -88,7 +89,8 @@ export async function DELETE(request, { params }) {
       reviewId: id,
       hasAuthorization: !!authorization,
     });
-    const baseUrl = 'http://hama-review:3004';
+    //const baseUrl = 'http://hama-review:3004';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL;
     const url = `${baseUrl}/reviews/${id}`;
     console.log('Deleting review at:', url);
 

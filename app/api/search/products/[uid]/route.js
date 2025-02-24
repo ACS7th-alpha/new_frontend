@@ -15,7 +15,8 @@ export async function GET(request, { params }) {
     }
 
     // 백엔드 요청 URL 구성
-    const baseUrl = 'http://hama-product:3007';
+    //const baseUrl = 'http://hama-product:3007';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL;
     const url = new URL(`/products/${uid}`, baseUrl);
 
     console.log('Fetching product detail from:', url.toString());

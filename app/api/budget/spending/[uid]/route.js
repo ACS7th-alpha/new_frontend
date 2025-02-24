@@ -12,7 +12,8 @@ export async function PUT(request, { params }) {
       hasAmount: !!requestBody.amount,
     });
 
-    const baseUrl = 'http://hama-budget:3005';
+    //const baseUrl = 'http://hama-budget:3005';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = `${baseUrl}/budget/spending/${uid}`;
     console.log('Updating spending at:', url);
 
@@ -104,7 +105,8 @@ export async function DELETE(request, { params }) {
       spendingId: uid,
       hasAuthorization: !!authorization,
     });
-    const baseUrl = 'http://hama-budget:3005';
+    //const baseUrl = 'http://hama-budget:3005';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = `${baseUrl}/budget/spending/${uid}`;
     console.log('Deleting spending at:', url);
 

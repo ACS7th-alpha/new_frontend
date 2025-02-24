@@ -8,7 +8,8 @@ export async function GET(request) {
 
     console.log('[Category Search] Parameters:', { category, page, limit });
 
-    const baseUrl = 'http://hama-product:3007';
+    //const baseUrl = 'http://hama-product:3007';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL;
     // 백엔드 API 경로 수정
     const url = new URL(
       `/products/category/${encodeURIComponent(category)}`,

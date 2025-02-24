@@ -1,7 +1,8 @@
 export async function GET(request) {
   try {
     console.log('Related reviews fetch request received');
-    const baseUrl = 'http://hama-review:3004';
+    //const baseUrl = 'http://hama-review:3004';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL;
     const url = `${baseUrl}/reviews`;
     console.log('Fetching reviews from:', url);
 
@@ -65,8 +66,8 @@ export async function POST(request) {
     console.log('Review creation request received');
     const authorization = request.headers.get('Authorization');
 
-    const baseUrl = 'http://hama-review:3004';
-
+    //const baseUrl = 'http://hama-review:3004';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL;
     // 환경 변수 로깅 추가
     console.log('Environment:', {
       baseUrl,
@@ -164,7 +165,8 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  const baseUrl = 'http://hama-review:3004';
+  //const baseUrl = 'http://hama-review:3004';
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL;
 
   try {
     console.log('All reviews deletion request received');

@@ -16,7 +16,8 @@ export async function GET(request) {
       );
     }
 
-    const baseUrl = 'http://hama-review:3004';
+    //const baseUrl = 'http://hama-review:3004';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_REVIEW_URL;
     const url = `${baseUrl}/reviews/my-reviews`;
     console.log('Fetching my reviews from:', url);
 

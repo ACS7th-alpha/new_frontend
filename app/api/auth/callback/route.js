@@ -5,7 +5,8 @@ export async function POST(request) {
   try {
     const { credential } = await request.json();
 
-    const baseUrl = 'http://hama-auth:3001';
+    //const baseUrl = 'http://hama-auth:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_AUTH_URL;
     const backendResponse = await api.post(`${baseUrl}/auth/google/login`, {
       credential,
     });
