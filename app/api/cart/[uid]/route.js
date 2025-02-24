@@ -10,14 +10,14 @@ export async function DELETE(request, { params }) {
 
     //const baseUrl = 'http://hama-cart:3008';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CART_URL;
-    const endpoint = `/cart/remove/${params.uid}`;
-
+    //const endpoint = `/cart/remove/${params.uid}`;
+    const url = `${baseUrl}/cart/remove/${params.uid}`;
     console.log(
       '[Cart API] Sending DELETE request to:',
       `${baseUrl}${endpoint}`
     );
 
-    const response = await fetch(`${baseUrl}${endpoint}`, {
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         Authorization: accessToken,

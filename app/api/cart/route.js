@@ -10,8 +10,9 @@ export async function GET(request) {
     //const baseUrl = 'http://hama-cart:3008';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CART_URL;
     console.log('[Cart API] Fetching cart items from:', `${baseUrl}/cart`);
+    const url = `${baseUrl}/cart`;
 
-    const response = await fetch(`${baseUrl}/cart`, {
+    const response = await fetch(url, {
       headers: {
         Authorization: accessToken,
         'Content-Type': 'application/json',
@@ -97,11 +98,11 @@ export async function POST(request) {
     //const baseUrl = 'http://hama-cart:3008';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CART_URL;
     // 정확한 엔드포인트로 수정 (예: /cart/add 또는 /cart/items)
-    const endpoint = '/cart/add'; // 또는 실제 백엔드 엔드포인트
+    //const endpoint = '/cart/add'; // 또는 실제 백엔드 엔드포인트
+    const url = `${baseUrl}/cart/add`;
+    console.log('[Cart API] Sending request to:', url);
 
-    console.log('[Cart API] Sending request to:', `${baseUrl}${endpoint}`);
-
-    const response = await fetch(`${baseUrl}${endpoint}`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         Authorization: accessToken,

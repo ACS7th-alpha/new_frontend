@@ -18,7 +18,7 @@ export async function GET(request) {
     });
 
     // 검색 전용 엔드포인트 사용
-    const apiUrl = `${backendUrl}/search?keyword=${encodeURIComponent(
+    const apiUrl = `${baseUrl}/search?keyword=${encodeURIComponent(
       keyword
     )}&page=${page}&limit=${limit}`;
     console.log('[Search API] Calling backend URL:', apiUrl);
