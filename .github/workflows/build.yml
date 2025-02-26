@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+
 jobs:
   build:
     name: Build and analyze
@@ -12,14 +13,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: SonarSource/sonarqube-scan-action@v4
+          fetch-depth: 0  # 분석 정확도를 높이기 위해 shallow clone 비활성화
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: SonarSource/sonarqube-quality-gate-action@v1
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarQube Quality Gate Check
+        id: sonarqube_quality_gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    # Quality Gate가 실패하면 전체 파이프라인 중단
+    outputs:
+      quality_gate_status: ${{ steps.sonarqube_quality_gate.outputs.quality_gate_status }}
+
+  check-quality-gate:
+    name: Check Quality Gate
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ needs.build.outputs.quality_gate_status != 'PASSED' }}
+    steps:
+      - name: Fail if Quality Gate fails
+        run: |
+          echo "Quality Gate check failed. Stopping pipeline."
+          exit 1
