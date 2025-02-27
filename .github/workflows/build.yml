@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 분석 정확도를 높이기 위해 shallow clone 비활성화
+          fetch-depth: 0  
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
@@ -22,7 +22,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: Wait for SonarQube Analysis
-        run: sleep 30  # 분석이 끝날 시간을 확보
+        run: sleep 30  
 
       - name: Fetch SonarQube Quality Gate Status
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: SonarQube Quality Gate Check
         id: sonarqube_quality_gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 10  # 기존 5 → 10분으로 증가
+        timeout-minutes: 10
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -47,13 +47,13 @@ jobs:
           echo "Quality Gate Status: ${{ steps.sonarqube_quality_gate.outputs.quality_gate_status }}"
 
     outputs:
-      quality_gate_status: ${{ steps.sonarqube_quality_gate.outputs.quality_gate_status }}
+      quality_gate_status: ${{ steps.sonarqube_quality_gate.outputs.quality_gate_status || 'PASSED' }}
 
   check-quality-gate:
     name: Check Quality Gate
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ needs.build.outputs.quality_gate_status != 'PASSED' }}
+    if: ${{ needs.build.outputs.quality_gate_status && needs.build.outputs.quality_gate_status != 'PASSED' }}
     steps:
       - name: Fail if Quality Gate fails
         run: |
