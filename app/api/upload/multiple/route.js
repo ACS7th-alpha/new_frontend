@@ -23,8 +23,8 @@ export async function POST(request) {
       fileNames: files.map((file) => file.name),
     });
 
-    //const baseUrl = 'http://hama-product:3007';
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL;
+    //const baseUrl = 'http://hama-product:3002';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_UPLOAD_URL;
     const url = `${baseUrl}/upload/multiple`;
     console.log('Uploading multiple files to:', url);
 
