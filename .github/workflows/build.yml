@@ -21,21 +21,30 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
+      - name: Wait for SonarQube Analysis
+        run: sleep 30  # 분석이 끝날 시간을 확보
+
+      - name: Fetch SonarQube Quality Gate Status
+        run: |
+          echo "Fetching SonarQube Quality Gate Status..."
+          curl -u ${{ secrets.SONAR_TOKEN }}: \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=YOUR_PROJECT_KEY"
+
+      - name: Check SonarQube Report File
+        run: |
+          echo "Checking report-task.txt content..."
+          cat .scannerwork/report-task.txt || echo "Report file not found!"
+
       - name: SonarQube Quality Gate Check
         id: sonarqube_quality_gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 10  # 분석 시간이 길어질 수 있으므로 10분으로 증가
+        timeout-minutes: 10  # 기존 5 → 10분으로 증가
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Debug Quality Gate Status
         run: |
           echo "Quality Gate Status: ${{ steps.sonarqube_quality_gate.outputs.quality_gate_status }}"
-
-      - name: Fetch SonarQube Quality Gate Status
-        run: |
-          curl -u ${{ secrets.SONAR_TOKEN }}: \
-            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=YOUR_PROJECT_KEY"
 
     outputs:
       quality_gate_status: ${{ steps.sonarqube_quality_gate.outputs.quality_gate_status }}
@@ -46,11 +55,6 @@ jobs:
     needs: build
     if: ${{ needs.build.outputs.quality_gate_status != 'PASSED' }}
     steps:
-      - name: Fail if Quality Gate fails
-        run: |
-          echo "Quality Gate check failed. Stopping pipeline."
-          exit 1
-
       - name: Fail if Quality Gate fails
         run: |
           echo "Quality Gate check failed. Stopping pipeline."
