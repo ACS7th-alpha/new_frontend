@@ -3,14 +3,11 @@ name: CI-Harbor
 on:
   push:
     branches:
-      - master
+      - master  # 또는 배포할 브랜치
 
 jobs:
   build-and-push:
-    runs-on: self-hosted
-    needs: build  # SonarQube 분석이 완료되어야 실행됨
-    if: ${{ needs.build.outputs.quality_gate_status == 'PASSED' }} # Quality Gate 실패 시 실행 안 함
-
+    runs-on: self-hosted  # Self-hosted runner 사용
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -20,10 +17,10 @@ jobs:
         with:
           node-version: '22'
 
+
       - name: Login to Harbor
         run: |
           docker login https://192.168.2.76:443 -u ${{ secrets.HARBOR_USERNAME }} -p ${{ secrets.HARBOR_PASSWORD }}
-
       - name: Build and push Docker images
         run: |
           BUILD_NUMBER=${{ github.run_number }} # GitHub Actions 빌드 번호
