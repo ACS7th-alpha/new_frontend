@@ -9,12 +9,27 @@ on:
 jobs:
   build-and-push:
     runs-on: self-hosted
-    needs: build
-    if: ${{ needs.build.outputs.quality_gate_status == 'PASSED' }} # Quality Gate 실패 시 실행 안 함
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Fetch SonarQube Quality Gate Status
+        id: check_sonar
+        run: |
+          echo "Fetching SonarQube Quality Gate Status..."
+          STATUS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=ACS7th-alpha-HAMA-front" \
+            | jq -r '.projectStatus.status')
+
+          echo "Quality Gate Status: $STATUS"
+          echo "quality_gate_status=$STATUS" >> $GITHUB_ENV
+
+      - name: Stop if Quality Gate failed
+        if: env.quality_gate_status != 'OK'
+        run: |
+          echo "Quality Gate check failed. Stopping pipeline."
+          exit 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
