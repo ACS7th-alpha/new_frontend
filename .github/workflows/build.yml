@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "Fetching SonarQube Quality Gate Status..."
           curl -u ${{ secrets.SONAR_TOKEN }}: \
-            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=YOUR_PROJECT_KEY"
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=ACS7th-alpha-HAMA-front"
 
       - name: Check SonarQube Report File
         run: |
