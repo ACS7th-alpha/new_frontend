@@ -45,3 +45,23 @@ jobs:
           BUILD_NUMBER=${{ github.run_number }} # GitHub Actions 빌드 번호
           docker build -t 192.168.2.76:443/hama/hama-frontend:$BUILD_NUMBER .
           docker push 192.168.2.76:443/hama/hama-frontend:$BUILD_NUMBER
+
+
+          
+      - name: Checkout CD Repo (`HAMA-ArgoCD-Kustomize`)
+        uses: actions/checkout@v3
+        with:
+          repository: ACS7th-alpha/HAMA-ArgoCD-Kustomize
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}  # ✅ `HAMA-Frontend-CI`에서 `HAMA-ArgoCD-Kustomize`를 수정할 권한 필요
+
+      - name: Update Kustomization with new image tag
+        run: |
+          cd kustomize
+          sed -i "s|newTag: .*|newTag: \"$BUILD_NUMBER\"|" kustomization.yaml
+
+          git config --global user.email "rhdwnsqja12345@github.com"
+          git config --global user.name "jbjbjb01"
+          git add kustomization.yaml
+          git commit -m "Update image tag to $BUILD_NUMBER"
+          git push origin master
