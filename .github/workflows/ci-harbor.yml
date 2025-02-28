@@ -62,6 +62,8 @@ jobs:
 
           git config --global user.email "rhdwnsqja12345@github.com"
           git config --global user.name "jbjbjb01"
+          git config --global credential.helper store
+          echo "https://${{ secrets.GITHUB_TOKEN }}@github.com" > ~/.git-credentials
           git add kustomization.yaml
           git commit -m "Update image tag to $BUILD_NUMBER"
           git push origin master
