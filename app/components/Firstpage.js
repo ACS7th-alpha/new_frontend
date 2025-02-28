@@ -40,7 +40,7 @@ export default function Firstpage() {
             </div>
           </div>
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            <span className="text-yellow-400">HAMA</span>와 함께
+            <span className="text-yellow-400">HAHA</span>와 함께
             <span className="inline-block animate-bounce ml-2">🎈</span>
           </h1>
           <p className="text-xl text-gray-700 font-semibold mb-4">
