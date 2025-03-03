@@ -7,13 +7,29 @@ on:
       - completed
 
 permissions:
-  contents: write  # ✅ Actions에서 GitHub 레포지토리 Push 가능하도록 권한 부여
+  contents: write  # ✅ GitHub Actions에서 레포지토리 Push 권한 부여
 
 jobs:
   build-and-push:
     runs-on: self-hosted
 
     steps:
+      - name: 📢 Notify Slack - Build Started
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": ":rocket: *CI/CD Pipeline Started* - CI-Harbor Workflow",
+            "attachments": [
+              {
+                "color": "#36a64f",
+                "fields": [
+                  { "title": "Repository", "value": "${{ github.repository }}", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref }}", "short": true },
+                  { "title": "Trigger", "value": "${{ github.event_name }}", "short": true }
+                ]
+              }
+            ]
+          }' ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -28,10 +44,22 @@ jobs:
           echo "Quality Gate Status: $STATUS"
           echo "quality_gate_status=$STATUS" >> $GITHUB_ENV
 
-      - name: Stop if Quality Gate failed
+      - name: ❌ Notify Slack - Quality Gate Failed
         if: env.quality_gate_status != 'OK'
         run: |
-          echo "Quality Gate check failed. Stopping pipeline."
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": ":warning: *Quality Gate Failed!*",
+            "attachments": [
+              {
+                "color": "#ff0000",
+                "fields": [
+                  { "title": "Repository", "value": "${{ github.repository }}", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref }}", "short": true },
+                  { "title": "Status", "value": "FAILED", "short": true }
+                ]
+              }
+            ]
+          }' ${{ secrets.SLACK_WEBHOOK_URL }}
           exit 1
 
       - name: Set up Node.js
@@ -55,6 +83,21 @@ jobs:
           docker build -t 192.168.2.76:443/hama/hama-frontend:$BUILD_NUMBER .
           docker push 192.168.2.76:443/hama/hama-frontend:$BUILD_NUMBER
 
+      - name: ✅ Notify Slack - Build & Push Success
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": ":white_check_mark: *Build & Push Success!*",
+            "attachments": [
+              {
+                "color": "#36a64f",
+                "fields": [
+                  { "title": "Repository", "value": "${{ github.repository }}", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref }}", "short": true },
+                  { "title": "Docker Tag", "value": "${{ env.BUILD_NUMBER }}", "short": true }
+                ]
+              }
+            ]
+          }' ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Checkout CD Repo (`HAMA-ArgoCD-Kustomize`)
         uses: actions/checkout@v3
@@ -94,3 +137,4 @@ jobs:
           git add kustomization.yaml
           git commit -m "Update image tag to $BUILD_NUMBER" || echo "No changes to commit"
           git push origin master || echo "No changes to push"
+
