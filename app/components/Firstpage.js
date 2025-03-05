@@ -58,10 +58,10 @@ export default function Firstpage() {
               modules={[EffectCoverflow, Navigation]}
               className="mySwiper"
             >
-              {images.map((src, index) => (
-                <SwiperSlide key={index}>
+              {images.map((src) => (
+                <SwiperSlide key={src}>
                   <div className="rounded-lg overflow-hidden shadow-lg">
-                    <img src={src} alt={`이미지 ${index + 1}`} className="w-full h-full" />
+                    <img src={src} alt={`이미지`} className="w-full h-full" />
                   </div>
                 </SwiperSlide>
               ))}
