@@ -101,14 +101,3 @@ button {
   font-display: swap;
 }
 
-
-.swiper-slide {
-  transition: all 0.3s ease;
-  opacity: 0.6;
-  transform: scale(0.8);
-}
-
-.swiper-slide-active {
-  opacity: 1;
-  transform: scale(1);
-}
