@@ -34,12 +34,12 @@ export default function Firstpage() {
             <span className="inline-block animate-bounce ml-2">🎈</span>
           </h1>
           <p className="text-xl text-gray-700 font-semibold mb-4">
-            최저가 육아 용품 구매, 소비패턴 분석을 한 곳에서
+            아이 성장 단계에 맞는 맞춤형 육아 용품 구매, 소비패턴 분석을 한 곳에서
             <span className="inline-block ml-2">✨</span>
           </p>
           <p className="max-w-2xl mx-auto text-gray-700 mb-6 leading-relaxed">
             온라인 쇼핑 예산, 아기 정보(생년월일, 성별)을 입력하면 
-            해당 조건에 맞는 최저가 육아 용품을 추천합니다.
+            해당 조건에 맞는 육아 용품을 추천합니다. <br />
             월별 소비 내역 및 카테고리별 지출 통계를 통해 
             육아 비용을 체계적으로 관리합니다.
           </p>
@@ -54,7 +54,7 @@ export default function Firstpage() {
               spaceBetween={30} // 슬라이드 간격 설정
 
               autoplay={{
-                delay: 1200, // ⏳ 0.5초마다 슬라이드 변경
+                delay: 2000, // ⏳ 1.8초마다 슬라이드 변경
                 disableOnInteraction: false, // 사용자 조작 후에도 자동 재생 유지
               }}
               coverflowEffect={{
@@ -70,7 +70,7 @@ export default function Firstpage() {
             >
               {images.map((src) => (
                 <SwiperSlide key={src}>
-                  <div className="rounded-lg overflow-hidden shadow-lg">
+                  <div className="rounded-2xl overflow-hidden shadow-lg border-2 border-yellow-200">
                     <img src={src} alt={`이미지`} className="w-full h-full" />
                   </div>
                 </SwiperSlide>

@@ -33,8 +33,10 @@ export default function RootLayout({ children }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Hama</title>
+        <title>Hama - 합리적인 엄마의 스마트한 선택</title>
+        <meta name="description" content="Hama는 소비자 맞춤형 육아용품을 추천하고 소비패턴을 분석해주는 서비스입니다." />
       </head>
+
       <body>
         <GoogleOAuthProvider clientId={clientId}>
           <main>{children}</main>

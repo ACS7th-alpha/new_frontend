@@ -101,3 +101,16 @@ button {
   font-display: swap;
 }
 
+
+/* Swiper 네비게이션 버튼 스타일 변경 */
+.swiper-button-prev, 
+.swiper-button-next {
+  color: #ff8400 !important; /* 원하는 색상 */
+  font-size: 24px !important;
+}
+
+.swiper-button-prev:hover, 
+.swiper-button-next:hover {
+  color: #ff80ab !important; /* 호버 시 색상 */
+}
+

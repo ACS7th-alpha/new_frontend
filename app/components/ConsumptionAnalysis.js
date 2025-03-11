@@ -64,6 +64,9 @@ export default function ConsumptionAnalysis() {
           </div>
         </div>
       </div>
+      <div>
+        
+      </div>
     </section>
   );
 }
