@@ -8,6 +8,7 @@ import { SessionProvider } from 'next-auth/react';
 // _app.js (또는 app/layout.js)
 import localFont from 'next/font/local';
 import './globals.css';
+import "../utils/otel"; 
 
 // const geistSans = localFont({
 //   src: '../public/fonts/GeistVF.woff',
