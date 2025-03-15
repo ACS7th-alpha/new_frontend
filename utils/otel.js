@@ -1,4 +1,4 @@
-console.log("✅ OTEL.js loaded"); // 🔥 OTEL.js가 실행되는지 확인!
+console.log("✅ OTEL.js loaded");
 
 if (typeof window !== "undefined") {
   import("@opentelemetry/sdk-trace-web").then(({ WebTracerProvider }) => {
