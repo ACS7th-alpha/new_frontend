@@ -161,22 +161,21 @@ export default function UserDashboard({
   // 상품 클릭 핸들러 추가
   const handleProductClick = async (product) => {
     try {
-      console.log('=== UserDashboard 클릭스트림 시작 ===');
-      console.log('클릭된 상품 정보:', {
-        uid: product?.uid,
-        name: product?.name,
-        brand: product?.brand,
-        site: product?.site,
-        category: product?.category,
-        전체데이터: product,
-      });
+      const token = localStorage.getItem('access_token');
+      console.log('토큰 확인:', token);
 
-      // 클릭스트림 데이터 전송
+      if (!token) {
+        console.error('인증 토큰이 없습니다.');
+        router.push(`/product/${product.uid}`);
+        return;
+      }
+
+      // API 응답 대기
       const response = await fetch('/api/clickstream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: localStorage.getItem('access_token'),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           product: {
@@ -185,27 +184,18 @@ export default function UserDashboard({
             site: product?.site || 'Unknown',
             category: product?.category || 'Unknown',
           },
-          source: 'UserDashboard',
-          timestamp: new Date().toISOString(),
         }),
       });
 
-      const responseData = await response.json();
-      console.log('클릭스트림 응답:', responseData);
+      const result = await response.json();
+      console.log('클릭스트림 응답:', result);
 
-      // 기존 네비게이션 로직
-      console.log('페이지 이동:', `/product/${product.uid}`);
+      // API 응답 이후 페이지 이동
       router.push(`/product/${product.uid}`);
     } catch (error) {
-      console.error('=== UserDashboard 클릭스트림 에러 ===');
-      console.error('에러 상세:', {
-        message: error.message,
-        stack: error.stack,
-        전체에러: error,
-      });
+      console.error('클릭스트림 전송 실패:', error);
+      // 에러가 발생해도 페이지 이동은 진행
       router.push(`/product/${product.uid}`);
-    } finally {
-      console.log('=== UserDashboard 클릭스트림 종료 ===');
     }
   };
 

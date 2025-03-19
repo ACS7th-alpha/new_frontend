@@ -130,12 +130,21 @@ export default function CategoryProduct() {
         scrollPosition: sessionStorage.getItem('scrollPosition'),
       });
 
+      const token = localStorage.getItem('access_token');
+      console.log('토큰 확인:', token);
+
+      if (!token) {
+        console.error('인증 토큰이 없습니다.');
+        router.push(`/product/${product.uid}`);
+        return;
+      }
+
       // 클릭스트림 데이터 전송
       const response = await fetch('/api/clickstream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: localStorage.getItem('access_token'),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           product: {
