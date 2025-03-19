@@ -130,12 +130,16 @@ export default function CategoryProduct() {
         scrollPosition: sessionStorage.getItem('scrollPosition'),
       });
 
-      const token = localStorage.getItem('access_token');
-      console.log('토큰 확인:', token);
+      const accessToken =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('access_token')
+          : null;
 
-      if (!token) {
+      console.log('토큰 확인:', accessToken);
+
+      if (!accessToken) {
         console.error('인증 토큰이 없습니다.');
-        router.push(`/product/${product.uid}`);
+        router.push(`/product/${uid}`);
         return;
       }
 
@@ -144,7 +148,7 @@ export default function CategoryProduct() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           product: {
