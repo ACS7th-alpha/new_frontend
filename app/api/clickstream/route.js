@@ -2,11 +2,13 @@ export async function POST(request) {
   try {
     const authorization = request.headers.get('Authorization');
 
-    if (!authorization) {
-      console.error('Missing Authorization header in clickstream request');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      console.error(
+        'Missing or invalid Authorization header in clickstream request'
+      );
       return new Response(
         JSON.stringify({
-          error: 'Authorization header is required',
+          error: 'Valid Bearer token is required',
           timestamp: new Date().toISOString(),
           path: '/api/clickstream',
         }),
@@ -18,6 +20,8 @@ export async function POST(request) {
     console.log('Clickstream data received:', data);
 
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CLICKSTREAM_URL;
+    console.log('Clickstream backend URL:', baseUrl);
+
     const response = await fetch(`${baseUrl}/track-click`, {
       method: 'POST',
       headers: {
