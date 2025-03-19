@@ -135,7 +135,7 @@ export default function CategoryProduct() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: localStorage.getItem('token'),
+          Authorization: localStorage.getItem('access_token'),
         },
         body: JSON.stringify({
           product: {
