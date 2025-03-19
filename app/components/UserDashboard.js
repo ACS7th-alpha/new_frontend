@@ -159,8 +159,54 @@ export default function UserDashboard({
     : 0;
 
   // 상품 클릭 핸들러 추가
-  const handleProductClick = (uid) => {
-    router.push(`/product/${uid}`);
+  const handleProductClick = async (product) => {
+    try {
+      console.log('=== UserDashboard 클릭스트림 시작 ===');
+      console.log('클릭된 상품 정보:', {
+        uid: product?.uid,
+        name: product?.name,
+        brand: product?.brand,
+        site: product?.site,
+        category: product?.category,
+        전체데이터: product,
+      });
+
+      // 클릭스트림 데이터 전송
+      const response = await fetch('/api/clickstream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          product: {
+            name: product?.name,
+            brand: product?.brand,
+            site: product?.site || 'Unknown',
+            category: product?.category || 'Unknown',
+          },
+          source: 'UserDashboard',
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      const responseData = await response.json();
+      console.log('클릭스트림 응답:', responseData);
+
+      // 기존 네비게이션 로직
+      console.log('페이지 이동:', `/product/${product.uid}`);
+      router.push(`/product/${product.uid}`);
+    } catch (error) {
+      console.error('=== UserDashboard 클릭스트림 에러 ===');
+      console.error('에러 상세:', {
+        message: error.message,
+        stack: error.stack,
+        전체에러: error,
+      });
+      router.push(`/product/${product.uid}`);
+    } finally {
+      console.log('=== UserDashboard 클릭스트림 종료 ===');
+    }
   };
 
   return (
@@ -353,7 +399,7 @@ export default function UserDashboard({
             {currentProducts.map((product) => (
               <div
                 key={product.uid}
-                onClick={() => handleProductClick(product.uid)}
+                onClick={() => handleProductClick(product)}
                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200"
               >
                 <div className="relative pb-[100%]">

@@ -111,12 +111,61 @@ export default function CategoryProduct() {
   const { startPage, endPage } = getPageRange();
 
   // 상품 클릭 핸들러
-  const handleProductClick = (uid) => {
-    // 현재 상태 저장
-    sessionStorage.setItem('prevPage', page.toString());
-    sessionStorage.setItem('prevCategory', category);
-    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-    router.push(`/product/${uid}`);
+  const handleProductClick = async (uid, productData) => {
+    try {
+      console.log('=== Categoryproduct 클릭스트림 시작 ===');
+      console.log('클릭 파라미터:', {
+        uid: uid,
+        productData: productData,
+      });
+
+      // 현재 상태 저장 (기존 코드)
+      sessionStorage.setItem('prevPage', page.toString());
+      sessionStorage.setItem('prevCategory', category);
+      sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+
+      console.log('저장된 세션 데이터:', {
+        prevPage: sessionStorage.getItem('prevPage'),
+        prevCategory: sessionStorage.getItem('prevCategory'),
+        scrollPosition: sessionStorage.getItem('scrollPosition'),
+      });
+
+      // 클릭스트림 데이터 전송
+      const response = await fetch('/api/clickstream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          product: {
+            name: productData?.name,
+            brand: productData?.brand,
+            site: productData?.site,
+            category: productData?.category,
+          },
+          source: 'CategoryProduct',
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      const responseData = await response.json();
+      console.log('클릭스트림 응답:', responseData);
+
+      // 기존 네비게이션 로직
+      console.log('페이지 이동:', `/product/${uid}`);
+      router.push(`/product/${uid}`);
+    } catch (error) {
+      console.error('=== Categoryproduct 클릭스트림 에러 ===');
+      console.error('에러 상세:', {
+        message: error.message,
+        stack: error.stack,
+        전체에러: error,
+      });
+      router.push(`/product/${uid}`);
+    } finally {
+      console.log('=== Categoryproduct 클릭스트림 종료 ===');
+    }
   };
 
   return (
@@ -168,7 +217,7 @@ export default function CategoryProduct() {
               {products.map((product) => (
                 <div
                   key={product.uid}
-                  onClick={() => handleProductClick(product.uid)}
+                  onClick={() => handleProductClick(product.uid, product)}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border-2 border-pink-100 hover:border-pink-200 cursor-pointer"
                 >
                   <div className="relative group">
