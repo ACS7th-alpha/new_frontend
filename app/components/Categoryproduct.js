@@ -113,31 +113,15 @@ export default function CategoryProduct() {
   // 상품 클릭 핸들러
   const handleProductClick = async (uid, productData) => {
     try {
-      console.log('=== Categoryproduct 클릭스트림 시작 ===');
-      console.log('클릭 파라미터:', {
-        uid: uid,
-        productData: productData,
-      });
+      const token = localStorage.getItem('access_token');
 
-      // 현재 상태 저장 (기존 코드)
       sessionStorage.setItem('prevPage', page.toString());
       sessionStorage.setItem('prevCategory', category);
       sessionStorage.setItem('scrollPosition', window.scrollY.toString());
 
-      console.log('저장된 세션 데이터:', {
-        prevPage: sessionStorage.getItem('prevPage'),
-        prevCategory: sessionStorage.getItem('prevCategory'),
-        scrollPosition: sessionStorage.getItem('scrollPosition'),
-      });
+      console.log('토큰 확인:', token);
 
-      const accessToken =
-        typeof window !== 'undefined'
-          ? localStorage.getItem('access_token')
-          : null;
-
-      console.log('토큰 확인:', accessToken);
-
-      if (!accessToken) {
+      if (!token) {
         console.error('인증 토큰이 없습니다.');
         router.push(`/product/${uid}`);
         return;
@@ -148,17 +132,17 @@ export default function CategoryProduct() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          product: {
-            name: productData?.name,
-            brand: productData?.brand,
-            site: productData?.site,
-            category: productData?.category,
-          },
-          source: 'CategoryProduct',
-          timestamp: new Date().toISOString(),
+          site: productData.site,
+          category: productData.category,
+          link: productData.link,
+          uid: productData.uid,
+          name: productData.name,
+          brand: productData.brand,
+          sale_price: productData.sale_price,
+          img: productData.img,
         }),
       });
 
@@ -166,18 +150,10 @@ export default function CategoryProduct() {
       console.log('클릭스트림 응답:', responseData);
 
       // 기존 네비게이션 로직
-      console.log('페이지 이동:', `/product/${uid}`);
       router.push(`/product/${uid}`);
     } catch (error) {
-      console.error('=== Categoryproduct 클릭스트림 에러 ===');
-      console.error('에러 상세:', {
-        message: error.message,
-        stack: error.stack,
-        전체에러: error,
-      });
+      console.error('클릭스트림 전송 실패:', error);
       router.push(`/product/${uid}`);
-    } finally {
-      console.log('=== Categoryproduct 클릭스트림 종료 ===');
     }
   };
 

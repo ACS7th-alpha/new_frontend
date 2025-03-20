@@ -24,7 +24,7 @@ export async function POST(request) {
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CLICKSTREAM_URL;
     const url = `${baseUrl}/track-click`;
     console.log('클릭스트림 요청 전송:', url);
-
+ 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
