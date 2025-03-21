@@ -2,8 +2,14 @@
 import Firstpage from './Firstpage';
 import UserDashboard from './UserDashboard';
 import Categoryproduct from './Categoryproduct';
+import TopProducts from './TopProducts';
 
-export default function HeroSection({ userInfo, childAge, monthlySpending }) {
+export default function HeroSection({
+  userInfo,
+  childAge,
+  monthlySpending,
+  topProducts,
+}) {
   if (!userInfo) {
     return <Firstpage />;
   }
@@ -16,6 +22,7 @@ export default function HeroSection({ userInfo, childAge, monthlySpending }) {
 
   return (
     <>
+      <TopProducts products={topProducts} />
       <UserDashboard
         userInfo={userInfo}
         childAge={childAge}
