@@ -10,14 +10,7 @@ export async function GET(request) {
 
     if (!authorization || !authorization.startsWith('Bearer ')) {
       console.error('올바른 Authorization 헤더가 없습니다.');
-      return new Response(
-        JSON.stringify({
-          error: 'Valid Bearer token is required',
-          timestamp: new Date().toISOString(),
-          path: '/api/data/users/top-products',
-        }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      throw new Error('Authorization token required');
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_CLICKSTREAM_GET_URL;
@@ -61,8 +54,10 @@ export async function GET(request) {
       timestamp: new Date().toISOString(),
     });
 
-    return new Response(
-      JSON.stringify({
+    console.log('=== 인기 상품 조회 종료 ===');
+
+    return Response.json(
+      {
         success: true,
         data: data,
         message: '인기 상품 데이터가 성공적으로 조회되었습니다.',
@@ -71,11 +66,10 @@ export async function GET(request) {
           count: data?.length || 0,
           categories: [...new Set(data?.map((p) => p.PRODUCT_CATEGORY) || [])],
         },
-      }),
+      },
       {
         status: 200,
         headers: {
-          'Content-Type': 'application/json',
           'Cache-Control': 'no-store, private',
         },
       }
@@ -87,18 +81,19 @@ export async function GET(request) {
       stack: error.stack,
       timestamp: new Date().toISOString(),
     });
-    return new Response(
-      JSON.stringify({
+
+    return Response.json(
+      {
         error: '인기 상품 데이터 조회에 실패했습니다.',
         details: error.message,
         timestamp: new Date().toISOString(),
-      }),
+      },
       {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        status: error.message === 'Authorization token required' ? 401 : 500,
+        headers: {
+          'Cache-Control': 'no-store, private',
+        },
       }
     );
-  } finally {
-    console.log('=== 인기 상품 조회 종료 ===');
   }
 }
