@@ -46,10 +46,10 @@ export default function BudgetPage() {
   const fetchBudgetData = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      console.log('[BudgetPage] Fetching budget data:', {
-        hasToken: !!accessToken,
-        tokenPreview: accessToken?.slice(-10),
-      });
+      // console.log('[BudgetPage] Fetching budget data:', {
+      //   hasToken: !!accessToken,
+      //   tokenPreview: accessToken?.slice(-10),
+      // });
 
       const response = await fetch('/api/budget', {
         headers: {
@@ -57,13 +57,13 @@ export default function BudgetPage() {
         },
       });
 
-      console.log('[BudgetPage] Budget API response:', {
-        status: response.status,
-        ok: response.ok,
-      });
+      // console.log('[BudgetPage] Budget API response:', {
+      //   status: response.status,
+      //   ok: response.ok,
+      // });
 
       if (response.status === 404) {
-        console.log('[BudgetPage] No budget data found');
+        //console.log('[BudgetPage] No budget data found');
         // 기본 카테고리 구조로 초기화
         const defaultCategories = [
           { name: '기저귀/물티슈', budget: 0 },
@@ -85,30 +85,30 @@ export default function BudgetPage() {
       }
 
       const data = await response.json();
-      console.log('[BudgetPage] Budget data received:', data);
+      //console.log('[BudgetPage] Budget data received:', data);
 
       // 선택된 월의 예산 데이터 찾기
       const selectedYear = parseInt(currentDate.getFullYear());
       const selectedMonth = parseInt(currentDate.getMonth() + 1);
 
-      console.log('[BudgetPage] Looking for budget:', {
-        selectedYear,
-        selectedMonth,
-        availableData: data,
-      });
+      // console.log('[BudgetPage] Looking for budget:', {
+      //   selectedYear,
+      //   selectedMonth,
+      //   availableData: data,
+      // });
 
       const currentBudget = data.data.find((budget) => {
-        console.log('[BudgetPage] Checking budget:', {
-          budget,
-          year: budget.year,
-          month: budget.month,
-          matches:
-            budget.year === selectedYear && budget.month === selectedMonth,
-        });
+        // console.log('[BudgetPage] Checking budget:', {
+        //   budget,
+        //   year: budget.year,
+        //   month: budget.month,
+        //   matches:
+        //     budget.year === selectedYear && budget.month === selectedMonth,
+        // });
         return budget.year === selectedYear && budget.month === selectedMonth;
       });
 
-      console.log('[BudgetPage] Found budget data:', currentBudget);
+      //console.log('[BudgetPage] Found budget data:', currentBudget);
 
       // 기본 카테고리 구조 정의
       const defaultCategories = [
@@ -143,14 +143,14 @@ export default function BudgetPage() {
             budget: parseInt(categories[apiKey]) || 0,
           };
         });
-        console.log('Setting categories:', newCategories);
+        //console.log('Setting categories:', newCategories);
         setCategories(newCategories);
       } else {
-        console.log('Setting default categories');
+        //console.log('Setting default categories');
         setCategories(defaultCategories);
       }
     } catch (error) {
-      console.error('[BudgetPage] Error fetching budget data:', error);
+      //console.error('[BudgetPage] Error fetching budget data:', error);
       // 에러 발생 시에도 기본 카테고리로 초기화
       const defaultCategories = [
         { name: '기저귀/물티슈', budget: 0 },
@@ -206,7 +206,7 @@ export default function BudgetPage() {
         setCategorySpending(categorySums);
       }
     } catch (error) {
-      console.error('Error fetching spending data:', error);
+      //console.error('Error fetching spending data:', error);
     }
   };
 
@@ -220,14 +220,14 @@ export default function BudgetPage() {
       });
 
       const data = await response.json();
-      console.log('[BudgetPage] Raw spending data:', {
-        fullData: data,
-        dataStructure: {
-          hasData: !!data?.data,
-          dataKeys: Object.keys(data?.data || {}),
-          spendingData: data?.data,
-        },
-      });
+      // console.log('[BudgetPage] Raw spending data:', {
+      //   fullData: data,
+      //   dataStructure: {
+      //     hasData: !!data?.data,
+      //     dataKeys: Object.keys(data?.data || {}),
+      //     spendingData: data?.data,
+      //   },
+      // });
 
       if (data?.data?.spending) {
         const spendingMap = {};
@@ -278,26 +278,26 @@ export default function BudgetPage() {
         setCategorySpending(categoryTotals);
       }
     } catch (error) {
-      console.error('[BudgetPage] Error in fetchSpendingData:', error);
+      //console.error('[BudgetPage] Error in fetchSpendingData:', error);
     }
   };
 
   useEffect(() => {
     // 사용자 정보와 당월 예산 설정
     const userStr = localStorage.getItem('user');
-    console.log('[BudgetPage] Local storage user data:', {
-      hasUserData: !!userStr,
-      rawData: userStr,
-    });
+    // console.log('[BudgetPage] Local storage user data:', {
+    //   hasUserData: !!userStr,
+    //   rawData: userStr,
+    // });
 
     if (userStr) {
       const user = JSON.parse(userStr);
-      console.log('[BudgetPage] Parsed user data:', {
-        fullUserObject: user,
-        userInfo: user?.user,
-        monthlyBudget: user?.user?.monthlyBudget,
-        parsedBudget: Number(user?.user?.monthlyBudget),
-      });
+      // console.log('[BudgetPage] Parsed user data:', {
+      //   fullUserObject: user,
+      //   userInfo: user?.user,
+      //   monthlyBudget: user?.user?.monthlyBudget,
+      //   parsedBudget: Number(user?.user?.monthlyBudget),
+      // });
       setMonthlyBudget(user?.user?.monthlyBudget || 0);
     }
 

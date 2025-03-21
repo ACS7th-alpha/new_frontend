@@ -14,13 +14,13 @@ export default function UserDashboard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAgeInfo, setShowAgeInfo] = useState(false);
 
-  console.log('[UserDashboard] Received userInfo:', {
-    hasUserInfo: !!userInfo,
-    hasUser: !!userInfo?.user,
-    monthlyBudget: userInfo?.user?.monthlyBudget,
-    parsedBudget: Number(userInfo?.user?.monthlyBudget),
-    formatted: Number(userInfo?.user?.monthlyBudget)?.toLocaleString('ko-KR'),
-  });
+  // console.log('[UserDashboard] Received userInfo:', {
+  //   hasUserInfo: !!userInfo,
+  //   hasUser: !!userInfo?.user,
+  //   monthlyBudget: userInfo?.user?.monthlyBudget,
+  //   parsedBudget: Number(userInfo?.user?.monthlyBudget),
+  //   formatted: Number(userInfo?.user?.monthlyBudget)?.toLocaleString('ko-KR'),
+  // });
 
   useEffect(() => {
     fetchAgeBasedProducts();
@@ -108,11 +108,11 @@ export default function UserDashboard({
       const searchUrl = `/api/search?keyword=${encodeURIComponent(
         keyword
       )}&page=${page}&limit=${limit}`;
-      console.log('Fetching URL:', searchUrl);
+      //console.log('Fetching URL:', searchUrl);
       const response = await fetch(searchUrl);
 
       // 응답 상태 확인
-      console.log('Response status:', response.status);
+      //console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -121,12 +121,12 @@ export default function UserDashboard({
       }
 
       const responseData = await response.json();
-      console.log('API Response:', responseData);
+      //console.log('API Response:', responseData);
 
       const productsArray = responseData.data || [];
       setProducts(productsArray);
 
-      console.log(`${keyword} 상품 개수:`, productsArray.length);
+      //console.log(`${keyword} 상품 개수:`, productsArray.length);
     } catch (error) {
       console.error('상품 조회 오류:', error);
       setProducts([]);
@@ -162,7 +162,7 @@ export default function UserDashboard({
   const handleProductClick = async (product) => {
     try {
       const token = localStorage.getItem('access_token');
-      console.log('토큰 확인:', token);
+      //('토큰 확인:', token);
 
       if (!token) {
         console.error('인증 토큰이 없습니다.');
@@ -190,7 +190,7 @@ export default function UserDashboard({
       });
 
       const result = await response.json();
-      console.log('클릭스트림 응답:', result);
+      // console.log('클릭스트림 응답:', result);
 
       // API 응답 이후 페이지 이동
       router.push(`/product/${product.uid}`);

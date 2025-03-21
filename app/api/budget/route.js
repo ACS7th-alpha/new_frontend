@@ -1,17 +1,17 @@
 export async function GET(request) {
   try {
-    console.log('[Budget API] Request received:', {
-      url: request.url,
-      headers: Object.fromEntries(request.headers),
-      timestamp: new Date().toISOString(),
-    });
+    // console.log('[Budget API] Request received:', {
+    //   url: request.url,
+    //   headers: Object.fromEntries(request.headers),
+    //   timestamp: new Date().toISOString(),
+    // });
 
     // 토큰 확인
     const authHeader = request.headers.get('authorization');
-    console.log('[Budget API] Auth header:', authHeader);
+    //console.log('[Budget API] Auth header:', authHeader);
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error('[Budget API] Missing or invalid authorization header');
+      //console.error('[Budget API] Missing or invalid authorization header');
       throw new Error('Authorization header is required');
     }
 
@@ -23,7 +23,7 @@ export async function GET(request) {
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = new URL('/budget', baseUrl);
 
-    console.log('[Budget API] Requesting budget from:', url.toString());
+    //console.log('[Budget API] Requesting budget from:', url.toString());
 
     const response = await fetch(url.toString(), {
       headers: {
@@ -33,28 +33,28 @@ export async function GET(request) {
       },
     });
 
-    console.log('[Budget API] Backend response status:', response.status);
+    //console.log('[Budget API] Backend response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[Budget API] Backend error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText,
-      });
+      // console.error('[Budget API] Backend error:', {
+      //   status: response.status,
+      //   statusText: response.statusText,
+      //   error: errorText,
+      // });
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
     }
 
     const data = await response.json();
-    console.log('[Budget API] Raw backend response:', data);
-    console.log('[Budget API] Backend response data:', {
-      success: true,
-      dataLength: data?.length || 0,
-      sampleData: data?.[0] || null,
-      fullData: data,
-    });
+    // console.log('[Budget API] Raw backend response:', data);
+    // console.log('[Budget API] Backend response data:', {
+    //   success: true,
+    //   dataLength: data?.length || 0,
+    //   sampleData: data?.[0] || null,
+    //   fullData: data,
+    // });
 
     return new Response(
       JSON.stringify({
@@ -75,11 +75,11 @@ export async function GET(request) {
       }
     );
   } catch (error) {
-    console.error('[Budget API] Error:', {
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-    });
+    // console.error('[Budget API] Error:', {
+    //   message: error.message,
+    //   stack: error.stack,
+    //   timestamp: new Date().toISOString(),
+    // });
 
     return new Response(
       JSON.stringify({
@@ -102,21 +102,21 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    console.log('Budget creation request received');
+    //console.log('Budget creation request received');
 
     const authorization = request.headers.get('Authorization');
-    console.log('Authorization header:', authorization ? 'Present' : 'Missing');
+    //console.log('Authorization header:', authorization ? 'Present' : 'Missing');
 
     const requestBody = await request.json();
-    console.log('Budget creation data:', {
-      hasAmount: !!requestBody.amount,
-      amount: requestBody.amount,
-    });
+    // console.log('Budget creation data:', {
+    //   hasAmount: !!requestBody.amount,
+    //   amount: requestBody.amount,
+    // });
 
     //const baseUrl = 'http://hama-budget:3005';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = `${baseUrl}/budget`;
-    console.log('Creating budget at:', url);
+    //console.log('Creating budget at:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -129,7 +129,7 @@ export async function POST(request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Backend budget creation error:', errorText);
+      //console.error('Backend budget creation error:', errorText);
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
@@ -138,7 +138,7 @@ export async function POST(request) {
     const data = await response.json();
 
     // 백엔드 응답 구조 확인을 위한 로그
-    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+    //console.log('Raw backend response:', JSON.stringify(data, null, 2));
 
     // 응답 데이터 구조 검증 및 변환
     const createdBudget = {
@@ -168,10 +168,10 @@ export async function POST(request) {
       }
     );
   } catch (error) {
-    console.error('Budget Creation API Error:', {
-      message: error.message,
-      stack: error.stack,
-    });
+    // console.error('Budget Creation API Error:', {
+    //   message: error.message,
+    //   stack: error.stack,
+    // });
     return new Response(
       JSON.stringify({
         error: '예산 설정에 실패했습니다.',
@@ -189,11 +189,11 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    console.log('Budget deletion request received');
+    //console.log('Budget deletion request received');
     const authorization = request.headers.get('Authorization');
 
     if (!authorization) {
-      console.error('Missing Authorization header in budget deletion request');
+      //console.error('Missing Authorization header in budget deletion request');
       return new Response(
         JSON.stringify({
           error: 'Authorization header is required',
@@ -207,7 +207,7 @@ export async function DELETE(request) {
     //const baseUrl = 'http://hama-budget:3005';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = `${baseUrl}/budget`;
-    console.log('Deleting budget at:', url);
+    //console.log('Deleting budget at:', url);
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -244,7 +244,7 @@ export async function DELETE(request) {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error deleting budget:', error);
+    //console.error('Error deleting budget:', error);
     return new Response(
       JSON.stringify({
         error: '예산 삭제에 실패했습니다.',

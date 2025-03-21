@@ -5,17 +5,17 @@ export async function PUT(request, { params }) {
 
     // 요청 본문 검증
     const requestBody = await request.json();
-    console.log('Update data:', {
-      spendingId: uid,
-      hasDate: !!requestBody.date,
-      hasCategory: !!requestBody.category,
-      hasAmount: !!requestBody.amount,
-    });
+    // console.log('Update data:', {
+    //   spendingId: uid,
+    //   hasDate: !!requestBody.date,
+    //   hasCategory: !!requestBody.category,
+    //   hasAmount: !!requestBody.amount,
+    // });
 
     //const baseUrl = 'http://hama-budget:3005';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = `${baseUrl}/budget/spending/${uid}`;
-    console.log('Updating spending at:', url);
+    //console.log('Updating spending at:', url);
 
     const response = await fetch(url, {
       method: 'PUT',
@@ -37,7 +37,7 @@ export async function PUT(request, { params }) {
     const data = await response.json();
 
     // 백엔드 응답 구조 확인을 위한 로그
-    console.log('Raw backend response:', JSON.stringify(data, null, 2));
+    //console.log('Raw backend response:', JSON.stringify(data, null, 2));
 
     // 응답 데이터 구조 검증 및 변환
     const updatedSpending = {
@@ -46,11 +46,11 @@ export async function PUT(request, { params }) {
       updatedAt: new Date().toISOString(),
     };
 
-    console.log('Processed spending update:', {
-      spendingId: updatedSpending.id,
-      category: updatedSpending.category,
-      amount: updatedSpending.amount,
-    });
+    // console.log('Processed spending update:', {
+    //   spendingId: updatedSpending.id,
+    //   category: updatedSpending.category,
+    //   amount: updatedSpending.amount,
+    // });
 
     return new Response(
       JSON.stringify({
@@ -75,10 +75,10 @@ export async function PUT(request, { params }) {
       }
     );
   } catch (error) {
-    console.error('Spending Update API Error:', {
-      message: error.message,
-      stack: error.stack,
-    });
+    // console.error('Spending Update API Error:', {
+    //   message: error.message,
+    //   stack: error.stack,
+    // });
     return new Response(
       JSON.stringify({
         error: '지출 수정에 실패했습니다.',
@@ -96,19 +96,19 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    console.log('Spending deletion request received');
+    //console.log('Spending deletion request received');
 
     const { uid } = params;
     const authorization = request.headers.get('Authorization');
 
-    console.log('Delete request details:', {
-      spendingId: uid,
-      hasAuthorization: !!authorization,
-    });
+    // console.log('Delete request details:', {
+    //   spendingId: uid,
+    //   hasAuthorization: !!authorization,
+    // });
     //const baseUrl = 'http://hama-budget:3005';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BUDGET_URL;
     const url = `${baseUrl}/budget/spending/${uid}`;
-    console.log('Deleting spending at:', url);
+    //console.log('Deleting spending at:', url);
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -117,13 +117,13 @@ export async function DELETE(request, { params }) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Backend spending deletion error:', errorText);
+      //console.error('Backend spending deletion error:', errorText);
       throw new Error(
         `HTTP error! status: ${response.status}, message: ${errorText}`
       );
     }
 
-    console.log('Spending successfully deleted:', { spendingId: uid });
+    //console.log('Spending successfully deleted:', { spendingId: uid });
 
     return new Response(
       JSON.stringify({
@@ -147,10 +147,10 @@ export async function DELETE(request, { params }) {
       }
     );
   } catch (error) {
-    console.error('Spending Deletion API Error:', {
-      message: error.message,
-      stack: error.stack,
-    });
+    // console.error('Spending Deletion API Error:', {
+    //   message: error.message,
+    //   stack: error.stack,
+    // });
     return new Response(
       JSON.stringify({
         error: '지출 삭제에 실패했습니다.',
