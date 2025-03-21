@@ -27,7 +27,7 @@ export default function TopProducts({ products }) {
   return (
     <div className="w-3/4 mx-auto">
       <div className="max-w-4xl mx-auto px-4 py-4">
-        <div className="bg-white rounded-xl shadow-md p-4">
+        <div className="bg-white rounded-xl p-4">
           {/* 날짜 및 타이틀 섹션 */}
           <div className="mb-2">
             <div className="text-xs text-gray-600">
@@ -62,11 +62,11 @@ export default function TopProducts({ products }) {
                       >
                         <div className="relative">
                           {/* 순위 뱃지 */}
-                          <div className="absolute top-1 left-1 bg-yellow-400 text-white rounded-full px-2 py-0.5 flex items-center justify-center font-bold text-xs shadow-sm z-10">
+                          <div className="absolute top-2 left-2 bg-yellow-400 text-white rounded-full px-3 py-1 flex items-center justify-center font-bold text-sm z-10">
                             {slideIndex * 3 + index + 1}위
                           </div>
                           {/* 이미지 컨테이너 */}
-                          <div className="relative aspect-[1/1] overflow-hidden rounded-md">
+                          <div className="relative aspect-[1/1] overflow-hidden rounded-lg">
                             <img
                               src={product.PRODUCT_IMG}
                               alt={product.PRODUCT_NAME}
@@ -74,14 +74,14 @@ export default function TopProducts({ products }) {
                             />
                           </div>
                           {/* 상품 정보 */}
-                          <div className="mt-2">
-                            <div className="text-[10px] text-gray-600">
+                          <div className="mt-3">
+                            <div className="text-sm text-gray-600 mb-1">
                               {product.PRODUCT_BRAND}
                             </div>
-                            <h3 className="text-xs font-semibold text-gray-800 line-clamp-1">
+                            <h3 className="text-base font-semibold text-gray-800 mb-1 line-clamp-2">
                               {product.PRODUCT_NAME}
                             </h3>
-                            <div className="text-sm font-bold text-pink-500">
+                            <div className="text-lg font-bold text-pink-500">
                               {product.PRODUCT_SALE_PRICE}
                             </div>
                           </div>
@@ -93,7 +93,7 @@ export default function TopProducts({ products }) {
             </div>
 
             {/* 진행 상태 표시 */}
-            <div className="flex justify-center mt-2 gap-0.5">
+            <div className="flex justify-center mt-3 gap-0.5">
               {Array.from({ length: totalSlides }).map((_, index) => (
                 <div
                   key={index}
