@@ -85,14 +85,14 @@ export default function HomePage() {
 
         // 인기 상품 데이터 가져오기
         try {
-          console.log('[HomePage] 인기 상품 데이터 요청 시작');
+          console.log('[HomePage] 랭킹 상품 데이터 요청 시작');
           const response = await fetch('/api/data/users/top-products', {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           });
 
-          console.log('[HomePage] 인기 상품 API 응답:', {
+          console.log('[HomePage] 랭킹 상품 API 응답:', {
             status: response.status,
             ok: response.ok,
             statusText: response.statusText,
@@ -100,7 +100,7 @@ export default function HomePage() {
 
           if (response.ok) {
             const result = await response.json();
-            console.log('[HomePage] 인기 상품 데이터:', {
+            console.log('[HomePage] 랭킹 상품 데이터:', {
               success: result.success,
               productsCount: result.data?.length || 0,
               categories: result.meta?.categories,
@@ -112,13 +112,13 @@ export default function HomePage() {
             }
           } else {
             const errorText = await response.text();
-            console.error('[HomePage] 인기 상품 API 에러:', {
+            console.error('[HomePage] 랭킹 상품 API 에러:', {
               status: response.status,
               error: errorText,
             });
           }
         } catch (error) {
-          console.error('[HomePage] 인기 상품 데이터 조회 실패:', {
+          console.error('[HomePage] 랭킹 상품 데이터 조회 실패:', {
             message: error.message,
             stack: error.stack,
             timestamp: new Date().toISOString(),
@@ -355,6 +355,7 @@ export default function HomePage() {
         userInfo={userInfo}
         childAge={childAge}
         monthlySpending={monthlySpending}
+        topProducts={topProducts}
       />
       <ConsumptionAnalysis />
       <ProductList />

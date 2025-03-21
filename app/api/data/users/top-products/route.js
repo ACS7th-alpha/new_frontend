@@ -38,29 +38,29 @@ export async function GET(request) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('인기 상품 서비스 에러:', {
+      console.error('랭킹 상품 서비스 에러:', {
         status: response.status,
         error: errorData,
         url: url,
         timestamp: new Date().toISOString(),
       });
-      throw new Error(`인기 상품 서비스 에러: ${response.status}`);
+      throw new Error(`랭킹 상품 서비스 에러: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('인기 상품 데이터 수신:', {
+    console.log('랭킹 상품 데이터 수신:', {
       productsCount: data?.length || 0,
       firstProduct: data?.[0]?.PRODUCT_NAME || 'none',
       timestamp: new Date().toISOString(),
     });
 
-    console.log('=== 인기 상품 조회 종료 ===');
+    console.log('=== 랭킹 상품 조회 종료 ===');
 
     return Response.json(
       {
         success: true,
         data: data,
-        message: '인기 상품 데이터가 성공적으로 조회되었습니다.',
+        message: '랭킹 상품 데이터가 성공적으로 조회되었습니다.',
         timestamp: new Date().toISOString(),
         meta: {
           count: data?.length || 0,
@@ -75,7 +75,7 @@ export async function GET(request) {
       }
     );
   } catch (error) {
-    console.error('=== 인기 상품 서비스 에러 ===');
+    console.error('=== 랭킹 상품 서비스 에러 ===');
     console.error('에러 상세:', {
       message: error.message,
       stack: error.stack,
@@ -84,7 +84,7 @@ export async function GET(request) {
 
     return Response.json(
       {
-        error: '인기 상품 데이터 조회에 실패했습니다.',
+        error: '랭킹 상품 데이터 조회에 실패했습니다.',
         details: error.message,
         timestamp: new Date().toISOString(),
       },
