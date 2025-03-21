@@ -15,6 +15,7 @@ export default function HomePage() {
   const [userInfo, setUserInfo] = useState(null);
   const [childAge, setChildAge] = useState(null);
   const [monthlySpending, setMonthlySpending] = useState(0);
+  const [topProducts, setTopProducts] = useState([]);
 
   useEffect(() => {
     setLoading(false);
@@ -40,11 +41,11 @@ export default function HomePage() {
       const userData = localStorage.getItem('user');
       const accessToken = localStorage.getItem('access_token');
 
-      // console.log('[HomePage] Storage Check:', {
-      //   hasUserData: !!userData,
-      //   hasAccessToken: !!accessToken,
-      //   tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
-      // });
+      console.log('[HomePage] Storage Check:', {
+        hasUserData: !!userData,
+        hasAccessToken: !!accessToken,
+        tokenPreview: accessToken ? `...${accessToken.slice(-10)}` : 'none',
+      });
 
       if (userData && accessToken) {
         const parsedUser = JSON.parse(userData);
@@ -80,6 +81,48 @@ export default function HomePage() {
           // console.log('[HomePage] Final monthDiff:', monthDiff);
 
           setChildAge(monthDiff);
+        }
+
+        // 인기 상품 데이터 가져오기
+        try {
+          console.log('[HomePage] 인기 상품 데이터 요청 시작');
+          const response = await fetch('/api/data/users/top-products', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          console.log('[HomePage] 인기 상품 API 응답:', {
+            status: response.status,
+            ok: response.ok,
+            statusText: response.statusText,
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log('[HomePage] 인기 상품 데이터:', {
+              success: result.success,
+              productsCount: result.data?.length || 0,
+              categories: result.meta?.categories,
+              timestamp: result.timestamp,
+            });
+
+            if (result.data) {
+              setTopProducts(result.data);
+            }
+          } else {
+            const errorText = await response.text();
+            console.error('[HomePage] 인기 상품 API 에러:', {
+              status: response.status,
+              error: errorText,
+            });
+          }
+        } catch (error) {
+          console.error('[HomePage] 인기 상품 데이터 조회 실패:', {
+            message: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+          });
         }
 
         // 지출 내역 조회 및 현재 월 지출액 계산
