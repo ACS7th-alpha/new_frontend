@@ -51,10 +51,10 @@ export default function TopProducts({ products }) {
         <div className="bg-white rounded-xl p-4">
           {/* 날짜 및 타이틀 섹션 */}
           <div className="mb-2">
-            <div className="text-xs text-gray-600">
+            <div className="text-sm text-gray-600">
               {month}월 {date}일 {dayName}요일
             </div>
-            <h2 className="text-sm font-bold text-gray-800 flex items-center">
+            <h2 className="text-base font-bold text-gray-800 flex items-center">
               <span className="mr-1">🏆</span>
               나와 같은 조건의 자녀를 둔 엄마들의 조회수 급상승 상품
             </h2>
