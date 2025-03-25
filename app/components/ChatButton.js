@@ -108,13 +108,15 @@ export default function ChatButton() {
       question: `${selectedCategory}에 맞는 ${subCategory} 추천해줘. 짧게 요약해주면서 AI 느낌 안 나게 답변해줘.`,
     };
 
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+    };
+
     try {
       const response = await fetch('/api/perplexity/ask', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        headers: headers,
         body: JSON.stringify(questionData),
       });
 
@@ -220,13 +222,15 @@ export default function ChatButton() {
       question: `${inputValue}. 링크는 포함하지 마세요. 사람처럼 자연스럽게 짧게 대답해 주세요.`,
     };
 
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+    };
+
     try {
       const response = await fetch('/api/perplexity/ask', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        headers: headers,
         body: JSON.stringify(questionData),
       });
 
@@ -239,48 +243,10 @@ export default function ChatButton() {
       // 로딩 메시지 제거
       setMessages((prevMessages) => prevMessages.filter((msg) => !msg.loading));
 
-      const citationsCount = data.citations ? data.citations.length : 0;
-      if (citationsCount > 0) {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            text: `${citationsCount}개의 정보를 제공해드리겠습니다.`,
-            sender: 'bot',
-          },
-        ]);
-      }
-
-      const content = data.content
-        .replace(/\*\*/g, '')
-        .replace(/-/g, '')
-        .replace(/\[.*?\]/g, '')
-        .replace(/^\d+\.\s*/gm, '');
-      const sentences = content.split(/(?<=[.!?])\s+/);
-
-      for (const sentence of sentences) {
-        if (sentence.trim()) {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { text: sentence.trim(), sender: 'bot' },
-          ]);
-        }
-      }
-
-      if (data.citations && data.citations.length > 0) {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            text: '관련 콘텐츠를 확인해보세요:',
-            sender: 'bot',
-            links: data.citations.map((link, index) => ({
-              url: link.url,
-              index: index + 1,
-              title: link.title,
-              image: link.image,
-            })),
-          },
-        ]);
-      }
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: data.content, sender: 'bot' },
+      ]);
 
       // 답변 후 초기화 메시지 추가
       setMessages((prevMessages) => [
