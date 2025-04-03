@@ -362,7 +362,7 @@ export default function HomePage() {
 
     
       // 새로고침을 먼저 실행
-      window.location.reload();
+      //window.location.reload();
   };
 
   if (loading) {
