@@ -665,16 +665,6 @@ export default function MyPage() {
           >
             내가 쓴 글
           </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`px-6 py-3 rounded-full font-semibold transition-colors ${
-              activeTab === 'settings'
-                ? 'bg-orange-400 text-white'
-                : 'bg-white text-gray-600 hover:bg-blue-50'
-            }`}
-          >
-            설정
-          </button>
         </div>
 
         {/* 탭 컨텐츠 */}
@@ -1026,28 +1016,6 @@ export default function MyPage() {
                   작성한 글이 없습니다.
                 </p>
               )}
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-8">
-                설정 <span className="ml-2">⚙️</span>
-              </h2>
-              <div className="flex items-center justify-between p-8 bg-gray-50 rounded-lg">
-                <div>
-                  <h3 className="text-xl font-semibold">계정 삭제</h3>
-                  <p className="text-l text-gray-600">
-                    회원 탈퇴 및 데이터 삭제
-                  </p>
-                </div>
-                <button
-                  onClick={handleDeleteAccount}
-                  className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                >
-                  탈퇴하기
-                </button>
-              </div>
             </div>
           )}
         </div>

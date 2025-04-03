@@ -86,13 +86,7 @@ export default function CommunityPage() {
             />
             비추천템
           </label>
-          {/* 글 작성 버튼 */}
-          <Link
-            href="/community/write"
-            className="flex items-center gap-2 px-4 py-2 bg-orange-400 text-white rounded-xl ml-auto block"
-          >
-            글 작성
-          </Link>
+          {/* 글 작성 버튼 x*/}
         </div>
 
         {/* 아이템 목록 */}
