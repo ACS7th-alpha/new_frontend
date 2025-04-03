@@ -212,6 +212,7 @@ export default function HomePage() {
       });
 
       if (response.ok) {
+        // 토큰과 사용자 정보 저장
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('user', JSON.stringify({
@@ -219,6 +220,20 @@ export default function HomePage() {
         }));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
+
+        // 사용자 정보 상태 업데이트
+        setUserInfo({
+          user: data.user
+        });
+
+        // 아기 나이 계산 및 업데이트
+        if (data.user?.children && data.user.children[0]) {
+          const birthDate = new Date(data.user.children[0].birthdate);
+          const today = new Date();
+          const monthDiff = (today.getFullYear() - birthDate.getFullYear()) * 12 +
+                           (today.getMonth() - birthDate.getMonth());
+          setChildAge(monthDiff);
+        }
 
         // 예산 데이터 가져오기
         try {
@@ -236,7 +251,42 @@ export default function HomePage() {
           console.error('[Login] Budget fetch error:', error);
         }
 
-        window.location.reload();
+        // 지출 데이터 가져오기
+        try {
+          const spendingResponse = await fetch('/api/budget/spending', {
+            headers: {
+              Authorization: `Bearer ${data.access_token}`,
+            },
+          });
+
+          if (spendingResponse.ok) {
+            const spendingData = await spendingResponse.json();
+            const { spending } = spendingData.data;
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1;
+
+            let currentMonthTotal = 0;
+            if (Array.isArray(spending)) {
+              currentMonthTotal = spending.reduce((total, category) => {
+                const categoryTotal = category.details.reduce((sum, detail) => {
+                  const detailDate = new Date(detail.date);
+                  if (detailDate.getFullYear() === currentYear && 
+                      detailDate.getMonth() + 1 === currentMonth) {
+                    return sum + (Number(detail.amount) || 0);
+                  }
+                  return sum;
+                }, 0);
+                return total + categoryTotal;
+              }, 0);
+            }
+            setMonthlySpending(currentMonthTotal);
+          }
+        } catch (error) {
+          console.error('[Login] Spending fetch error:', error);
+          setMonthlySpending(0);
+        }
+
       } else {
         console.error('[Login] Failed:', data.message);
       }
