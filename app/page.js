@@ -195,8 +195,10 @@ export default function HomePage() {
 
   const handleLogin = async () => {
     try {
-      const googleId = '106517685696893761191'; // 고정된 Google ID 사용
+      setLoading(true); // 로딩 상태 시작
+      const googleId = '106517685696893761191';
       
+      // 1. 로그인 API 호출
       const response = await fetch('/api/auth/google/login', {
         method: 'POST',
         headers: {
@@ -206,96 +208,91 @@ export default function HomePage() {
       });
 
       const data = await response.json();
-      console.log('[Login] Auth response:', {
-        status: response.status,
-        ok: response.ok,
-      });
-
-      if (response.ok) {
-        // 토큰과 사용자 정보 저장
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('refresh_token', data.refresh_token);
-        localStorage.setItem('user', JSON.stringify({
-          user: data.user
-        }));
-        localStorage.removeItem('spendingData');
-        localStorage.removeItem('budget');
-
-        // 사용자 정보 상태 업데이트
-        setUserInfo({
-          user: data.user
-        });
-
-        // 아기 나이 계산 및 업데이트
-        if (data.user?.children && data.user.children[0]) {
-          const birthDate = new Date(data.user.children[0].birthdate);
-          const today = new Date();
-          const monthDiff = (today.getFullYear() - birthDate.getFullYear()) * 12 +
-                           (today.getMonth() - birthDate.getMonth());
-          setChildAge(monthDiff);
-        }
-
-        // 예산 데이터 가져오기
-        try {
-          const budgetResponse = await fetch('/api/budget', {
-            headers: {
-              Authorization: `Bearer ${data.access_token}`,
-            },
-          });
-
-          if (budgetResponse.ok) {
-            const budgetData = await budgetResponse.json();
-            localStorage.setItem('budget', JSON.stringify(budgetData));
-          }
-        } catch (error) {
-          console.error('[Login] Budget fetch error:', error);
-        }
-
-        // 지출 데이터 가져오기
-        try {
-          const spendingResponse = await fetch('/api/budget/spending', {
-            headers: {
-              Authorization: `Bearer ${data.access_token}`,
-            },
-          });
-
-          if (spendingResponse.ok) {
-            const spendingData = await spendingResponse.json();
-            const { spending } = spendingData.data;
-            const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1;
-
-            let currentMonthTotal = 0;
-            if (Array.isArray(spending)) {
-              currentMonthTotal = spending.reduce((total, category) => {
-                const categoryTotal = category.details.reduce((sum, detail) => {
-                  const detailDate = new Date(detail.date);
-                  if (detailDate.getFullYear() === currentYear && 
-                      detailDate.getMonth() + 1 === currentMonth) {
-                    return sum + (Number(detail.amount) || 0);
-                  }
-                  return sum;
-                }, 0);
-                return total + categoryTotal;
-              }, 0);
-            }
-            setMonthlySpending(currentMonthTotal);
-          }
-        } catch (error) {
-          console.error('[Login] Spending fetch error:', error);
-          setMonthlySpending(0);
-        }
-
-      } else {
-        console.error('[Login] Failed:', data.message);
+      
+      if (!response.ok) {
+        throw new Error(data.message || '로그인에 실패했습니다.');
       }
-    } catch (error) {
-      console.error('[Login] Error:', {
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
+
+      // 2. 토큰과 사용자 정보 저장
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('user', JSON.stringify({
+        user: data.user
+      }));
+      localStorage.removeItem('spendingData');
+      localStorage.removeItem('budget');
+
+      // 3. 사용자 정보 상태 업데이트
+      setUserInfo({
+        user: data.user
       });
+
+      // 4. 아기 나이 계산 및 업데이트
+      if (data.user?.children && data.user.children[0]) {
+        const birthDate = new Date(data.user.children[0].birthdate);
+        const today = new Date();
+        const monthDiff = (today.getFullYear() - birthDate.getFullYear()) * 12 +
+                         (today.getMonth() - birthDate.getMonth());
+        setChildAge(monthDiff);
+      }
+
+      // 5. 모든 필요한 데이터를 병렬로 가져오기
+      const [budgetResponse, spendingResponse, topProductsResponse] = await Promise.all([
+        fetch('/api/budget', {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        }),
+        fetch('/api/budget/spending', {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        }),
+        fetch('/api/data/users/top-products', {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        })
+      ]);
+
+      // 6. 예산 데이터 처리
+      if (budgetResponse.ok) {
+        const budgetData = await budgetResponse.json();
+        localStorage.setItem('budget', JSON.stringify(budgetData));
+      }
+
+      // 7. 지출 데이터 처리
+      if (spendingResponse.ok) {
+        const spendingData = await spendingResponse.json();
+        const { spending } = spendingData.data;
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+
+        let currentMonthTotal = 0;
+        if (Array.isArray(spending)) {
+          currentMonthTotal = spending.reduce((total, category) => {
+            const categoryTotal = category.details.reduce((sum, detail) => {
+              const detailDate = new Date(detail.date);
+              if (detailDate.getFullYear() === currentYear && 
+                  detailDate.getMonth() + 1 === currentMonth) {
+                return sum + (Number(detail.amount) || 0);
+              }
+              return sum;
+            }, 0);
+            return total + categoryTotal;
+          }, 0);
+        }
+        setMonthlySpending(currentMonthTotal);
+      }
+
+      // 8. 인기 상품 데이터 처리
+      if (topProductsResponse.ok) {
+        const result = await topProductsResponse.json();
+        if (result.data) {
+          setTopProducts(result.data);
+        }
+      }
+
+    } catch (error) {
+      console.error('[Login] Error:', error);
+      alert('로그인 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false); // 로딩 상태 종료
     }
   };
 
