@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { GoogleLogin } from '@react-oauth/google';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import LoginButton from './LoginButton';
 
 export default function Header({ onLogin }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -192,29 +193,7 @@ export default function Header({ onLogin }) {
         </div>
 
         <div className="flex items-center gap-4">
-          {!isLoggedIn && onLogin && (
-            <GoogleLogin
-              onSuccess={(response) => {
-                console.log('=== Google 로그인 성공 ===');
-                console.log('Google Response:', response);
-                onLogin(response);
-              }}
-              onError={() => {
-                console.error('=== Google 로그인 실패 ===');
-                console.error('Login Failed');
-              }}
-              useOneTap={false}
-              text="signin_with"
-              shape="rectangular"
-              locale="ko"
-              width="200"
-              context="signin"
-              theme="outline"
-              size="large"
-              type="standard"
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
-            />
-          )}
+          {!isLoggedIn && <LoginButton />}
           {isLoggedIn && (
             <nav className="flex items-center space-x-0">
               {/* 장바구니 버튼 */}

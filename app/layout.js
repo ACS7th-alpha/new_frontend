@@ -1,5 +1,4 @@
 'use client';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import './globals.css';
 import { useEffect, useState } from 'react';
 import ChatButton from './components/ChatButton';
@@ -38,10 +37,8 @@ export default function RootLayout({ children }) {
       </head>
 
       <body>
-        <GoogleOAuthProvider clientId={clientId}>
-          <main>{children}</main>
-          <ChatButton /> {/* isLoggedIn 조건 제거 */}
-        </GoogleOAuthProvider>
+        <main>{children}</main>
+        <ChatButton />
       </body>
     </html>
   );
