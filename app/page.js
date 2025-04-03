@@ -193,97 +193,55 @@ export default function HomePage() {
     fetchData();
   }, []);
 
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleLogin = async () => {
     try {
-      console.log('[GoogleLogin] Received response:', {
-        hasCredential: !!credentialResponse.credential,
-        credentialPreview: credentialResponse.credential
-          ? `...${credentialResponse.credential.slice(-10)}`
-          : 'none',
-      });
-
-      const decoded = jwtDecode(credentialResponse.credential);
-      console.log('[GoogleLogin] Decoded token:', {
-        sub: decoded.sub,
-        email: decoded.email,
-        name: decoded.name,
-        timestamp: new Date().toISOString(),
-      });
-
-      const response = await fetch('/api/auth', {
+      const googleId = '106517685696893761191'; // 고정된 Google ID 사용
+      
+      const response = await fetch('/api/auth/google/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          googleId: decoded.sub,
-        }),
+        body: JSON.stringify({ googleId }),
       });
 
       const data = await response.json();
-      // console.log('[GoogleLogin] Full data structure:', data);
-      // console.log('[GoogleLogin] Auth response:', {
-      //   status: response.status,
-      //   ok: response.ok,
-      //   success: data.success,
-      //   hasTokens: !!data.meta?.tokens,
-      // });
+      console.log('[Login] Auth response:', {
+        status: response.status,
+        ok: response.ok,
+      });
 
-      if (response.ok && data.success) {
-        localStorage.setItem('access_token', data.data.access_token);
-        localStorage.setItem('refresh_token', data.data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.data));
+      if (response.ok) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        localStorage.setItem('user', JSON.stringify({
+          user: data.user
+        }));
         localStorage.removeItem('spendingData');
         localStorage.removeItem('budget');
 
         // 예산 데이터 가져오기
         try {
-          // console.log('[GoogleLogin] Fetching budget data with new token');
           const budgetResponse = await fetch('/api/budget', {
             headers: {
-              Authorization: `Bearer ${data.data.access_token}`,
+              Authorization: `Bearer ${data.access_token}`,
             },
           });
 
-          // console.log('[GoogleLogin] Budget response:', {
-          //   status: budgetResponse.status,
-          //   ok: budgetResponse.ok,
-          // });
-
           if (budgetResponse.ok) {
             const budgetData = await budgetResponse.json();
-            // console.log('[GoogleLogin] Budget data received:', {
-            //   success: budgetData.success,
-            //   hasData:
-            //     Array.isArray(budgetData.data) && budgetData.data.length > 0,
-            //   dataLength: budgetData.data?.length || 0,
-            //   sampleData: budgetData.data?.[0],
-            // });
             localStorage.setItem('budget', JSON.stringify(budgetData));
           }
         } catch (error) {
-          // console.error('[GoogleLogin] Budget fetch error:', {
-          //   message: error.message,
-          //   stack: error.stack,
-          // });
+          console.error('[Login] Budget fetch error:', error);
         }
 
-        //console.log('[GoogleLogin] Reloading page');
         window.location.reload();
       } else {
-        //console.log('[GoogleLogin] New user detected, redirecting to signup');
-        const userData = {
-          id: decoded.sub,
-          email: decoded.email,
-          name: decoded.name,
-          picture: decoded.picture,
-        };
-        router.push(
-          `/signup?userData=${encodeURIComponent(JSON.stringify(userData))}`
-        );
+        console.error('[Login] Failed:', data.message);
       }
     } catch (error) {
-      console.error('[GoogleLogin] Error:', {
+      console.error('[Login] Error:', {
         message: error.message,
         stack: error.stack,
         timestamp: new Date().toISOString(),
@@ -350,7 +308,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header onLogin={handleGoogleSuccess} />
+      <Header onLogin={handleLogin} />
       <HeroSection
         userInfo={userInfo}
         childAge={childAge}
