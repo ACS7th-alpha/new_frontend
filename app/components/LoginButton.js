@@ -19,12 +19,21 @@ export default function LoginButton() {
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        localStorage.setItem('access_token', data.meta.tokens.accessToken);
-        localStorage.setItem('refresh_token', data.meta.tokens.refreshToken);
+      if (response.ok) {
+        // 새로운 응답 형식에 맞게 저장
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        console.log('로그인 성공:', {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          user: data.user
+        });
+        
         window.location.reload();
       } else {
-        console.error('로그인 실패:', data.error);
+        console.error('로그인 실패:', data.message);
       }
     } catch (error) {
       console.error('로그인 중 오류 발생:', error);
