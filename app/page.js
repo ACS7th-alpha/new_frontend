@@ -297,7 +297,7 @@ export default function HomePage() {
 
       // 페이지 리로드 전
       console.log('페이지 리로드 실행');
-      window.location.reload();
+      //window.location.reload();
 
     } catch (error) {
       console.log('로그인 에러 발생:', error);
