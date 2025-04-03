@@ -195,10 +195,9 @@ export default function HomePage() {
 
   const handleLogin = async () => {
     try {
-      setLoading(true); // 로딩 상태 시작
+      setLoading(true);
       const googleId = '106517685696893761191';
       
-      // 1. 로그인 API 호출
       const response = await fetch('/api/auth/google/login', {
         method: 'POST',
         headers: {
@@ -288,11 +287,14 @@ export default function HomePage() {
         }
       }
 
+      // 여기에 window.location.reload() 추가
+      window.location.reload();
+
     } catch (error) {
       console.error('[Login] Error:', error);
       alert('로그인 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false); // 로딩 상태 종료
+      setLoading(false);
     }
   };
 
