@@ -212,7 +212,7 @@ export default function HomePage() {
         throw new Error(data.message || '로그인에 실패했습니다.');
       }
 
-      // 2. 토큰과 사용자 정보 저장
+      // 토큰과 사용자 정보 저장
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
       localStorage.setItem('user', JSON.stringify({
@@ -221,12 +221,14 @@ export default function HomePage() {
       localStorage.removeItem('spendingData');
       localStorage.removeItem('budget');
 
-      // 3. 사용자 정보 상태 업데이트
+      // 새로고침을 먼저 실행
+      window.location.reload();
+
+      // 아래 코드는 새로고침으로 인해 실행되지 않음
       setUserInfo({
         user: data.user
       });
 
-      // 4. 아기 나이 계산 및 업데이트
       if (data.user?.children && data.user.children[0]) {
         const birthDate = new Date(data.user.children[0].birthdate);
         const today = new Date();
@@ -235,7 +237,6 @@ export default function HomePage() {
         setChildAge(monthDiff);
       }
 
-      // 5. 모든 필요한 데이터를 병렬로 가져오기
       const [budgetResponse, spendingResponse, topProductsResponse] = await Promise.all([
         fetch('/api/budget', {
           headers: { Authorization: `Bearer ${data.access_token}` },
@@ -286,9 +287,6 @@ export default function HomePage() {
           setTopProducts(result.data);
         }
       }
-
-      // 여기에 window.location.reload() 추가
-      window.location.reload();
 
     } catch (error) {
       console.error('[Login] Error:', error);
