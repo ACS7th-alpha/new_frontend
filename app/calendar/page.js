@@ -925,7 +925,7 @@ function CalendarContent() {
                 <h2 className="text-xl font-bold mb-4 text-black">지출 등록</h2>
                 <div className="flex items-center space-x-4">
                   {/* OCR 업로드 버튼 */}
-                  <div className="relative">
+                  {/* <div className="relative">
                     <input
                       type="file"
                       accept="image/*"
@@ -991,7 +991,7 @@ function CalendarContent() {
                         </>
                       )}
                     </label>
-                  </div>
+                  </div> */}
 
                   {/* 기존 지출 항목 추가 버튼 */}
                   <button

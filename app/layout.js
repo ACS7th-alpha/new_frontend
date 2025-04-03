@@ -1,5 +1,5 @@
 import './globals.css';
-import ChatButton from './components/ChatButton';
+//import ChatButton from './components/ChatButton';
 
 export default function RootLayout({ children }) {
   return (
@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <main>{children}</main>
-        <ChatButton />
+        {/* <ChatButton /> */}
       </body>
     </html>
   );
