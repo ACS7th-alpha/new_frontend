@@ -194,16 +194,16 @@ export default function HomePage() {
   }, []);
 
   const handleLogin = async () => {
+    console.log('=== 로그인 프로세스 시작 ===');
+    console.log('고정 googleId로 로그인 시도:', '106517685696893761191');
+    
     try {
-      console.log('[Login] 로그인 시작...');
       setLoading(true);
       const googleId = '106517685696893761191';
       
-      console.log('[Login] 백엔드 API 호출:', {
-        endpoint: '/api/auth/google/login',
-        googleId: googleId
-      });
-
+      // API 호출 전
+      console.log('API 호출 시작 - POST /api/auth/google/login');
+      
       const response = await fetch('/api/auth/google/login', {
         method: 'POST',
         headers: {
@@ -212,29 +212,18 @@ export default function HomePage() {
         body: JSON.stringify({ googleId }),
       });
 
-      const data = await response.json();
-      console.log('[Login] 백엔드 응답:', {
-        status: response.status,
-        ok: response.ok,
-        data: {
-          hasAccessToken: !!data.access_token,
-          hasRefreshToken: !!data.refresh_token,
-          hasUserData: !!data.user,
-          user: data.user ? {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name,
-            hasChildren: !!data.user.children
-          } : null
-        }
-      });
+      // API 응답 직후
+      console.log('API 응답 받음:', response.status);
       
+      const data = await response.json();
+      console.log('응답 데이터:', data);
+
       if (!response.ok) {
         throw new Error(data.message || '로그인에 실패했습니다.');
       }
 
-      console.log('[Login] 로컬 스토리지에 데이터 저장 시작');
-      // 토큰과 사용자 정보 저장
+      // 토큰 저장 전
+      console.log('로컬 스토리지에 토큰 저장 시작');
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
       localStorage.setItem('user', JSON.stringify({
@@ -243,7 +232,8 @@ export default function HomePage() {
       localStorage.removeItem('spendingData');
       localStorage.removeItem('budget');
 
-      // 아래 코드는 새로고침으로 인해 실행되지 않음
+      console.log('토큰 저장 완료');
+
       setUserInfo({
         user: data.user
       });
@@ -256,7 +246,7 @@ export default function HomePage() {
         setChildAge(monthDiff);
       }
 
-      console.log('[Login] 병렬로 데이터 요청 시작');
+      // 기존 데이터 요청 로직 유지
       const [budgetResponse, spendingResponse, topProductsResponse] = await Promise.all([
         fetch('/api/budget', {
           headers: { Authorization: `Bearer ${data.access_token}` },
@@ -269,40 +259,13 @@ export default function HomePage() {
         })
       ]);
 
-      console.log('[Login] API 응답 상태:', {
-        budget: {
-          status: budgetResponse.status,
-          ok: budgetResponse.ok
-        },
-        spending: {
-          status: spendingResponse.status,
-          ok: spendingResponse.ok
-        },
-        topProducts: {
-          status: topProductsResponse.status,
-          ok: topProductsResponse.ok
-        }
-      });
-
-      // 6. 예산 데이터 처리
       if (budgetResponse.ok) {
         const budgetData = await budgetResponse.json();
-        console.log('[Login] 예산 데이터:', {
-          success: budgetData.success,
-          hasData: !!budgetData.data,
-          dataLength: budgetData.data?.length || 0
-        });
         localStorage.setItem('budget', JSON.stringify(budgetData));
       }
 
-      // 7. 지출 데이터 처리
       if (spendingResponse.ok) {
         const spendingData = await spendingResponse.json();
-        console.log('[Login] 지출 데이터:', {
-          success: spendingData.success,
-          hasData: !!spendingData.data,
-          spending: spendingData.data?.spending?.length || 0
-        });
         const { spending } = spendingData.data;
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
@@ -325,31 +288,23 @@ export default function HomePage() {
         setMonthlySpending(currentMonthTotal);
       }
 
-      // 8. 인기 상품 데이터 처리
       if (topProductsResponse.ok) {
         const result = await topProductsResponse.json();
-        console.log('[Login] 인기 상품 데이터:', {
-          success: result.success,
-          hasData: !!result.data,
-          productsCount: result.data?.length || 0
-        });
         if (result.data) {
           setTopProducts(result.data);
         }
       }
 
-      console.log('[Login] 모든 데이터 처리 완료');
+      // 페이지 리로드 전
+      console.log('페이지 리로드 실행');
+      window.location.reload();
 
     } catch (error) {
-      console.error('[Login] 에러 발생:', {
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString()
-      });
+      console.log('로그인 에러 발생:', error);
       alert('로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
-      console.log('[Login] 로그인 프로세스 종료');
+      console.log('=== 로그인 프로세스 종료 ===');
     }
   };
 
