@@ -193,7 +193,7 @@ export default function Header({ onLogin }) {
         </div>
 
         <div className="flex items-center gap-4">
-          {!isLoggedIn && <LoginButton />}
+          {!isLoggedIn && <LoginButton onLogin={onLogin} />}
           {isLoggedIn && (
             <nav className="flex items-center space-x-0">
               {/* 장바구니 버튼 */}
