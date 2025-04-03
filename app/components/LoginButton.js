@@ -11,7 +11,7 @@ export default function LoginButton() {
     try {
       const googleId = '106517685696893761191'; // 고정된 Google ID 사용
       
-      const response = await fetch('/api/auth', {
+      const response = await fetch('/api/auth/google/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
