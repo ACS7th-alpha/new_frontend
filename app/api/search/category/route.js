@@ -11,16 +11,17 @@ export async function GET(request) {
     //const baseUrl = 'http://hama-product:3007';
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_SEARCH_URL;
     // 백엔드 API 경로 수정
-    const url = new URL(
-      `/products/category/${encodeURIComponent(category)}`,
-      baseUrl
-    );
-    url.searchParams.set('page', page);
-    url.searchParams.set('limit', limit);
+    let url = '/api/products/search';
+    if (category !== '전체') {
+      const encodedCategory = encodeURIComponent(category);
+      url += `/${encodedCategory}?page=${page}&limit=${limit}`;
+    } else {
+      url += `?page=${page}&limit=${limit}`;
+    }
 
-    console.log('[Category Search] Backend URL:', url.toString());
+    console.log('[Category Search] Backend URL:', url);
 
-    const response = await fetch(url.toString(), {
+    const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
