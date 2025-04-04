@@ -2,13 +2,11 @@
 import Firstpage from './Firstpage';
 import UserDashboard from './UserDashboard';
 import Categoryproduct from './Categoryproduct';
-import TopProducts from './TopProducts';
 
 export default function HeroSection({
   userInfo,
   childAge,
   monthlySpending,
-  topProducts,
 }) {
   if (!userInfo) {
     return <Firstpage />;
