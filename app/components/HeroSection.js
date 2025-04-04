@@ -22,7 +22,6 @@ export default function HeroSection({
 
   return (
     <>
-      <TopProducts products={topProducts} />
       <UserDashboard
         userInfo={userInfo}
         childAge={childAge}

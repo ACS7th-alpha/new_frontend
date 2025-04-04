@@ -33,7 +33,7 @@ export default function ItemCard({ item }) {
               {new Date(item.createdAt).toLocaleDateString('ko-KR')}
             </span>
           </div>
-          <p className="text-l text-gray-700 whitespace-pre-wrap mb-1">내용              {item.description}</p>
+          <p className="text-l text-gray-700 whitespace-pre-wrap mb-1 line-clamp-1">내용              {item.description}</p>
           <p className="text-l text-gray-700 whitespace-pre-wrap mb-1">사용 연령      {item.ageGroup}</p>
           <p className="text-l text-gray-700 whitespace-pre-wrap mb-1">
             구매처           {item.purchaseLink || '미기재'}

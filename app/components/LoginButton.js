@@ -20,9 +20,16 @@ export default function LoginButton({ onLogin }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors"
+      className="flex flex-col items-center px-4 py-2 text-gray-700 rounded-lg font-semibold bg-white hover:bg-pink-200 transition-colors"
     >
-      {loading ? '로그인 중...' : '로그인'}
+      {loading ? (
+        '로그인 중...' 
+      ) : (
+        <>
+          <span className="text-2xl">😃</span>
+          <span className="text-sm font-semibold">로그인</span>
+        </>
+      )}
     </button>
   );
 } 
