@@ -49,10 +49,10 @@ export default function CategoryProduct() {
     async function fetchProducts() {
       setLoading(true);
       try {
-        let url = '/api/search/category';
+        let url = '/api/products/search';
         if (category !== '전체') {
           const encodedCategory = encodeURIComponent(category);
-          url += `?category=${encodedCategory}&page=${page}&limit=${limit}`;
+          url += `/${encodedCategory}?page=${page}&limit=${limit}`;
         } else {
           url += `?page=${page}&limit=${limit}`;
         }

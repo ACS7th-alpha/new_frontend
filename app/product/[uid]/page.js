@@ -115,7 +115,7 @@ export default function ProductDetail() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/search/products/${params.uid}`);
+        const response = await fetch(`/api/products/${params.uid}`);
         console.log('[ProductDetail] API Response:', {
           status: response.status,
           ok: response.ok,
